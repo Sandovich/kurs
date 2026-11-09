@@ -16,10 +16,11 @@
 body.night{--bg:#000;--panel:#140000;--panel2:#1d0000;--line:#3a0a0a;--text:#ff5a4a;--muted:#a8332b;--accent:#ff3b30;--warn:#ff3b30;--ok:#ff6a5a;--danger:#ff2a1a}
 body.night .leaflet-tile-pane{filter:grayscale(1) brightness(.4) sepia(1) hue-rotate(-45deg) saturate(5)}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;width:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--text);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
 #map{position:fixed;inset:0;background:#0d2236}
 button,select,input{font:inherit;color:inherit}
 button{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px;cursor:pointer;white-space:nowrap}
+#top nav button{flex:1 1 0;min-width:0;padding:6px 4px;font-size:14px;min-height:42px;overflow:hidden;text-overflow:ellipsis}
 button.on{background:var(--accent);color:#001321;border-color:var(--accent)}
 button.primary{background:var(--accent);color:#001321;border-color:var(--accent);font-weight:600}
 input,select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;min-height:42px;max-width:100%}
@@ -31,7 +32,10 @@ hr{border:0;border-top:1px solid var(--line);margin:12px 0}
 body.night #top{background:linear-gradient(#000,rgba(0,0,0,0))}
 .brand{font-weight:700;font-size:16px;flex:none;line-height:1.1}
 .brand small{font-weight:400;color:var(--muted);font-size:11px;display:block}
-#top nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1}
+@media (max-width:430px){.brand small{display:none}.brand{font-size:14px}}
+@media (max-width:400px){.brand{display:none}}
+select{-webkit-appearance:none;appearance:none;background:var(--panel2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238aa1b5'/%3E%3C/svg%3E") no-repeat right 10px center;padding-right:26px;color:var(--text)}
+#top nav{display:flex;gap:5px;flex:1;min-width:0}
 #top nav::-webkit-scrollbar{display:none}
 #status{position:fixed;z-index:1000;right:10px;top:calc(env(safe-area-inset-top) + 64px);display:flex;flex-direction:column;gap:6px;align-items:flex-end;pointer-events:none}
 .chip{background:rgba(16,34,51,.92);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px}
@@ -41,16 +45,19 @@ body.night #top{background:linear-gradient(#000,rgba(0,0,0,0))}
 #hud.stale{border-color:var(--danger);box-shadow:0 0 0 2px var(--danger)}
 #hud b{font-size:22px;display:block}
 #hud span{color:var(--muted);font-size:11px}
-#timebar{position:fixed;z-index:1000;left:0;right:0;bottom:0;padding:8px 10px calc(env(safe-area-inset-bottom) + 8px);background:linear-gradient(rgba(11,23,36,0),var(--bg) 35%);display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:center}
+#timebar{position:fixed;z-index:1000;left:0;right:0;bottom:0;padding:8px 10px calc(env(safe-area-inset-bottom) + 8px);background:linear-gradient(rgba(11,23,36,0),var(--bg) 35%);display:grid;grid-template-columns:minmax(0,9.5em) 44px minmax(0,1fr);gap:8px;align-items:center}
+#timebar select{width:100%;min-width:0;text-overflow:ellipsis}
+#time{width:100%;min-width:0}
 body.night #timebar{background:linear-gradient(rgba(0,0,0,0),#000 35%)}
 #timeLabel{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
 #timeLabel b{color:var(--text);font-size:13px}
-#legend{height:8px;border-radius:4px;width:120px}
+#legend{height:8px;border-radius:4px;width:clamp(50px,22vw,120px)}
+#tl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .leaflet-bottom{bottom:88px}
 .leaflet-control-attribution{font-size:10px;background:rgba(11,23,36,.7)!important;color:var(--muted)}
 .leaflet-control-attribution a{color:var(--muted)}
 .nmscale{background:rgba(11,23,36,.75);color:var(--text);font-size:11px;padding:2px 6px;border:2px solid var(--text);border-top:0;line-height:1.2}
-.panel{position:fixed;z-index:1100;left:0;right:0;bottom:0;max-height:55vh;overflow:auto;background:var(--panel);border-top:1px solid var(--line);border-radius:16px 16px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 16px);box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+.panel{position:fixed;z-index:1100;left:0;right:0;bottom:0;max-height:55vh;max-height:55dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border-top:1px solid var(--line);border-radius:16px 16px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 16px);box-shadow:0 -10px 40px rgba(0,0,0,.4)}
 .panel h2{margin:0 0 10px;font-size:17px;padding-right:48px}
 .panel h3{margin:14px 0 6px;font-size:14px}
 .panel .close{position:absolute;top:8px;right:8px;min-width:44px}
@@ -87,15 +94,13 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <div id="map"></div>
 
 <header id="top">
-  <div class="brand">Курс<small>v0.2 · тест</small></div>
+  <div class="brand">Курс<small>v0.3 · тест</small></div>
   <nav>
     <button data-panel="route" id="btnRoute">Переход</button>
     <button id="btnGps">GPS</button>
-    <button data-panel="layers">Слои</button>
-    <button data-panel="anchor" id="btnAnchor">Якорь</button>
     <button data-panel="ais" id="btnAis">AIS</button>
-    <button data-panel="boat">Лодка</button>
-    <button data-panel="help" aria-label="Помощь">?</button>
+    <button data-panel="layers">Слои</button>
+    <button data-panel="more" id="btnMore" aria-label="Ещё" style="flex:0 0 46px">☰</button>
   </nav>
 </header>
 
@@ -109,12 +114,12 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 
 <footer id="timebar">
   <select id="model" aria-label="Модель прогноза">
-    <option value="ecmwf_ifs025">ECMWF · мир</option>
-    <option value="icon_seamless">ICON-EU · 7 км</option>
-    <option value="gfs_seamless">GFS · мир</option>
-    <option value="metno_seamless">MET Nordic · 1 км</option>
-    <option value="dmi_seamless">HARMONIE · 2 км</option>
-    <option value="ecmwf_aifs025_single">AIFS · нейросеть ECMWF</option>
+    <option value="ecmwf_ifs025">ECMWF</option>
+    <option value="icon_seamless">ICON-EU 7 км</option>
+    <option value="gfs_seamless">GFS</option>
+    <option value="metno_seamless">MET Nordic 1 км</option>
+    <option value="dmi_seamless">HARMONIE 2 км</option>
+    <option value="ecmwf_aifs025_single">AIFS (ИИ)</option>
   </select>
   <button id="play" aria-label="Проиграть">▶</button>
   <input type="range" id="time" min="0" max="0" value="0" aria-label="Время прогноза">
@@ -177,11 +182,14 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <button class="close">✕</button>
   <h2>AIS</h2>
   <div class="warnbox small">Интернет-AIS собирают береговые станции. Суда бывают с опозданием на минуты, а часть не видна совсем. Это не замена вахте и своему приёмнику. У каждого судна показан возраст данных.</div>
-  <div class="row"><input id="aisKey" placeholder="Ключ aisstream.io" style="flex:1"><button id="aisSave">Сохранить</button></div>
   <div class="row"><button class="primary" id="aisOn">Включить</button><button id="aisOff">Выключить</button></div>
-  <p>Статус: <b id="aisStatus">выкл</b> · судов: <b id="aisCount">0</b></p>
+  <p class="small">Финский поток (Digitraffic): <b id="dtStatus">выкл</b><br>aisstream: <b id="aisStatus">без ключа</b><br>Всего судов: <b id="aisCount">0</b></p>
   <div id="aisList" class="scroll"></div>
-  <p class="muted small">Ключ бесплатный: aisstream.io → вход через GitHub → API Keys. Свой приёмник на лодке подключим через Wi-Fi-шлюз (Signal K) в следующей версии.</p>
+  <details><summary>Дополнительный источник aisstream (по желанию)</summary>
+    <p class="muted small">Без ключа работает финский государственный поток: береговые станции Финского залива, видно Петербург, Кронштадт и часть Ладоги. Ключ aisstream добавит ещё станций. Он бесплатный: aisstream.io → вход через GitHub → API Keys.</p>
+    <div class="row"><input id="aisKey" placeholder="Ключ aisstream.io" style="flex:1"><button id="aisSave">Сохранить</button></div>
+  </details>
+  <p class="muted small">Свой приёмник на лодке подключим через Wi-Fi-шлюз (Signal K) в версии-приложении.</p>
 </section>
 
 <section class="panel" id="p-boat" hidden>
@@ -202,6 +210,17 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   </details>
   <div class="row"><button class="primary" id="sSave">Сохранить</button><button id="sTrack">Стереть трек</button><button id="sLog">Журнал ошибок</button></div>
   <p class="muted small">Всё хранится только на этом устройстве, без регистрации. Настройки не сбрасываются.</p>
+</section>
+
+<section class="panel" id="p-more" hidden>
+  <button class="close">✕</button>
+  <h2>Ещё</h2>
+  <div class="row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <button data-go="anchor" id="btnAnchor">⚓ Якорь</button>
+    <button data-go="boat">⛵ Лодка и пределы</button>
+    <button id="mNight">🌙 Ночной режим</button>
+    <button data-go="help">? Как пользоваться</button>
+  </div>
 </section>
 
 <section class="panel" id="p-help" hidden>
@@ -272,7 +291,7 @@ function boatSpeed(tws,twa){const B=S.boat;
 const view=store.get('view',{c:[60.25,31.0],z:8});
 const map=L.map('map',{zoomControl:false}).setView(view.c,view.z);
 map.attributionControl.setPrefix(false);
-map.attributionControl.addAttribution('Погода <a href="https://open-meteo.com">Open-Meteo</a>');
+map.attributionControl.addAttribution('<a href="https://open-meteo.com">Open-Meteo</a>');
 L.control.zoom({position:'bottomright'}).addTo(map);
 const NmScale=L.Control.extend({options:{position:'bottomleft'},onAdd(){this._d=L.DomUtil.create('div','nmscale');map.on('moveend zoomend',()=>this.upd());setTimeout(()=>this.upd());return this._d},
   upd(){const y=map.getSize().y/2,a=map.containerPointToLatLng([0,y]),b=map.containerPointToLatLng([100,y]),nm=dist([a.lat,a.lng],[b.lat,b.lng])/NM;
@@ -280,7 +299,7 @@ const NmScale=L.Control.extend({options:{position:'bottomleft'},onAdd(){this._d=
 new NmScale().addTo(map);
 map.on('moveend',()=>{const c=map.getCenter();store.set('view',{c:[c.lat,c.lng],z:map.getZoom()})});
 const bases={
-  osm:()=>L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}),
+  osm:()=>L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}),
   topo:()=>L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,subdomains:'abc',attribution:'© OpenTopoMap, OSM'}),
   yandex:()=>L.tileLayer('https://tiles.api-maps.yandex.ru/v1/tiles/?x={x}&y={y}&z={z}&lang=ru_RU&l=map&projection=web_mercator&apikey='+encodeURIComponent(S.yandexKey),{maxZoom:19,attribution:'© Яндекс'})
 };
@@ -548,7 +567,7 @@ $('#aSetGps').onclick=()=>{audio();if(!G.pos){toast('Сначала включи
 $('#aSetMap').onclick=()=>{audio();const c=map.getCenter();A.pos=[c.lat,c.lng];anchorSave()};
 $('#aOff').onclick=()=>{A.pos=null;anchorSave();alarmOff()};
 function anchorSave(){store.set('anchor',A.pos);A.out=0;anchorDraw();if(A.pos&&G.watch==null)toast('Включите GPS, иначе вахта не работает')}
-function anchorBtn(){$('#btnAnchor').classList.toggle('on',!!A.pos||openName==='anchor')}
+function anchorBtn(){$('#btnAnchor').classList.toggle('on',!!A.pos);$('#btnMore').classList.toggle('on',openName==='more'||(!!A.pos&&!openName));chip('anchor',A.pos?'⚓ Якорная вахта включена':null)}
 function anchorDraw(){if(A.circle){map.removeLayer(A.circle);A.circle=null}if(A.line){map.removeLayer(A.line);A.line=null}anchorBtn();
   if(!A.pos){$('#aState').textContent='Якорь не брошен.';return}
   A.circle=L.circle(A.pos,{radius:A.r,color:'#ffb020',weight:2,fillOpacity:.08}).addTo(map);
@@ -563,25 +582,43 @@ function alarmOff(){A.alarm=false;clearInterval(A.beepT);$('#alarm').hidden=true
 $('#alarmStop').onclick=()=>{alarmOff();A.out=-15};
 
 /* ===== AIS с возрастом данных ===== */
-const AIS={ws:null,ships:new Map(),layer:L.layerGroup().addTo(map),subT:null,warned:new Set(),retry:0};
+const AIS={on:false,ws:null,ships:new Map(),layer:L.layerGroup().addTo(map),subT:null,warned:new Set(),retry:0};
+const DT={timer:null,meta:new Map(),metaT:0,H:{headers:{'Digitraffic-User':'Kurs/0.3'}}};
 $('#aisKey').value=S.aisKey;
-$('#aisSave').onclick=()=>{S.aisKey=$('#aisKey').value.trim();saveS();toast('Ключ сохранён')};
-$('#aisOn').onclick=()=>{AIS.retry=0;aisConnect()};$('#aisOff').onclick=()=>{AIS.retry=-1;aisDisconnect()};
-const aisSt=m=>{$('#aisStatus').textContent=m;$('#btnAis').classList.toggle('on',!!AIS.ws||openName==='ais')};
-function aisConnect(){S.aisKey=$('#aisKey').value.trim()||S.aisKey;saveS();if(!S.aisKey)return toast('Вставьте ключ aisstream.io');aisDisconnect(true);
+$('#aisSave').onclick=()=>{S.aisKey=$('#aisKey').value.trim();saveS();toast('Ключ сохранён');if(AIS.on){AIS.retry=0;aisConnect()}};
+$('#aisOn').onclick=()=>aisStart();$('#aisOff').onclick=()=>aisStop();
+function aisStart(){AIS.on=true;store.set('aisOn',true);dtStart();if(S.aisKey){AIS.retry=0;aisConnect()}aisBtn()}
+function aisStop(){AIS.on=false;store.set('aisOn',false);clearInterval(DT.timer);DT.timer=null;$('#dtStatus').textContent='выкл';AIS.retry=-1;aisDisconnect();
+  AIS.layer.clearLayers();AIS.ships.clear();$('#aisCount').textContent=0;aisList();aisBtn()}
+function aisBtn(){$('#btnAis').classList.toggle('on',AIS.on||openName==='ais')}
+const aisSt=m=>{$('#aisStatus').textContent=m;aisBtn()};
+/* финский государственный поток AIS: без ключа, береговые станции Финского залива */
+function dtStart(){clearInterval(DT.timer);dtPoll();DT.timer=setInterval(dtPoll,60000)}
+async function dtPoll(){if(!AIS.on)return;DT.last=Date.now();$('#dtStatus').textContent=DT.ok==null?'загружаю…':$('#dtStatus').textContent;
+  try{if(Date.now()-DT.metaT>3600e3){const v=await fetch('https://meri.digitraffic.fi/api/ais/v1/vessels',DT.H).then(r=>r.json());v.forEach(x=>DT.meta.set(x.mmsi,x));DT.metaT=Date.now()}
+    const r=await fetch('https://meri.digitraffic.fi/api/ais/v1/locations',DT.H);if(!r.ok)throw new Error('ответ '+r.status);const j=await r.json();
+    const b=map.getBounds().pad(.5),old=Date.now()-20*60000;let n=0;
+    for(const f of j.features){const[lon,lat]=f.geometry.coordinates,p=f.properties;if(!b.contains([lat,lon])||p.timestampExternal<old)continue;
+      let s=AIS.ships.get(p.mmsi);if(!s){s={id:p.mmsi};AIS.ships.set(p.mmsi,s)}if(s.t&&s.t>p.timestampExternal)continue;
+      s.lat=lat;s.lon=lon;s.sog=p.sog>=102.2?null:p.sog;s.cog=p.cog>=360?null:p.cog;s.hdg=p.heading<360?p.heading:null;s.t=p.timestampExternal;s.src='Digitraffic';
+      const m=DT.meta.get(p.mmsi);if(m){if(m.name&&m.name.trim())s.name=m.name.trim();s.dest=(m.destination||'').trim();s.len=(m.referencePointA||0)+(m.referencePointB||0)||null}
+      aisDraw(s);n++}
+    DT.ok=n;$('#dtStatus').textContent=`на связи, ${n} судов рядом · обновлено ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}`;$('#aisCount').textContent=AIS.ships.size;if(openName==='ais')aisList();aisCpaCheck()
+  }catch(e){logE('digitraffic '+e.message);$('#dtStatus').textContent='нет связи, повторю через минуту'}}
+function aisConnect(){S.aisKey=$('#aisKey').value.trim()||S.aisKey;saveS();if(!S.aisKey)return aisSt('без ключа');aisDisconnect(true);
   const ws=new WebSocket('wss://stream.aisstream.io/v0/stream');AIS.ws=ws;aisSt('подключаюсь…');
   ws.onopen=()=>{aisSub();aisSt('на связи, жду суда…')};
   ws.onmessage=async ev=>{let tx=typeof ev.data==='string'?ev.data:await ev.data.text(),m;try{m=JSON.parse(tx)}catch(e){return}
     if(m.error){aisSt('ошибка: '+m.error);logE('ais '+m.error);return}aisMsg(m)};
   ws.onerror=()=>{aisSt('ошибка соединения');logE('ais ws error')};
   ws.onclose=()=>{if(AIS.ws===ws){AIS.ws=null;aisSt('отключено');if(AIS.retry>=0&&AIS.retry<5){AIS.retry++;setTimeout(aisConnect,5000*AIS.retry);aisSt(`переподключаюсь (${AIS.retry})…`)}}}}
-function aisDisconnect(keep){if(AIS.ws){const w=AIS.ws;AIS.ws=null;w.close()}if(!keep)aisSt('выкл')}
+function aisDisconnect(keep){if(AIS.ws){const w=AIS.ws;AIS.ws=null;w.close()}if(!keep)aisSt(S.aisKey?'выкл':'без ключа')}
 function aisSub(){if(!AIS.ws||AIS.ws.readyState!==1)return;const b=map.getBounds().pad(.3);
   AIS.ws.send(JSON.stringify({APIKey:S.aisKey,BoundingBoxes:[[[b.getSouth(),b.getWest()],[b.getNorth(),b.getEast()]]],FilterMessageTypes:['PositionReport','StandardClassBPositionReport','ShipStaticData']}))}
-map.on('moveend',()=>{clearTimeout(AIS.subT);AIS.subT=setTimeout(aisSub,1500)});
+map.on('moveend',()=>{clearTimeout(AIS.subT);AIS.subT=setTimeout(()=>{aisSub();if(AIS.on&&Date.now()-(DT.last||0)>15000)dtPoll()},1500)});
 function aisMsg(m){const md=m.MetaData||{},id=md.MMSI;if(!id)return;let s=AIS.ships.get(id);if(!s){s={id};AIS.ships.set(id,s)}
   if(md.ShipName&&md.ShipName.trim())s.name=md.ShipName.trim();const msg=m.Message||{},pr=msg.PositionReport||msg.StandardClassBPositionReport;
-  if(pr){s.lat=pr.Latitude;s.lon=pr.Longitude;s.sog=pr.Sog;s.cog=pr.Cog;s.hdg=pr.TrueHeading!=null&&pr.TrueHeading<360?pr.TrueHeading:null;s.t=Date.now()}
+  if(pr){s.lat=pr.Latitude;s.lon=pr.Longitude;s.sog=pr.Sog;s.cog=pr.Cog;s.hdg=pr.TrueHeading!=null&&pr.TrueHeading<360?pr.TrueHeading:null;s.t=Date.now();s.src='aisstream'}
   const sd=msg.ShipStaticData;if(sd){if(sd.Name&&sd.Name.trim())s.name=sd.Name.trim();s.dest=(sd.Destination||'').trim();const D=sd.Dimension||{};s.len=(D.A||0)+(D.B||0)||null}
   if(s.lat!=null&&Math.abs(s.lat)<=90)aisDraw(s)}
 function shipIcon(s){const age=(Date.now()-(s.t||0))/60000,mv=s.sog>0.5,col=age>10?'#5a6b7a':mv?'#4cc38a':'#8aa1b5',rot=s.hdg??s.cog??0,op=age>3?.55:1;
@@ -592,7 +629,7 @@ function cpa(s){if(!G.pos||G.sog==null||s.sog==null||s.cog==null||s.lat==null)re
   const px=(s.lon-G.pos[1])*60*k,py=(s.lat-G.pos[0])*60;const vo=[G.sog*Math.sin(rad(G.cog||0)),G.sog*Math.cos(rad(G.cog||0))],vt=[s.sog*Math.sin(rad(s.cog)),s.sog*Math.cos(rad(s.cog))];
   const vx=vt[0]-vo[0],vy=vt[1]-vo[1],v2=vx*vx+vy*vy;if(v2<1e-6)return{cpa:Math.hypot(px,py),t:Infinity};const t=-(px*vx+py*vy)/v2;return{cpa:Math.hypot(px+vx*t,py+vy*t),t:t*60}}
 function aisPopup(s){const c=cpa(s),d=G.pos?dist(G.pos,[s.lat,s.lon])/NM:null;
-  return `<b>${s.name||'MMSI '+s.id}</b><br>${f1(s.sog)} уз · ${f0(s.cog)}°${s.len?` · ${s.len} м`:''}${s.dest?`<br>→ ${s.dest}`:''}${d!=null?`<br>до него ${f1(d)} мили`:''}${c&&c.t>0&&c.t<120?`<br>сближение до ${f1(c.cpa)} мили через ${f0(c.t)} мин`:''}<br><span style="color:#888">данные ${ago(s.t)} · интернет-AIS</span>`}
+  return `<b>${s.name||'MMSI '+s.id}</b><br>${f1(s.sog)} уз · ${f0(s.cog)}°${s.len?` · ${s.len} м`:''}${s.dest?`<br>→ ${s.dest}`:''}${d!=null?`<br>до него ${f1(d)} мили`:''}${c&&c.t>0&&c.t<120?`<br>сближение до ${f1(c.cpa)} мили через ${f0(c.t)} мин`:''}<br><span style="color:#888">данные ${ago(s.t)} · ${s.src||'интернет-AIS'}</span>`}
 function aisList(){const arr=[...AIS.ships.values()].filter(s=>s.lat!=null).map(s=>({s,d:G.pos?dist(G.pos,[s.lat,s.lon])/NM:null,c:cpa(s)})).sort((a,b)=>(a.d??1e9)-(b.d??1e9)).slice(0,30);
   $('#aisList').innerHTML=arr.length?'<table><tr><th>Судно</th><th>Уз</th><th>Миль</th><th>Сближение</th><th>Данные</th></tr>'+arr.map(({s,d,c})=>`<tr><td>${s.name||s.id}</td><td>${f1(s.sog)}</td><td>${f1(d)}</td><td>${c&&c.t>0&&c.t<120?`${f1(c.cpa)} м. через ${f0(c.t)} мин`:'—'}</td><td>${ago(s.t)}</td></tr>`).join('')+'</table>':''}
 function aisCpaCheck(){for(const s of AIS.ships.values()){const c=cpa(s);if(c&&c.t>0&&c.t<15&&c.cpa<0.3&&!AIS.warned.has(s.id)){AIS.warned.add(s.id);toast(`⚠ Сближение: ${s.name||s.id} — ${f1(c.cpa)} мили через ${f0(c.t)} мин`,8000);beep();navigator.vibrate?.([300,150,300])}}}
@@ -608,8 +645,10 @@ $('#sSave').onclick=()=>{const k=$('#sYa').value.trim(),chK=k!==S.yandexKey;S.ya
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);gpsStart()}toast('Сохранено')};
 $('#sNight').onchange=e=>document.body.classList.toggle('night',e.target.checked);
 $('#sTrack').onclick=()=>{G.track=[];G.line.setLatLngs([]);store.set('track',[]);toast('Трек стёрт')};
-$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.2 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
+$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.3 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
 
+$$('#p-more [data-go]').forEach(b=>b.onclick=()=>openPanel(b.dataset.go));
+$('#mNight').onclick=()=>{S.night=!S.night;saveS();document.body.classList.toggle('night',S.night);$('#sNight').checked=S.night};
 /* ===== клик по карте ===== */
 map.on('click',e=>{if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}showPoint(e.latlng)});
 
@@ -621,6 +660,7 @@ anchorDraw();renderRoute();sizeCv();netChip();
 {const c=store.get('grid',null);if(c){W.g=buildGrid(c);setupTime();drawField();freshChip()}}
 loadGrid(true);
 if(RT.fc)bestWindows();
+if(store.get('aisOn',false))aisStart();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(e=>logE('sw '+e.message));
 if(location.protocol==='file:')setTimeout(()=>toast('Откройте программу через адрес http://…, а не файлом: иначе карта OSM блокируется и не работает офлайн',9000),500);
 else if(!store.get('seenIntro2',false)){store.set('seenIntro2',true);setTimeout(()=>openPanel('help'),600)}
