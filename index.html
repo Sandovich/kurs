@@ -95,7 +95,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <div id="map"></div>
 
 <header id="top">
-  <div class="brand">Курс<small>v0.3.1 · тест</small></div>
+  <div class="brand">Курс<small>v0.4 · тест</small></div>
   <nav>
     <button data-panel="route" id="btnRoute">Переход</button>
     <button id="btnGps">GPS</button>
@@ -130,7 +130,9 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <section class="panel" id="p-layers" hidden>
   <button class="close">✕</button>
   <h2>Слои карты</h2>
-  <label><input type="radio" name="base" value="osm"> OpenStreetMap: работает без ключа, просмотренное сохраняется для офлайна</label>
+  <label><input type="radio" name="base" value="kurs"> <b>Карта «Курса»</b>: Нева, Ладога, Финский залив. Работает без интернета после скачивания</label>
+  <div class="row"><button class="primary" id="mapDl">Скачать карту района (≈70 МБ)</button></div><p class="small muted" id="mapSt"></p>
+  <label><input type="radio" name="base" value="osm"> OpenStreetMap: весь мир, только с интернетом</label>
   <label><input type="radio" name="base" value="yandex"> Яндекс Карты (нужен ключ в «Лодка» → «Ключи»)</label>
   <label><input type="radio" name="base" value="topo"> Рельеф берега (OpenTopoMap)</label>
   <hr>
@@ -248,6 +250,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <div id="alarm" hidden><div id="alarmTitle">⚓ ЯКОРЬ ПОЛЗЁТ</div><div id="alarmDist" style="font-size:20px"></div><button id="alarmStop">Я на палубе</button></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://unpkg.com/protomaps-leaflet@5.1.0/dist/protomaps-leaflet.js"></script>
 <script>
 'use strict';
 /* ===== журнал ошибок (жалоба: «поддержка молчит», нечего им отправить) ===== */
@@ -257,7 +260,7 @@ window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.rea
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
-const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,saver:false,base:'osm',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
+const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,saver:false,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
   boat:{name:'',type:'sail',speed:5.5,motor:5,draft:1.8}},store.get('settings',{}));
 const saveS=()=>store.set('settings',S);
 function toast(m,ms=4000){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
@@ -308,7 +311,10 @@ const NmScale=L.Control.extend({options:{position:'bottomleft'},onAdd(){this._d=
     const nice=[.05,.1,.2,.25,.5,1,2,5,10,20,50,100].reverse().find(v=>v<=nm)||.05;this._d.style.width=Math.round(100*nice/nm)+'px';this._d.textContent=(nice<1?String(nice).replace('.',','):nice)+' миль'}});
 new NmScale().addTo(map);
 map.on('moveend',()=>{const c=map.getCenter();store.set('view',{c:[c.lat,c.lng],z:map.getZoom()})});
+const REG={id:'ladoga',W:28.4,S:59.55,E:33.2,N:61.85,maxz:12};
+const pmOpts=()=>({url:`map/${REG.id}/{z}/{x}/{y}.mvt`,maxDataZoom:REG.maxz,maxZoom:19,flavor:S.night?'dark':'light',lang:'ru',bounds:[[REG.S,REG.W],[REG.N,REG.E]],attribution:'Protomaps'});
 const bases={
+  kurs:()=>L.featureGroup([L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}),protomapsL.leafletLayer(pmOpts())]),
   osm:()=>L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}),
   topo:()=>L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,subdomains:'abc',attribution:'© OpenTopoMap, OSM'}),
   yandex:()=>L.tileLayer('https://tiles.api-maps.yandex.ru/v1/tiles/?x={x}&y={y}&z={z}&lang=ru_RU&l=map&projection=web_mercator&apikey='+encodeURIComponent(S.yandexKey),{maxZoom:19,attribution:'© Яндекс'})
@@ -316,7 +322,7 @@ const bases={
 let baseLayer=null;
 function setBase(k){if(k==='yandex'&&!S.yandexKey){toast('Для Яндекса нужен ключ: «Лодка» → «Ключи сервисов»');k='osm'}
   if(baseLayer)map.removeLayer(baseLayer);baseLayer=bases[k]().addTo(map);baseLayer.bringToBack();
-  let errs=0;baseLayer.on('tileerror',()=>{if(++errs===4)toast(navigator.onLine?'Карта не грузится: проверьте ключ или сеть':'Нет сети: видна только сохранённая часть карты')});
+  let errs=0;baseLayer.on('tileerror',()=>{if(++errs===4&&k!=='kurs')toast(navigator.onLine?'Карта не грузится: проверьте ключ или сеть':'Нет сети: видна только сохранённая часть карты')});
   S.base=k;saveS();$$('input[name=base]').forEach(r=>r.checked=r.value===k)}
 const seaLayer=L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenSeaMap'});
 function setSea(on){S.seamarks=on;saveS();$('#chkSea').checked=on;on?seaLayer.addTo(map):map.removeLayer(seaLayer)}
@@ -436,13 +442,14 @@ async function showPoint(ll){
        :`<div class="okbox small">Модели согласны (разброс до ${f0(spread)} уз за 72 ч). Уверенность высокая.</div>`;
   html+=chart(t,i0,Math.min(t.length,i0+120),[...models.map(k=>({v:sp(k),c:MODEL_COLOR[k]})),{v:gu(main),c:MODEL_COLOR[main],dash:1}],dr(main));
   html+=`<div class="row small">${models.map(k=>`<span><span class="dot" style="background:${MODEL_COLOR[k]}"></span>${MODEL_NAME[k]}</span>`).join('')}<span class="muted">пунктир — порывы ${MODEL_NAME[main]}</span></div>`;
-  html+='<div class="scroll"><table><tr><th>Время</th>'+models.map(k=>`<th>${MODEL_NAME[k]}</th>`).join('')+'<th>Откуда</th><th>Волна</th></tr>';
+  html+='<div class="scroll"><table><tr><th>Время</th>'+models.map(k=>`<th>${MODEL_NAME[k]}</th>`).join('')+'<th>Откуда</th><th>Волна</th>'+(WM.g&&isWater(ll.lat,ll.lng)?'<th>По разгону</th>':'')+'</tr>';const est=WM.g&&isWater(ll.lat,ll.lng);
   for(let i=i0;i<Math.min(t.length,i0+48);i+=3){const d=dr(main)[i];const wi=mh?mh.time.indexOf(t[i]):-1;const wv=wi>=0?mh.wave_height[wi]:null,wp=wi>=0?mh.wave_period[wi]:null;
     html+=`<tr><td>${fmtT(t[i])}</td>`+models.map(k=>{const s=sp(k)[i],g=gu(k)[i],bad=s>S.windMax||g>S.gustMax;return `<td style="${bad?'color:var(--danger);font-weight:600':''}"><span class="dot" style="background:${css(s)}"></span>${f0(s)}<span class="muted">/${f0(g)}</span></td>`}).join('')+
-      `<td>${rumb(d)} ${f0(d)}°</td><td style="${wv>S.waveMax?'color:var(--danger);font-weight:600':''}">${wv!=null?f1(wv)+' м'+(wp?` <span class="muted">${f0(wp)} с</span>`:''):'—'}</td></tr>`}
+      `<td>${rumb(d)} ${f0(d)}°</td><td style="${wv>S.waveMax?'color:var(--danger);font-weight:600':''}">${wv!=null?f1(wv)+' м'+(wp?` <span class="muted">${f0(wp)} с</span>`:''):'—'}</td>`+(est?(()=>{const sp0=sp(main)[i],F=fetchKm(ll.lat,ll.lng,d),e=waveEst(sp0,F);return `<td style="${e&&e.h>S.waveMax?'color:var(--danger);font-weight:600':''}">${e?f1(e.h)+' м <span class="muted">'+f0(e.t)+' с</span>':'—'}</td>`})():'')+'</tr>'}
   html+='</table></div><p class="muted small">Ветер, уз: средний/порыв. Красным — выше ваших пределов («Лодка»).</p>';
   const pr=h['pressure_msl_'+main];if(pr&&pr[i0]!=null&&pr[i0+12]!=null){const dp=pr[i0+12]-pr[i0];html+=`<p class="small">Давление ${f0(pr[i0])} гПа, за 12 ч ${dp>0?'+':''}${f1(dp)}${dp<=-4?' — <b style="color:var(--warn)">быстро падает: жди усиления ветра</b>':''}</p>`}
-  if(!mh)html+='<p class="note">Волну в этой точке морская модель не считает.</p>';
+  if(est){const d0=dr(main)[i0],F=fetchKm(ll.lat,ll.lng,d0);html+=`<p class="note">«По разгону» — своя оценка волны: сколько километров воды ветер прошёл до этой точки (сейчас с ${rumb(d0)}: ${f0(F)} км). На Ладоге и в заливе это надёжнее морской модели. Расчёт для глубокой воды: на мелководье юга Ладоги волна ниже, но круче.</p>`}
+  if(!mh&&!est)html+='<p class="note">Волну в этой точке морская модель не считает.</p>';
   body.innerHTML=html}
 function chart(t,a,b,series,dirs){const Wd=360,H=170,P=26;let mx=10;series.forEach(s=>{for(let i=a;i<b;i++)if(s.v[i]>mx)mx=s.v[i]});mx=Math.ceil(mx/5)*5;
   const X=i=>P+(i-a)/(b-a-1)*(Wd-P-6),Y=v=>H-22-(v/mx)*(H-40);let g=`<svg class="chart" viewBox="0 0 ${Wd} ${H}" font-size="9" fill="var(--muted)">`;
@@ -501,7 +508,7 @@ async function routeWx(){if(RT.pts.length<2)return toast('Поставьте м�
 function evalRoute(dep){const fc=RT.fc,L2=legs();if(!fc)return null;
   const rows=L2.map(l=>({...l,spd:null,gst:null,dir:null,wave:null,eta:null,spread:0,boat:0,time:0}));let t=dep;const m=fc.model;
   for(const s of fc.smp){let i=fc.times.findIndex(x=>x>=t/1000-1800);if(i<0)return null;
-    const v=s['s_'+m][i],g=s['g_'+m][i],d=s.d[i],w=s.w?s.w[i]:null,r=rows[s.li];if(!r)continue;
+    const v=s['s_'+m][i],g=s['g_'+m][i],d=s.d[i],r=rows[s.li];if(!r)continue;let w=s.w?s.w[i]:null;const we=d!=null?waveEst(v,fetchKm(s.p[0],s.p[1],d)):null;if(we&&(w==null||we.h>w))w=we.h;
     const twa=d!=null?offBow(d,r.c):90,bs=boatSpeed(v,twa),dt=s.len/(bs*NM/3600000);
     const vs=fc.models.map(k=>s['s_'+k][i]).filter(x=>x!=null),spr=vs.length>1?Math.max(...vs)-Math.min(...vs):0;
     if(r.eta==null)r.eta=t;
@@ -525,7 +532,7 @@ function renderRoute(){const L2=legs(),total=L2.reduce((s,l)=>s+l.d,0),dep=depTs
   let t='<table><tr><th>Уч.</th><th>Миль</th><th>Курс</th>'+(rows?'<th>Начало</th><th>Ветер</th><th>К ветру</th><th>Ход</th><th>Волна</th><th>Прогноз</th>':'')+'</tr>';
   (rows||L2).forEach((r,i)=>{const bad=rows&&(r.spd>S.windMax||r.gst>S.gustMax||r.wave>S.waveMax);
     t+=`<tr class="${bad?'bad':''}"><td>${i+1}→${i+2}</td><td>${f1(r.d/NM)}</td><td>${f0(r.c)}°</td>`+(rows?`<td>${r.eta?fmtT(r.eta/1000):'—'}</td><td><span class="dot" style="background:${css(r.spd)}"></span>${f0(r.spd)}/${f0(r.gst)} ${rumb(r.dir)}</td><td>${r.dir!=null?sail(offBow(r.dir,r.c)):'—'}</td><td>${f1(r.boat)} уз</td><td>${r.wave!=null?f1(r.wave)+' м':'—'}</td><td>${conf(r.spread)}</td>`:'')+'</tr>'});
-  $('#rLegs').innerHTML=t+'</table>'+(rows?`<p class="muted small">Ветер — средний/порыв в худшей точке участка на время вашего прохода. «Ход» — скорость ${S.boat.type==='sail'?'под парусом при этом ветре (в штиль — мотор)':'под мотором'}. «Прогноз» — насколько согласны модели.</p>`:'')}
+  $('#rLegs').innerHTML=t+'</table>'+(rows?`<p class="muted small">Ветер — средний/порыв в худшей точке участка на время вашего прохода. «Ход» — скорость ${S.boat.type==='sail'?'под парусом при этом ветре (в штиль — мотор)':'под мотором'}. «Прогноз» — насколько согласны модели. «Волна» — большее из морской модели и своей оценки по ветру и разгону.</p>`:'')}
 function bestWindows(){const fc=RT.fc;if(!fc)return;const now=Date.now(),res=[];
   for(let h=0;h<=96;h++){const dep=Math.ceil(now/3600000)*3600000+h*3600000,rows=evalRoute(dep);if(!rows)break;
     const mg=Math.max(...rows.map(r=>r.gst||0)),ms=Math.max(...rows.map(r=>r.spd||0)),mw=Math.max(...rows.map(r=>r.wave||0)),head=rows.filter(r=>r.dir!=null&&offBow(r.dir,r.c)<40).length;
@@ -656,10 +663,35 @@ $('#sSave').onclick=()=>{const k=$('#sYa').value.trim(),chK=k!==S.yandexKey;S.ya
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);gpsStart()}toast('Сохранено')};
 $('#sNight').onchange=e=>document.body.classList.toggle('night',e.target.checked);
 $('#sTrack').onclick=()=>{G.track=[];G.line.setLatLngs([]);store.set('track',[]);toast('Трек стёрт')};
-$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.3 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
+$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.4 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
 
 $$('#p-more [data-go]').forEach(b=>b.onclick=()=>openPanel(b.dataset.go));
-$('#mNight').onclick=()=>{S.night=!S.night;saveS();document.body.classList.toggle('night',S.night);$('#sNight').checked=S.night};
+$('#mNight').onclick=()=>{S.night=!S.night;saveS();document.body.classList.toggle('night',S.night);$('#sNight').checked=S.night;if(S.base==='kurs')setBase('kurs')};
+/* ===== офлайн-карта района ===== */
+function regTiles(){const lon2x=(l,z)=>Math.floor((l+180)/360*2**z),lat2y=(a,z)=>{const q=rad(a);return Math.floor((1-Math.log(Math.tan(q)+1/Math.cos(q))/Math.PI)/2*2**z)};
+  const out=[];for(let z=0;z<=REG.maxz;z++)for(let x=lon2x(REG.W,z);x<=lon2x(REG.E,z);x++)for(let y=lat2y(REG.N,z);y<=lat2y(REG.S,z);y++)out.push(`map/${REG.id}/${z}/${x}/${y}.mvt`);return out}
+function mapStatus(){const d=store.get('mapDl_'+REG.id,null);$('#mapSt').textContent=d?`✓ Карта района сохранена ${new Date(d).toLocaleDateString('ru-RU')}: работает без интернета.`:'Карта ещё не скачана: без интернета будет видна только просмотренная часть.';$('#mapDl').textContent=d?'Обновить карту района':'Скачать карту района (≈70 МБ)'}
+$('#mapDl').onclick=async()=>{if(!('caches' in window)||!navigator.serviceWorker?.controller){toast('Откройте программу по адресу https://… и обновите страницу один раз, потом скачивайте');return}
+  try{await navigator.storage?.persist?.()}catch(e){}
+  const list=regTiles(),b=$('#mapDl');b.disabled=true;let done=0,fail=0,i=0;
+  const work=async()=>{while(i<list.length){const u=list[i++];try{const r=await fetch(u);if(!r.ok&&r.status!==404)fail++}catch(e){fail++}done++;if(done%40===0||done===list.length)b.textContent=`Скачиваю… ${Math.round(done/list.length*100)} %`}};
+  await Promise.all(Array.from({length:6},work));b.disabled=false;
+  if(fail>list.length*.02){toast(`Скачано не всё (ошибок ${fail}). Нажмите ещё раз: докачается остальное`);b.textContent='Докачать карту'}
+  else{store.set('mapDl_'+REG.id,Date.now());mapStatus();toast('Карта района сохранена и работает без интернета')}};
+
+/* ===== волна по ветру и разгону (для Ладоги и залива: морская модель там слабая) ===== */
+const WM={g:null,cache:new Map()};
+fetch(`map/${REG.id}/water.json`).then(r=>r.json()).then(j=>{const raw=atob(j.b64),b=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)b[i]=raw.charCodeAt(i);WM.g={...j,bits:b};if(RT.fc)renderRoute()}).catch(e=>logE('water '+e.message));
+function isWater(lat,lon){const g=WM.g;if(!g)return null;const r=Math.floor((lat-g.S)/g.RES),c=Math.floor((lon-g.W)/(g.RES*2));if(r<0||c<0||r>=g.NY||c>=g.NX)return undefined;const i=r*g.NX+c;return(g.bits[i>>3]>>(i&7)&1)===1}
+function ray(lat,lon,dir){const st=.25;let d=0;const k=Math.cos(rad(lat));
+  while(d<250){d+=st;const la=lat+Math.cos(rad(dir))*d/111.2,lo=lon+Math.sin(rad(dir))*d/(111.2*k),w=isWater(la,lo);if(w===undefined)return d+100;if(!w)return d}return d}
+function fetchKm(lat,lon,dirFrom){if(!WM.g||isWater(lat,lon)===undefined)return null;const key=lat.toFixed(3)+','+lon.toFixed(3)+','+Math.round(dirFrom/10);
+  if(WM.cache.has(key))return WM.cache.get(key);if(!isWater(lat,lon)){WM.cache.set(key,0);return 0}
+  const f=(ray(lat,lon,dirFrom-12)+ray(lat,lon,dirFrom)+ray(lat,lon,dirFrom+12))/3;WM.cache.set(key,f);return f}
+/* SPM-1984, глубокая вода, ограничение разгоном; кн → м/с */
+function waveEst(kn,km){if(kn==null||km==null||km<=0)return null;const U=kn*.5144,UA=.71*Math.pow(U,1.23),F=km*1000;
+  const h=Math.min(5.112e-4*UA*Math.sqrt(F),2.482e-2*UA*UA),t=Math.min(6.238e-2*Math.cbrt(UA*F),.83*UA);return{h,t}}
+
 /* ===== проверка связи ===== */
 $('#dRun').onclick=async()=>{const T=[
   ['Прогноз (Open-Meteo)','https://api.open-meteo.com/v1/forecast?latitude=60&longitude=31&hourly=wind_speed_10m&forecast_days=1'],
@@ -684,7 +716,7 @@ map.on('click',e=>{if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeC
 /* ===== старт ===== */
 LOG.push(...store.get('log',[]).slice(-100));
 document.body.classList.toggle('night',S.night);fillBoat();
-setBase(S.base);setSea(S.seamarks);$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
+mapStatus();setBase(S.base);setSea(S.seamarks);$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
 anchorDraw();renderRoute();sizeCv();netChip();
 {const c=store.get('grid',null);if(c){W.g=buildGrid(c);setupTime();drawField();freshChip()}}
 loadGrid(true);
