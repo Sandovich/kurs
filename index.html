@@ -91,7 +91,7 @@ tr.bad td{background:rgba(255,77,79,.13)}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
 .conf{font-size:11px;padding:1px 6px;border-radius:999px;border:1px solid var(--line)}
 .conf.hi{color:var(--ok);border-color:var(--ok)}.conf.mid{color:var(--warn);border-color:var(--warn)}.conf.lo{color:var(--danger);border-color:var(--danger)}
-#toast{position:fixed;z-index:2000;left:50%;top:calc(env(safe-area-inset-top) + 70px);transform:translate(-50%,-20px);opacity:0;transition:.25s;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;max-width:min(92vw,460px);pointer-events:none}
+#toast{position:fixed;z-index:2000;left:50%;bottom:calc(env(safe-area-inset-bottom) + 110px);transform:translate(-50%,20px);opacity:0;transition:.25s;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;max-width:min(92vw,460px);pointer-events:none}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 #alarm{position:fixed;inset:0;z-index:3000;background:rgba(200,0,0,.88);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-size:28px;font-weight:800;text-align:center;animation:blink 1s infinite;padding:20px}
 #alarm button{font-size:20px;padding:14px 30px;background:#fff;color:#a00;border:0}
@@ -114,7 +114,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <div id="map"></div>
 
 <header id="top">
-  <div class="brand">Курс<small>v0.8 · тест</small></div>
+  <div class="brand">Курс<small>v0.9 · тест</small></div>
   <nav>
     <button data-panel="route" id="btnRoute">Переход</button>
     <button id="btnGps">GPS</button>
@@ -242,6 +242,10 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
     <label>Крейсерская <input id="bSpeed" type="number" step="0.5" min="1" max="30" style="width:70px"> уз</label></div>
   <div class="row"><label>Осадка <input id="bDraft" type="number" step="0.1" min="0.2" max="5" style="width:70px"> м</label>
     <label>Мотор <input id="bMotor" type="number" step="0.5" min="0" max="30" style="width:70px"> уз</label></div>
+  <h3>Поляры (скорость лодки при ветре)</h3>
+  <div class="row"><select id="bPolar" style="flex:1"><option value="simple">Упрощённо, от крейсерской скорости</option><option value="p28">Крейсерская 28–30 футов</option><option value="p33">Крейсерская 32–34 фута</option><option value="p35">Крейсерская 35–37 футов</option><option value="p40">Крейсерская 38–42 фута</option><option value="p45">Быстрая крейсерская 44–46 футов</option><option value="cat40">Катамаран 38–42 фута</option><option value="file">Свой файл поляр</option></select></div>
+  <div class="row"><button id="bPolLoad">Загрузить файл поляр</button><input type="file" id="bPolFile" accept=".pol,.txt,.csv,.tsv" hidden><label>КПД <input id="bEff" type="number" min="50" max="115" style="width:64px"> %</label></div>
+  <div id="bPolPrev"></div>
   <h3>Мои пределы (выше — красным)</h3>
   <div class="row"><label>Ветер <input id="sWind" type="number" style="width:64px"> уз</label><label>Порывы <input id="sGust" type="number" style="width:64px"> уз</label><label>Волна <input id="sWave" type="number" step="0.1" style="width:64px"> м</label></div>
   <h3>Режимы</h3>
@@ -263,6 +267,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
     <button data-go="boat">⛵ Лодка и пределы</button>
     <button id="mNight">🌙 Ночной режим</button>
     <button data-go="help">? Как пользоваться</button>
+    <button id="mWatch" style="grid-column:1/-1">⏱ Вахтенный таймер: выкл</button>
     <button data-go="diag" style="grid-column:1/-1">📡 Проверка связи</button>
   </div>
 </section>
@@ -300,7 +305,7 @@ window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.rea
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
-const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
+const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
   boat:{name:'',type:'sail',speed:5.5,motor:5,draft:1.8}},store.get('settings',{}));
 const saveS=()=>store.set('settings',S);
 function toast(m,ms=4000){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
@@ -331,7 +336,7 @@ const MODEL_COLOR={ecmwf_ifs025:'#3fb6ff',icon_seamless:'#4cc38a',gfs_seamless:'
 const CMP=['ecmwf_ifs025','icon_seamless','gfs_seamless'];
 
 /* ===== скорость лодки при ветре (упрощённые поляры крейсерской яхты) ===== */
-function boatSpeed(tws,twa){const B=S.boat;
+function boatSpeed0(tws,twa){const B=S.boat;
   if(B.type==='motor')return B.speed;
   if(tws==null||isNaN(tws))return B.speed;
   if(tws<4)return B.motor>0?B.motor:B.speed*.3;                // штиль: под мотором
@@ -391,7 +396,7 @@ async function loadGrid(force){
   const vb=map.getBounds(),z=map.getZoom(),g=W.g;
   if(!force&&g&&g.model===S.model&&Math.abs(g.z-z)<1&&vb.getSouth()>=g.s&&vb.getNorth()<=g.n&&vb.getWest()>=g.w&&vb.getEast()<=g.e&&Date.now()-g.fetched<3600e3){drawField();return}
   if(W.loading)return;W.loading=true;
-  const b=vb.pad(0.25),N=11,s=b.getSouth(),n=b.getNorth(),w=b.getWest(),e=b.getEast(),la=[],lo=[];
+  const b=vb.pad(0.25),N=9,s=b.getSouth(),n=b.getNorth(),w=b.getWest(),e=b.getEast(),la=[],lo=[];
   for(let i=0;i<N;i++)for(let j=0;j<N;j++){la.push((s+(n-s)*i/(N-1)).toFixed(3));lo.push((w+(e-w)*j/(N-1)).toFixed(3))}
   const model=S.model;
   try{
@@ -590,7 +595,7 @@ function bestWindows(){const fc=RT.fc;if(!fc)return;const now=Date.now(),res=[];
   $$('#rWin button').forEach(b=>b.onclick=()=>{setDep(new Date(+b.dataset.dep));renderRoute()})}
 
 /* ===== автопрокладка под ветер: изохроны по прогнозу и полярам, обход суши ===== */
-function polarSpeed(tws,twa){const B=S.boat;if(B.type==='motor'||tws==null)return B.speed;
+function polarSpeed0(tws,twa){const B=S.boat;if(B.type==='motor'||tws==null)return B.speed;
   if(tws<4)return B.motor>0?B.motor:0;                       // штиль: мотор
   if(twa<38)return 0;                                          // мёртвый угол: прямо против ветра не идём
   const g=Math.min(1.12,Math.max(.4,tws/11)),h=twa<50?.78:twa<70?.92:twa<110?1:twa<150?.96:.82;
@@ -599,7 +604,7 @@ function gridSample(g,lat,lon,t){const fx=(lon-g.w)/(g.e-g.w)*(g.N-1),fy=(lat-g.
   const x0=Math.min(Math.floor(fx),g.N-2),y0=Math.min(Math.floor(fy),g.N-2),ax=fx-x0,ay=fy-y0,N=g.N;
   const bl=a=>a[y0*N+x0]*(1-ax)*(1-ay)+a[y0*N+x0+1]*ax*(1-ay)+a[(y0+1)*N+x0]*(1-ax)*ay+a[(y0+1)*N+x0+1]*ax*ay;
   const u=bl(g.U[t]),v=bl(g.V[t]);if(isNaN(u)||isNaN(v))return null;return{spd:Math.hypot(u,v),dir:(deg(Math.atan2(-u,-v))+360)%360,gust:bl(g.G[t])}}
-async function routeGrid(a,b){const pad=.35,s=Math.min(a[0],b[0])-pad,n=Math.max(a[0],b[0])+pad,w=Math.min(a[1],b[1])-pad*2,e=Math.max(a[1],b[1])+pad*2,N=11,la=[],lo=[];
+async function routeGrid(a,b){const pad=.35,s=Math.min(a[0],b[0])-pad,n=Math.max(a[0],b[0])+pad,w=Math.min(a[1],b[1])-pad*2,e=Math.max(a[1],b[1])+pad*2,N=9,la=[],lo=[];
   for(let i=0;i<N;i++)for(let j=0;j<N;j++){la.push((s+(n-s)*i/(N-1)).toFixed(3));lo.push((w+(e-w)*j/(N-1)).toFixed(3))}
   let js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${S.model}`,40000);
   if(!Array.isArray(js))js=[js];return buildGrid({model:S.model,s,n,w,e,N,z:0,fetched:Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)})}
@@ -700,7 +705,7 @@ G.line=L.polyline(G.track,{color:'#ff8a3d',weight:3,opacity:.85});
 const boatHTML='<svg width="30" height="30" viewBox="-15 -15 30 30"><path d="M0,-13 L7,10 L0,6 L-7,10Z" fill="#ff8a3d" stroke="#fff" stroke-width="2"/></svg>';
 async function wake(on){try{if(on&&'wakeLock' in navigator&&!G.wake){G.wake=await navigator.wakeLock.request('screen');G.wake.addEventListener('release',()=>G.wake=null)}else if(!on&&G.wake){await G.wake.release();G.wake=null}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&G.watch!=null)wake(true)});
-function gpsStart(){G.watch=navigator.geolocation.watchPosition(onPos,e=>{logE('gps '+e.message);toast('GPS: '+(e.code===1?'нет разрешения. Разрешите геолокацию для сайта в настройках браузера':e.message))},{enableHighAccuracy:true,maximumAge:S.saver?5000:1000,timeout:30000})}
+function gpsStart(){G.watch=navigator.geolocation.watchPosition(onPos,e=>{logE('gps '+e.message);toast('GPS: '+(e.code===1?'нет разрешения. Разрешите геолокацию для сайта в настройках браузера':e.code===3?'долго нет сигнала, продолжаю искать':(e.message||'нет сигнала')))},{enableHighAccuracy:true,maximumAge:S.saver?5000:1000,timeout:30000})}
 $('#btnGps').onclick=()=>{
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);G.watch=null;$('#btnGps').classList.remove('on');$('#hud').hidden=true;$('#mob').hidden=true;chip('gps',null);wake(false);store.set('track',G.track);return}
   if(!('geolocation' in navigator))return toast('В этом браузере нет GPS');
@@ -719,7 +724,7 @@ function onPos(p){const c=p.coords,ll=[c.latitude,c.longitude];let sog=c.speed!=
   $('#hSog').textContent=f1(sog);$('#hCog').textContent=G.cog!=null?f0(G.cog)+'°':'—';$('#hPos').innerHTML=`${fmtC(ll[0],1)}<br>${fmtC(ll[1],0)}`;
   const acc=c.accuracy;$('#hAcc').innerHTML=`<span style="color:${acc<15?'var(--ok)':acc<50?'var(--warn)':'var(--danger)'}">точность ±${f0(acc)} м</span>`;
   $('#hud').classList.remove('stale');chip('gps',acc>50?`GPS неточный: ±${f0(acc)} м`:null,'warn');
-  anchorCheck();aisCpaCheck();navUpdate();shoreCheck()}
+  anchorCheck();aisCpaCheck();navUpdate();shoreCheck();borderCheck()}
 setInterval(()=>{if(G.watch==null)return;const s=(Date.now()-G.last)/1000;
   if(!G.pos){const w=Math.round((Date.now()-G.start)/1000);chip('gps',w<45?`Жду первую позицию GPS… ${w} с`:'Нет позиции. Проверьте: Настройки → Конфиденциальность → Службы геолокации → Safari: «При использовании» и «Точная геопозиция»',w<45?'warn':'bad');return}
   if(s>30)G.marker?.getElement()?.classList.add('stale');
@@ -810,7 +815,7 @@ function anchorCheck(){if(!A.pos||!G.pos)return;const d=dist(A.pos,G.pos);
 function alarmOn(d,title){$('#alarmTitle').textContent=title||'⚓ ЯКОРЬ ПОЛЗЁТ';$('#alarmDist').textContent=d!=null?`${f0(d)} м от якоря (радиус ${A.r} м)`:'';if(A.alarm)return;A.alarm=true;$('#alarm').hidden=false;
   const go=()=>{beep();navigator.vibrate?.([400,200,400])};go();A.beepT=setInterval(go,1000)}
 function alarmOff(){A.alarm=false;clearInterval(A.beepT);$('#alarm').hidden=true}
-$('#alarmStop').onclick=()=>{alarmOff();A.out=-15};
+$('#alarmStop').onclick=()=>{alarmOff();A.out=-15;$('#alarm').style.animation='';if(typeof WT!=='undefined'){clearTimeout(WT.esc);wtArm()}};
 
 /* ===== AIS с возрастом данных ===== */
 const AIS={on:false,ws:null,ships:new Map(),layer:L.layerGroup().addTo(map),subT:null,warned:new Set(),retry:0};
@@ -885,7 +890,7 @@ $('#sSave').onclick=()=>{const k=$('#sYa').value.trim(),chK=k!==S.yandexKey;S.ya
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);gpsStart()}toast('Сохранено')};
 $('#sNight').onchange=e=>document.body.classList.toggle('night',e.target.checked);
 $('#sTrack').onclick=()=>{G.track=[];G.line.setLatLngs([]);store.set('track',[]);toast('Трек стёрт')};
-$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.8 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
+$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.9 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
 
 $$('#p-more [data-go]').forEach(b=>b.onclick=()=>openPanel(b.dataset.go));
 $('#mNight').onclick=()=>{S.autoNight=false;S.night=!S.night;saveS();document.body.classList.toggle('night',S.night);$('#sNight').checked=S.night;if(S.base==='kurs')setBase('kurs')};
@@ -968,6 +973,74 @@ mc.addEventListener('touchmove',e=>{const t=e.touches[0];if(Math.hypot(t.clientX
 mc.addEventListener('touchend',()=>clearTimeout(LP.t));
 map.on('contextmenu',e=>{LP.suppress=true;setTimeout(()=>LP.suppress=false,300);lpMenu(e.latlng)});
 
+/* ===== поляры: типовые наборы и свой файл ===== */
+const POL_TWS=[6,8,10,12,14,16,20,25],POL_TWA=[40,52,60,75,90,110,120,135,150,165,180];
+const POL_BASE=[[3.6,4.6,5.3,5.7,5.9,6.0,6.0,5.8],[4.4,5.4,6.0,6.4,6.6,6.7,6.8,6.7],[4.7,5.7,6.3,6.7,6.9,7.0,7.1,7.1],[4.9,5.9,6.6,7.0,7.2,7.4,7.6,7.6],[5.0,6.0,6.7,7.1,7.4,7.6,7.9,8.0],
+  [4.9,6.0,6.7,7.2,7.5,7.8,8.2,8.5],[4.6,5.8,6.6,7.1,7.5,7.8,8.3,8.8],[4.0,5.2,6.1,6.7,7.2,7.6,8.3,9.0],[3.3,4.4,5.4,6.1,6.7,7.1,7.9,8.6],[2.9,3.9,4.8,5.6,6.2,6.7,7.5,8.2],[2.7,3.6,4.5,5.3,5.9,6.4,7.2,7.9]];
+const POL_PRESETS={p28:['Крейсерская яхта 28–30 футов',()=>.86],p33:['Крейсерская яхта 32–34 фута',()=>.95],p35:['Крейсерская яхта 35–37 футов',()=>1],p40:['Крейсерская яхта 38–42 фута',()=>1.08],p45:['Быстрая крейсерская 44–46 футов',()=>1.18],
+  cat40:['Катамаран 38–42 фута',a=>a<=52?.82:a<=90?1.08:a<=135?1.2:1.1]};
+function presetTable(k){const f=POL_PRESETS[k][1];return{name:POL_PRESETS[k][0],tws:POL_TWS,twa:POL_TWA,v:POL_BASE.map((r,i)=>r.map(x=>+(x*f(POL_TWA[i])).toFixed(2)))}}
+function polTable(){return S.polar==='file'?store.get('polFile',null):POL_PRESETS[S.polar]?presetTable(S.polar):null}
+let POLC={k:null,t:null};function polT(){const k=S.polar+'|'+(S.polar==='file'?store.get('polFileName',''):'');if(POLC.k!==k){POLC={k,t:polTable()}}return POLC.t}
+function pv(t,tws,twa){twa=Math.abs(((twa%360)+540)%360-180);const cl=(a,x)=>{if(x<=a[0])return[0,0,0];if(x>=a[a.length-1])return[a.length-1,a.length-1,0];let i=0;while(a[i+1]<x)i++;return[i,i+1,(x-a[i])/(a[i+1]-a[i])]};
+  if(twa<t.twa[0])return t.v[0]&&0;const[a0,a1,fa]=cl(t.twa,twa),[s0,s1,fs]=cl(t.tws,tws);let v=(t.v[a0][s0]*(1-fs)+t.v[a0][s1]*fs)*(1-fa)+(t.v[a1][s0]*(1-fs)+t.v[a1][s1]*fs)*fa;
+  if(tws<t.tws[0])v*=tws/t.tws[0];return v}
+function beatA(t,tws){let b=40,bv=0;for(let a=t.twa[0];a<=70;a++){const x=pv(t,tws,a)*Math.cos(rad(a));if(x>bv){bv=x;b=a}}return b}
+function runA(t,tws){let b=180,bv=0;for(let a=130;a<=180;a++){const x=pv(t,tws,a)*Math.cos(rad(180-a));if(x>bv){bv=x;b=a}}return b}
+const eff=()=>(S.polEff||90)/100;
+function polarSpeed(tws,twa){const t=polT();if(!t||S.boat.type==='motor')return polarSpeed0(tws,twa);if(tws==null)return S.boat.speed;if(tws<4)return S.boat.motor>0?S.boat.motor:0;
+  if(twa<beatA(t,tws)-2)return 0;return pv(t,tws,twa)*eff()}
+function boatSpeed(tws,twa){const t=polT();if(!t||S.boat.type==='motor')return boatSpeed0(tws,twa);if(tws==null||isNaN(tws))return S.boat.speed;if(tws<4)return S.boat.motor>0?S.boat.motor:S.boat.speed*.3;
+  const b=beatA(t,tws),r=runA(t,tws);let v;if(twa<b)v=pv(t,tws,b)*Math.cos(rad(b))/Math.max(.2,Math.cos(rad(twa)));else if(twa>r)v=pv(t,tws,r)*Math.cos(rad(180-r))/Math.max(.2,Math.cos(rad(180-twa)));else v=pv(t,tws,twa);
+  return Math.max(.8,v*eff())}
+function parsePolar(txt){const rows=txt.split(/\r?\n/).map(l=>l.trim()).filter(l=>l&&!l.startsWith('#')).map(l=>l.split(/[\t;,]+|\s+/).filter(Boolean));
+  if(rows.length<4)throw new Error('слишком мало строк');const head=rows[0],tws=head.slice(isNaN(+head[0].replace(',','.'))?1:0).map(x=>+x.replace(',','.'));
+  if(tws.length<3||tws.some(isNaN))throw new Error('не нашёл в первой строке скорости ветра');const twa=[],v=[];
+  for(const r of rows.slice(1)){const a=+r[0].replace(',','.');const vals=r.slice(1).map(x=>+x.replace(',','.'));if(isNaN(a)||vals.length<tws.length)continue;twa.push(a);v.push(vals.slice(0,tws.length))}
+  if(twa.length<5)throw new Error('мало строк углов к ветру');const o=twa.map((a,i)=>[a,v[i]]).sort((x,y)=>x[0]-y[0]);return{tws,twa:o.map(x=>x[0]),v:o.map(x=>x[1])}}
+function polarSvg(t){const W=300,H=220,cx=20,cy=110,mx=Math.max(...t.v.flat())*1.05,R=95,col=['#3fb6ff','#4cc38a','#ffb020','#ff4d4f'],ws=[8,12,16,20];
+  let g=`<svg class="chart" viewBox="0 0 ${W} ${H}" font-size="9" fill="var(--muted)">`;
+  for(let k=2;k<=Math.ceil(mx);k+=2){g+=`<path d="M${cx},${cy-k/mx*R} A${k/mx*R},${k/mx*R} 0 0 1 ${cx},${cy+k/mx*R}" fill="none" stroke="var(--line)"/><text x="${cx+2}" y="${cy-k/mx*R-2}">${k}</text>`}
+  for(const a of[45,90,135])g+=`<line x1="${cx}" y1="${cy}" x2="${cx+Math.sin(rad(a))*R}" y2="${cy-Math.cos(rad(a))*R}" stroke="var(--line)"/><text x="${cx+Math.sin(rad(a))*(R+8)}" y="${cy-Math.cos(rad(a))*(R+8)}">${a}°</text>`;
+  ws.forEach((w,i)=>{let d='';for(let a=t.twa[0];a<=180;a+=3){const v=pv(t,w,a)/mx*R;d+=(d?'L':'M')+(cx+Math.sin(rad(a))*v).toFixed(1)+','+(cy-Math.cos(rad(a))*v).toFixed(1)}g+=`<path d="${d}" fill="none" stroke="${col[i]}" stroke-width="1.6"/>`});
+  g+=ws.map((w,i)=>`<text x="${170}" y="${20+i*14}" fill="${col[i]}">ветер ${w} уз · лавировка ${beatA(t,w)}°</text>`).join('');return g+'</svg>'}
+function polUi(){const t=polT();$('#bPolar').value=S.polar||'simple';$('#bEff').value=S.polEff||90;
+  $('#bPolPrev').innerHTML=t?polarSvg(t)+`<p class="muted small">${S.polar==='file'?'Ваш файл: '+store.get('polFileName',''):t.name+' — типовые цифры, приблизительно'}. Скорость умножается на «КПД» (загрузка, обрастание, неидеальные паруса).</p>`:'<p class="muted small">Упрощённо: от вашей крейсерской скорости. Для точного времени и автопрокладки выберите тип лодки или загрузите файл поляр (.pol, .txt, .csv: первая строка — скорости ветра, дальше строки «угол, скорости»).</p>'}
+$('#bPolar').onchange=e=>{if(e.target.value==='file'&&!store.get('polFile',null)){$('#bPolFile').click();return}S.polar=e.target.value;saveS();polUi();renderRoute()};
+$('#bPolLoad').onclick=()=>$('#bPolFile').click();
+$('#bPolFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const t=parsePolar(await f.text());t.name=f.name;store.set('polFile',t);store.set('polFileName',f.name);S.polar='file';saveS();polUi();renderRoute();toast(`Поляры загружены: ${t.twa.length} углов × ${t.tws.length} скоростей ветра`)}catch(err){toast('Не получилось прочитать файл: '+err.message,7000);polUi()}e.target.value=''};
+$('#bEff').onchange=e=>{S.polEff=Math.min(115,Math.max(50,+e.target.value||90));saveS();polUi();renderRoute()};
+
+/* ===== морская граница: OSM, Финский залив ===== */
+const BD={lines:null,layer:L.layerGroup(),t:0};
+fetch(`map/${REG.id}/border.json`).then(r=>r.json()).then(l=>{BD.lines=l;l.forEach(seg=>L.polyline(seg,{color:'#ff4d4f',weight:2,dashArray:'8 6',opacity:.85,interactive:false}).addTo(BD.layer));BD.layer.addTo(map)}).catch(e=>logE('border '+e.message));
+function segDist(p,a,b){const k=Math.cos(rad(p[0])),m=111320,ax=(a[1]-p[1])*k*m,ay=(a[0]-p[0])*m,bx=(b[1]-p[1])*k*m,by=(b[0]-p[0])*m,dx=bx-ax,dy=by-ay,L2=dx*dx+dy*dy||1,t=Math.max(0,Math.min(1,-(ax*dx+ay*dy)/L2));return Math.hypot(ax+dx*t,ay+dy*t)}
+function borderDist(p){if(!BD.lines)return null;let d=1e12;for(const l of BD.lines)for(let i=1;i<l.length;i++)d=Math.min(d,segDist(p,l[i-1],l[i]));return d}
+function borderCheck(){if(!G.pos||!BD.lines)return;const d=borderDist(G.pos);if(d==null||d>3*NM)return chip('border',null);
+  let ahead=null;if(G.sog>1&&G.cog!=null){for(let m=5;m<=30;m+=5){const q=moveP(G.pos,G.cog,G.sog*m/60);if(borderDist(q)<120){ahead=m;break}}}
+  const cls=d<.3*NM||(ahead&&ahead<=10)?'bad':'warn';chip('border',`Морская граница: ${d<NM?f0(d)+' м':f1(d/NM)+' мили'}${ahead?` · по курсу через ${ahead} мин`:''}`,cls);
+  if(cls==='bad'&&Date.now()-BD.t>300000){BD.t=Date.now();beep();navigator.vibrate?.([400,200,400]);toast('⚠ Рядом морская граница! Пересечение без оформления — нарушение. Проверьте курс.',9000)}}
+
+/* ===== давление по прогнозу: тревога быстрого падения ===== */
+const PR={t:0};
+async function presCheck(){const c=G.pos||[map.getCenter().lat,map.getCenter().lng];try{
+  const j=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${c[0].toFixed(2)}&longitude=${c[1].toFixed(2)}&hourly=pressure_msl&forecast_days=2&past_hours=3&timeformat=unixtime&models=${S.model}`);
+  const t=j.hourly.time,p=j.hourly.pressure_msl,now=Date.now()/1000;let i=t.findIndex(x=>x>=now-1800);if(i<0)return;
+  const d3=p[i+3]-p[i],d6=p[i+6]-p[i],drop=Math.min(d3,d6/1.6);
+  if(drop<=-3){const bad=drop<=-6;chip('pres',`Давление падает: ${f1(d3)} гПа за 3 ч${bad?' — штормовой признак':''}`,bad?'bad':'warn');if(bad&&Date.now()-PR.t>3*36e5){PR.t=Date.now();beep();toast('⚠ Давление быстро падает по прогнозу: жди усиления ветра. Проверьте рифы и укрытие.',9000)}}
+  else chip('pres',null)}catch(e){}}
+setInterval(presCheck,30*60000);setTimeout(presCheck,5000);
+
+/* ===== вахтенный таймер «осмотрись» ===== */
+const WT={min:store.get('watchMin',0),t:null,esc:null};
+function wtLabel(){$('#mWatch').textContent=WT.min?`⏱ Вахта: каждые ${WT.min} мин`:'⏱ Вахтенный таймер: выкл';$('#mWatch').classList.toggle('on',!!WT.min);chip('watch',WT.min?`⏱ вахта ${WT.min} мин`:null)}
+function wtArm(){clearTimeout(WT.t);clearTimeout(WT.esc);if(!WT.min)return;WT.t=setTimeout(()=>{beep();navigator.vibrate?.([300,150,300]);
+  $('#alarmTitle').textContent='⏱ ОСМОТРИСЬ';$('#alarmDist').textContent='Горизонт, паруса, курс, AIS, экипаж. Нажмите кнопку — таймер пойдёт заново.';$('#alarm').hidden=false;$('#alarm').style.animation='none';
+  WT.esc=setTimeout(()=>{$('#alarm').style.animation='';alarmOn(null,'⏱ ВАХТА НЕ ОТВЕТИЛА')},60000)},WT.min*60000)}
+$('#mWatch').onclick=()=>{audio();const o=[0,10,15,20,30];WT.min=o[(o.indexOf(WT.min)+1)%o.length];store.set('watchMin',WT.min);wtLabel();wtArm();if(WT.min)wake(true)};
+wtLabel();wtArm();
+
+polUi();
 /* ===== клик по карте ===== */
 map.on('click',e=>{if(LP.suppress)return;if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}showPoint(e.latlng)});
 
