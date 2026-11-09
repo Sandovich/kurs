@@ -14,7 +14,10 @@
 <style>
 :root{--bg:#0b1724;--panel:#102233;--panel2:#15293d;--line:#24405a;--text:#e6eef5;--muted:#8aa1b5;--accent:#3fb6ff;--warn:#ffb020;--danger:#ff4d4f;--ok:#4cc38a}
 body.night{--bg:#000;--panel:#140000;--panel2:#1d0000;--line:#3a0a0a;--text:#ff5a4a;--muted:#a8332b;--accent:#ff3b30;--warn:#ff3b30;--ok:#ff6a5a;--danger:#ff2a1a}
-body.night .leaflet-tile-pane{filter:grayscale(1) brightness(.4) sepia(1) hue-rotate(-45deg) saturate(5)}
+body.night .leaflet-tile-pane{filter:grayscale(1) contrast(1.3) brightness(.32) sepia(1) hue-rotate(-50deg) saturate(3.5) brightness(.42)}
+body.night #map{background:#000}
+body.night .leaflet-control-zoom a,body.night .leaflet-bar a{background:#140000;color:#ff5a4a;border-color:#3a0a0a}
+body.night .leaflet-popup-content-wrapper,body.night .leaflet-popup-tip{background:#140000;color:#ff5a4a}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;width:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--text);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
 #map{position:fixed;inset:0;background:#0d2236}
@@ -96,6 +99,7 @@ tr.bad td{background:rgba(255,77,79,.13)}
 [hidden]{display:none!important}
 .wp{background:var(--accent);color:#001321;border:2px solid #fff;border-radius:50%;display:flex!important;align-items:center;justify-content:center;font-size:11px;font-weight:700}
 .chart{width:100%;height:auto;display:block;margin:6px 0}
+.boat.stale::after{content:'?';position:absolute;right:-10px;top:-12px;background:#ff4d4f;color:#fff;border-radius:50%;width:18px;height:18px;font:700 13px/18px system-ui;text-align:center}
 .panel .row button{white-space:normal;max-width:100%}
 .windows button{margin:3px 0;width:100%;text-align:left;white-space:normal}
 .cal{display:grid;grid-template-columns:3.6em repeat(8,minmax(0,1fr));gap:3px;font-size:11px;margin:8px 0}
@@ -110,7 +114,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <div id="map"></div>
 
 <header id="top">
-  <div class="brand">Курс<small>v0.6 · тест</small></div>
+  <div class="brand">Курс<small>v0.7 · тест</small></div>
   <nav>
     <button data-panel="route" id="btnRoute">Переход</button>
     <button id="btnGps">GPS</button>
@@ -136,6 +140,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
     <div><b id="nEta">—</b><span>прибытие</span></div>
   </div>
   <div class="small muted" id="nNote"></div>
+  <div class="row" id="nMob" hidden style="margin:6px 0 0"><button id="nMay" class="primary" style="flex:1">📢 Текст для MAYDAY по рации</button></div>
 </div>
 <button id="mob" hidden aria-label="Человек за бортом">MOB</button>
 
@@ -237,11 +242,12 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <div class="row"><label>Ветер <input id="sWind" type="number" style="width:64px"> уз</label><label>Порывы <input id="sGust" type="number" style="width:64px"> уз</label><label>Волна <input id="sWave" type="number" step="0.1" style="width:64px"> м</label></div>
   <h3>Режимы</h3>
   <label><input type="checkbox" id="sNight"> Ночной режим (красный, не слепит)</label>
+  <label><input type="checkbox" id="sAutoN"> Ночной режим сам по солнцу (закат / рассвет)</label>
   <label><input type="checkbox" id="sSaver"> Экономия батареи (без анимации, GPS реже)</label>
   <details><summary>Ключи сервисов</summary>
     <label class="small" style="display:block">Яндекс Tiles API<br><input id="sYa" style="width:100%" placeholder="developer.tech.yandex.ru → Подключить API → Tiles API"></label>
   </details>
-  <div class="row"><button class="primary" id="sSave">Сохранить</button><button id="sTrack">Стереть трек</button><button id="sLog">Журнал ошибок</button></div>
+  <div class="row"><button class="primary" id="sSave">Сохранить</button><button id="sTrkGpx">Трек в GPX</button><button id="sTrack">Стереть трек</button><button id="sLog">Журнал ошибок</button></div>
   <p class="muted small">Всё хранится только на этом устройстве, без регистрации. Настройки не сбрасываются.</p>
 </section>
 
@@ -290,7 +296,7 @@ window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.rea
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
-const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,saver:false,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
+const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
   boat:{name:'',type:'sail',speed:5.5,motor:5,draft:1.8}},store.get('settings',{}));
 const saveS=()=>store.set('settings',S);
 function toast(m,ms=4000){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
@@ -648,8 +654,9 @@ function onPos(p){const c=p.coords,ll=[c.latitude,c.longitude];let sog=c.speed!=
   G.prev={ll,t:p.timestamp};G.pos=ll;G.sog=sog;if(cog!=null)G.cog=cog;G.acc=c.accuracy;G.last=Date.now();G.warned=false;
   if(!G.marker){G.marker=L.marker(ll,{icon:L.divIcon({className:'boat',html:boatHTML,iconSize:[30,30]}),zIndexOffset:1000,interactive:false}).addTo(map);G.accC=L.circle(ll,{radius:c.accuracy,color:'#ff8a3d',weight:1,fillOpacity:.06,interactive:false}).addTo(map)}
   else{G.marker.setLatLng(ll);G.accC.setLatLng(ll).setRadius(c.accuracy)}
-  const sv=G.marker.getElement()?.querySelector('svg');if(sv)sv.style.transform=`rotate(${G.cog||0}deg)`;
-  const last=G.track[G.track.length-1];if(!last||dist(last,ll)>10){G.track.push(ll);if(G.track.length>20000)G.track.shift();G.line.addLatLng(ll);if(Date.now()-G.saved>15000){store.set('track',G.track);G.saved=Date.now()}}
+  const sv=G.marker.getElement()?.querySelector('svg');if(sv&&(sog==null||sog>=.5))sv.style.transform=`rotate(${G.cog||0}deg)`;G.marker.getElement()?.classList.remove('stale');
+  if(G.vec){map.removeLayer(G.vec);G.vec=null}if(sog>=.5&&G.cog!=null){const dnm=sog*10/60,k=Math.cos(rad(ll[0]));G.vec=L.polyline([ll,[ll[0]+Math.cos(rad(G.cog))*dnm/60,ll[1]+Math.sin(rad(G.cog))*dnm/60/k]],{color:'#ff8a3d',weight:2,dashArray:'6 4',interactive:false}).addTo(map)}
+  const last=G.track[G.track.length-1];if(!last||dist(last,ll)>10){G.track.push([ll[0],ll[1],Math.round(p.timestamp/1000)]);if(G.track.length>20000)G.track.shift();G.line.addLatLng(ll);if(Date.now()-G.saved>15000){store.set('track',G.track);G.saved=Date.now()}}
   if(G.follow)map.panTo(ll);
   $('#hSog').textContent=f1(sog);$('#hCog').textContent=G.cog!=null?f0(G.cog)+'°':'—';$('#hPos').innerHTML=`${fmtC(ll[0],1)}<br>${fmtC(ll[1],0)}`;
   const acc=c.accuracy;$('#hAcc').innerHTML=`<span style="color:${acc<15?'var(--ok)':acc<50?'var(--warn)':'var(--danger)'}">точность ±${f0(acc)} м</span>`;
@@ -657,6 +664,7 @@ function onPos(p){const c=p.coords,ll=[c.latitude,c.longitude];let sog=c.speed!=
   anchorCheck();aisCpaCheck();navUpdate();shoreCheck()}
 setInterval(()=>{if(G.watch==null)return;const s=(Date.now()-G.last)/1000;
   if(!G.pos){const w=Math.round((Date.now()-G.start)/1000);chip('gps',w<45?`Жду первую позицию GPS… ${w} с`:'Нет позиции. Проверьте: Настройки → Конфиденциальность → Службы геолокации → Safari: «При использовании» и «Точная геопозиция»',w<45?'warn':'bad');return}
+  if(s>30)G.marker?.getElement()?.classList.add('stale');
   if(s>20){$('#hud').classList.add('stale');chip('gps',`GPS молчит ${Math.round(s)} с`,'bad')}
   if(s>60&&!G.warned){G.warned=true;navigator.vibrate?.([300,200,300]);beep();toast('GPS не обновлялся больше минуты. Позиция на экране устарела!',8000);
     if(A.pos)alarmOn(null,'⚠ GPS ПОТЕРЯН — ЯКОРНАЯ ВАХТА НЕ РАБОТАЕТ');
@@ -669,7 +677,7 @@ const navSave=()=>store.set('nav',{mode:NAV.mode,pts:NAV.pts,idx:NAV.idx,name:NA
 const navLayer=L.layerGroup().addTo(map);
 function navStart(mode,pts,idx,name){Object.assign(NAV,{mode,pts,idx,name,xteWarned:false});navSave();$('#navd').hidden=false;$('#navd').classList.toggle('mob',mode==='mob');
   if(G.watch==null)$('#btnGps').click();navUpdate();toast(mode==='mob'?'MOB! Не теряйте человека из виду. Курс на точку падения — на панели.':'Ведение включено: '+name,6000)}
-function navStop(){NAV.mode=null;navSave();$('#navd').hidden=true;navLayer.clearLayers();chip('nav',null)}
+function navStop(){$('#nMob').hidden=true;NAV.mode=null;navSave();$('#navd').hidden=true;navLayer.clearLayers();chip('nav',null)}
 $('#nStop').onclick=()=>{if(NAV.mode==='mob'&&!confirm('Человек поднят на борт? Закончить MOB?'))return;navStop()};
 $('#rGo').onclick=()=>{if(RT.pts.length<2)return toast('Сначала постройте маршрут');let i=1;
   if(G.pos){let best=1e12;RT.pts.forEach((p,k)=>{const d=dist(G.pos,p);if(d<best){best=d;i=Math.max(1,k)}})}
@@ -699,7 +707,8 @@ function navUpdate(){if(!NAV.mode)return;$('#navd').hidden=false;const tgt=NAV.p
     $('#nXte').textContent=ax<10?'0':`${x.xte>0?'◀ ':''}${ax<1000?f0(ax)+' м':f1(ax/NM)+' мили'}${x.xte<0?' ▶':''}`;
     if(ax/NM>NAV.xteNm){chip('nav',`Ушли с линии на ${f0(ax)} м`,'warn');if(!NAV.xteWarned){NAV.xteWarned=true;beep();navigator.vibrate?.([200,100,200]);toast(`Ушли с линии на ${f0(ax)} м — держите ${x.xte>0?'левее':'правее'}`,6000)}}
     else{NAV.xteWarned=false;chip('nav',null)}
-    if(dnm<NAV.arrNm||x.t>1){if(NAV.idx<NAV.pts.length-1){NAV.idx++;navSave();beep();toast(`Точка ${NAV.idx} пройдена. Новый курс ${f0(brg(me,NAV.pts[NAV.idx]))}°`,6000);return navUpdate()}
+    if(NAV.lastD!=null&&dnm>NAV.lastD&&dnm<.5)NAV.away=(NAV.away||0)+1;else NAV.away=0;NAV.lastD=dnm;
+    if(dnm<NAV.arrNm||x.t>1||NAV.away>=3){NAV.away=0;NAV.lastD=null;if(NAV.idx<NAV.pts.length-1){NAV.idx++;navSave();beep();toast(`Точка ${NAV.idx} пройдена. Новый курс ${f0(brg(me,NAV.pts[NAV.idx]))}°`,6000);return navUpdate()}
       if(dnm<NAV.arrNm){beep();toast('Прибыли! Маршрут пройден.',8000);navStop();return}}}
   else{$('#nXte').textContent='—';if(NAV.mode==='point'&&dnm<NAV.arrNm){beep();toast('Прибыли в точку.',8000);navStop();return}}
   if(vmg!=null&&vmg>.3){const ms=dnm/vmg*36e5;$('#nEta').textContent=new Date(Date.now()+ms).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});note.push(`в пути ${fmtHM(ms)}, к цели ${f1(vmg)} уз`)}
@@ -708,6 +717,7 @@ function navUpdate(){if(!NAV.mode)return;$('#navd').hidden=false;const tgt=NAV.p
   if(w&&NAV.mode!=='mob'&&offBow(w.dir,b)<50){const k=Math.cos(rad(tgt[0])),Ld=5*NM/111320;
     for(const h of[w.dir+45,w.dir-45]){const back=rad(h+180);L.polyline([tgt,[tgt[0]+Math.cos(back)*Ld,tgt[1]+Math.sin(back)*Ld/k]],{color:'#9fb4c7',weight:1.5,dashArray:'2 6'}).addTo(navLayer)}
     note.push(`цель против ветра (${f0(w.spd)} уз с ${rumb(w.dir)}): пунктир — лэйлайны`)}
+  $('#nMob').hidden=NAV.mode!=='mob';
   if(NAV.mode==='mob')note.unshift('Бросьте круг, назначьте наблюдателя, подходите против ветра');
   $('#nNote').textContent=note.join(' · ')}
 /* берег по курсу: луч по маске воды вперёд по курсу */
@@ -764,7 +774,7 @@ async function dtPoll(){if(!AIS.on)return;DT.last=Date.now();$('#dtStatus').text
     for(const f of j.features){const[lon,lat]=f.geometry.coordinates,p=f.properties;if(!b.contains([lat,lon])||p.timestampExternal<old)continue;
       let s=AIS.ships.get(p.mmsi);if(!s){s={id:p.mmsi};AIS.ships.set(p.mmsi,s)}if(s.t&&s.t>p.timestampExternal)continue;
       s.lat=lat;s.lon=lon;s.sog=p.sog>=102.2?null:p.sog;s.cog=p.cog>=360?null:p.cog;s.hdg=p.heading<360?p.heading:null;s.t=p.timestampExternal;s.src='Digitraffic';
-      const m=DT.meta.get(p.mmsi);if(m){if(m.name&&m.name.trim())s.name=m.name.trim();s.dest=(m.destination||'').trim();s.len=(m.referencePointA||0)+(m.referencePointB||0)||null}
+      const m=DT.meta.get(p.mmsi);if(m){if(m.name&&m.name.trim())s.name=m.name.trim();s.type=m.shipType;s.dest=(m.destination||'').trim();s.len=(m.referencePointA||0)+(m.referencePointB||0)||null}
       aisDraw(s);n++}
     DT.ok=n;$('#dtStatus').textContent=`на связи, ${n} судов рядом · обновлено ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}`;$('#aisCount').textContent=AIS.ships.size;if(openName==='ais')aisList();aisCpaCheck()
   }catch(e){logE('digitraffic '+e.message);$('#dtStatus').textContent='нет связи, повторю через минуту'}}
@@ -782,12 +792,21 @@ map.on('moveend',()=>{clearTimeout(AIS.subT);AIS.subT=setTimeout(()=>{aisSub();i
 function aisMsg(m){const md=m.MetaData||{},id=md.MMSI;if(!id)return;let s=AIS.ships.get(id);if(!s){s={id};AIS.ships.set(id,s)}
   if(md.ShipName&&md.ShipName.trim())s.name=md.ShipName.trim();const msg=m.Message||{},pr=msg.PositionReport||msg.StandardClassBPositionReport;
   if(pr){s.lat=pr.Latitude;s.lon=pr.Longitude;s.sog=pr.Sog;s.cog=pr.Cog;s.hdg=pr.TrueHeading!=null&&pr.TrueHeading<360?pr.TrueHeading:null;s.t=Date.now();s.src='aisstream'}
-  const sd=msg.ShipStaticData;if(sd){if(sd.Name&&sd.Name.trim())s.name=sd.Name.trim();s.dest=(sd.Destination||'').trim();const D=sd.Dimension||{};s.len=(D.A||0)+(D.B||0)||null}
+  if(msg.StandardClassBPositionReport)s.cls='B';const sd=msg.ShipStaticData;if(sd){if(sd.Name&&sd.Name.trim())s.name=sd.Name.trim();s.type=sd.Type;s.dest=(sd.Destination||'').trim();const D=sd.Dimension||{};s.len=(D.A||0)+(D.B||0)||null}
   if(s.lat!=null&&Math.abs(s.lat)<=90)aisDraw(s)}
-function shipIcon(s){const age=(Date.now()-(s.t||0))/60000,mv=s.sog>0.5,col=age>10?'#5a6b7a':mv?'#4cc38a':'#8aa1b5',rot=s.hdg??s.cog??0,op=age>3?.55:1;
-  const html=`<svg width="22" height="22" viewBox="-11 -11 22 22" style="transform:rotate(${rot}deg);opacity:${op}"><path d="M0,-9 L6,8 L-6,8Z" fill="${col}" stroke="#05121d" stroke-width="1.5"/>${mv&&age<=10?`<line x1="0" y1="-9" x2="0" y2="${-9-Math.min(30,s.sog*2)}" stroke="${col}" stroke-width="1.5"/>`:''}</svg>`;
-  return L.divIcon({className:'ship',html,iconSize:[22,22]})}
-function aisDraw(s){if(!s.mk){s.mk=L.marker([s.lat,s.lon],{icon:shipIcon(s)}).addTo(AIS.layer);s.mk.bindPopup(()=>aisPopup(s))}else{s.mk.setLatLng([s.lat,s.lon]);s.mk.setIcon(shipIcon(s))}$('#aisCount').textContent=AIS.ships.size}
+const SHIPT=t=>t==null?['судно','#8aa1b5']:t===30?['рыболов','#ffb020']:t===36||t===37?['парус / прогулочное','#c78bff']:t>=50&&t<=59?['служебное (буксир, лоцман, спасатели)','#ffd84d']:t>=60&&t<=69?['пассажирское','#3fb6ff']:t>=70&&t<=79?['грузовое','#4cc38a']:t>=80&&t<=89?['танкер','#ff4d4f']:['судно','#8aa1b5'];
+const isSart=id=>id>=970000000&&id<975000000;
+function shipIcon(s){const age=(Date.now()-(s.t||0))/60000,mv=s.sog>0.5,lost=age>10,rot=mv?(s.cog??s.hdg??0):(s.hdg??s.cog??0);
+  if(isSart(s.id))return L.divIcon({className:'ship',html:'<svg width="26" height="26" viewBox="-13 -13 26 26"><circle r="10" fill="#e01e1e" stroke="#fff" stroke-width="2"/><path d="M-6,-6L6,6M6,-6L-6,6" stroke="#fff" stroke-width="2.5"/></svg>',iconSize:[26,26]});
+  const col=lost?'#5a6b7a':SHIPT(s.type)[1],B=s.cls==='B',sh=B?'M0,-7 L5,6 L-5,6Z':'M0,-10 L6,8 L0,5 L-6,8Z';
+  const html=`<svg width="24" height="24" viewBox="-12 -12 24 24" style="transform:rotate(${rot}deg);opacity:${age>3?.6:1}"><path d="${sh}" fill="${mv?col:'none'}" stroke="${mv?'#05121d':col}" stroke-width="${mv?1.5:2}"/>${lost?'<path d="M-8,-8L8,8M8,-8L-8,8" stroke="#ff4d4f" stroke-width="1.5"/>':''}</svg>`;
+  return L.divIcon({className:'ship',html,iconSize:[24,24]})}
+function aisDraw(s){if(!s.mk){s.mk=L.marker([s.lat,s.lon],{icon:shipIcon(s)}).addTo(AIS.layer);s.mk.bindPopup(()=>aisPopup(s))}else{s.mk.setLatLng([s.lat,s.lon]);s.mk.setIcon(shipIcon(s))}
+  const age=(Date.now()-(s.t||0))/60000;if(s.vec){AIS.layer.removeLayer(s.vec);s.vec=null}
+  if(s.sog>0.5&&s.cog!=null&&age<=10){const dnm=s.sog*10/60,k=Math.cos(rad(s.lat));s.vec=L.polyline([[s.lat,s.lon],[s.lat+Math.cos(rad(s.cog))*dnm/60,s.lon+Math.sin(rad(s.cog))*dnm/60/k]],{color:SHIPT(s.type)[1],weight:1.5,opacity:.8,interactive:false}).addTo(AIS.layer)}
+  if(isSart(s.id)&&!AIS.warned.has('sart'+s.id)){AIS.warned.add('sart'+s.id);const d=G.pos?dist(G.pos,[s.lat,s.lon])/NM:null;
+    alarmOn(null,'🆘 AIS-МАЯК БЕДСТВИЯ РЯДОМ');$('#alarmDist').textContent=`MMSI ${s.id}${d!=null?` · ${f1(d)} мили, пеленг ${f0(brg(G.pos,[s.lat,s.lon]))}°`:''}`;logE('SART '+s.id)}
+  $('#aisCount').textContent=AIS.ships.size}
 function cpa(s){if(!G.pos||G.sog==null||s.sog==null||s.cog==null||s.lat==null)return null;const k=Math.cos(rad(G.pos[0]));
   const px=(s.lon-G.pos[1])*60*k,py=(s.lat-G.pos[0])*60;const vo=[G.sog*Math.sin(rad(G.cog||0)),G.sog*Math.cos(rad(G.cog||0))],vt=[s.sog*Math.sin(rad(s.cog)),s.sog*Math.cos(rad(s.cog))];
   const vx=vt[0]-vo[0],vy=vt[1]-vo[1],v2=vx*vx+vy*vy;if(v2<1e-6)return{cpa:Math.hypot(px,py),t:Infinity};const t=-(px*vx+py*vy)/v2;return{cpa:Math.hypot(px+vx*t,py+vy*t),t:t*60}}
@@ -796,22 +815,22 @@ function aisPopup(s){const c=cpa(s),d=G.pos?dist(G.pos,[s.lat,s.lon])/NM:null;
 function aisList(){const arr=[...AIS.ships.values()].filter(s=>s.lat!=null).map(s=>({s,d:G.pos?dist(G.pos,[s.lat,s.lon])/NM:null,c:cpa(s)})).sort((a,b)=>(a.d??1e9)-(b.d??1e9)).slice(0,30);
   $('#aisList').innerHTML=arr.length?'<table><tr><th>Судно</th><th>Уз</th><th>Миль</th><th>Сближение</th><th>Данные</th></tr>'+arr.map(({s,d,c})=>`<tr><td>${s.name||s.id}</td><td>${f1(s.sog)}</td><td>${f1(d)}</td><td>${c&&c.t>0&&c.t<120?`${f1(c.cpa)} м. через ${f0(c.t)} мин`:'—'}</td><td>${ago(s.t)}</td></tr>`).join('')+'</table>':''}
 function aisCpaCheck(){for(const s of AIS.ships.values()){const c=cpa(s);if(c&&c.t>0&&c.t<15&&c.cpa<0.3&&!AIS.warned.has(s.id)){AIS.warned.add(s.id);toast(`⚠ Сближение: ${s.name||s.id} — ${f1(c.cpa)} мили через ${f0(c.t)} мин`,8000);beep();navigator.vibrate?.([300,150,300])}}}
-setInterval(()=>{const lim=Date.now()-20*60000;for(const[id,s]of AIS.ships){if(s.t&&s.t<lim){if(s.mk)AIS.layer.removeLayer(s.mk);AIS.ships.delete(id)}else if(s.mk)s.mk.setIcon(shipIcon(s))}$('#aisCount').textContent=AIS.ships.size;if(openName==='ais')aisList()},30000);
+setInterval(()=>{const lim=Date.now()-20*60000;for(const[id,s]of AIS.ships){if(s.t&&s.t<lim){if(s.mk)AIS.layer.removeLayer(s.mk);if(s.vec)AIS.layer.removeLayer(s.vec);AIS.ships.delete(id)}else if(s.mk)s.mk.setIcon(shipIcon(s))}$('#aisCount').textContent=AIS.ships.size;if(openName==='ais')aisList()},30000);
 
 /* ===== лодка и настройки ===== */
 function fillBoat(){const B=S.boat;$('#bName').value=B.name;$('#bType').value=B.type;$('#bSpeed').value=B.speed;$('#bDraft').value=B.draft;$('#bMotor').value=B.motor;
-  $('#sWind').value=S.windMax;$('#sGust').value=S.gustMax;$('#sWave').value=S.waveMax;$('#sNight').checked=S.night;$('#sSaver').checked=S.saver;$('#sYa').value=S.yandexKey}
+  $('#sWind').value=S.windMax;$('#sGust').value=S.gustMax;$('#sWave').value=S.waveMax;$('#sNight').checked=S.night;$('#sAutoN').checked=S.autoNight;$('#sSaver').checked=S.saver;$('#sYa').value=S.yandexKey}
 $('#sSave').onclick=()=>{const k=$('#sYa').value.trim(),chK=k!==S.yandexKey;S.yandexKey=k;
   S.boat={name:$('#bName').value.trim(),type:$('#bType').value,speed:Math.max(1,+$('#bSpeed').value||5),draft:+$('#bDraft').value||1.8,motor:Math.max(0,+$('#bMotor').value||0)};
-  S.windMax=+$('#sWind').value||20;S.gustMax=+$('#sGust').value||25;S.waveMax=+$('#sWave').value||1.2;S.night=$('#sNight').checked;S.saver=$('#sSaver').checked;saveS();
+  S.windMax=+$('#sWind').value||20;S.gustMax=+$('#sGust').value||25;S.waveMax=+$('#sWave').value||1.2;S.night=$('#sNight').checked;S.autoNight=$('#sAutoN').checked;S.saver=$('#sSaver').checked;saveS();
   document.body.classList.toggle('night',S.night);if(chK&&S.base==='yandex')setBase('yandex');drawField();renderRoute();if(RT.fc)bestWindows();renderEns();
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);gpsStart()}toast('Сохранено')};
 $('#sNight').onchange=e=>document.body.classList.toggle('night',e.target.checked);
 $('#sTrack').onclick=()=>{G.track=[];G.line.setLatLngs([]);store.set('track',[]);toast('Трек стёрт')};
-$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.6 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
+$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.7 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
 
 $$('#p-more [data-go]').forEach(b=>b.onclick=()=>openPanel(b.dataset.go));
-$('#mNight').onclick=()=>{S.night=!S.night;saveS();document.body.classList.toggle('night',S.night);$('#sNight').checked=S.night;if(S.base==='kurs')setBase('kurs')};
+$('#mNight').onclick=()=>{S.autoNight=false;S.night=!S.night;saveS();document.body.classList.toggle('night',S.night);$('#sNight').checked=S.night;if(S.base==='kurs')setBase('kurs')};
 /* ===== офлайн-карта района ===== */
 function regTiles(){const lon2x=(l,z)=>Math.floor((l+180)/360*2**z),lat2y=(a,z)=>{const q=rad(a);return Math.floor((1-Math.log(Math.tan(q)+1/Math.cos(q))/Math.PI)/2*2**z)};
   const out=[];for(let z=0;z<=REG.maxz;z++)for(let x=lon2x(REG.W,z);x<=lon2x(REG.E,z);x++)for(let y=lat2y(REG.N,z);y<=lat2y(REG.S,z);y++)out.push(`map/${REG.id}/${z}/${x}/${y}.mvt`);return out}
@@ -855,8 +874,44 @@ $('#dRun').onclick=async()=>{const T=[
     catch(e){tr.children[1].innerHTML=`<b style="color:var(--danger)">✗ ${e.name==='AbortError'?'не отвечает':'недоступен'}</b>`}
     finally{clearTimeout(tm);tr.children[2].textContent=Math.round(performance.now()-t0)+' мс'}}
   logE('diag '+[...$$('#dT tr')].slice(1).map(r=>r.children[0].textContent+'='+r.children[1].textContent).join('; '))};
+/* ===== трек в GPX со временем ===== */
+$('#sTrkGpx').onclick=()=>{if(G.track.length<2)return toast('Трек пока пустой');
+  const pts=G.track.map(q=>`<trkpt lat="${q[0].toFixed(6)}" lon="${q[1].toFixed(6)}">${q[2]?`<time>${new Date(q[2]*1000).toISOString()}</time>`:''}</trkpt>`).join('');
+  download(`track-${new Date().toISOString().slice(0,10)}.gpx`,`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Kurs" xmlns="http://www.topografix.com/GPX/1/1"><trk><name>${S.boat.name||'Трек'} ${new Date().toLocaleDateString('ru-RU')}</name><trkseg>${pts}</trkseg></trk></gpx>`,'application/gpx+xml')};
+
+/* ===== MAYDAY: готовый текст для рации ===== */
+$('#nMay').onclick=()=>{const p=NAV.pts[0]||G.pos;if(!p)return;const nm=S.boat.name||'(название яхты)',t=new Date(NAV.mobT||Date.now()),utc=t.toISOString().slice(11,16);
+  const ru=`MAYDAY, MAYDAY, MAYDAY. Это яхта ${nm}, ${nm}, ${nm}. MAYDAY, яхта ${nm}. Позиция: ${fmtC(p[0],1)}, ${fmtC(p[1],0)}. Человек за бортом в ${utc} UTC. Нужна помощь в поиске. На борту ___ человек. Приём.`;
+  const en=`MAYDAY, MAYDAY, MAYDAY. This is sailing yacht ${nm}, ${nm}, ${nm}. MAYDAY ${nm}. My position ${fmtC(p[0],1)}, ${fmtC(p[1],0)}. Man overboard at ${utc} UTC. Request assistance. ___ persons on board. Over.`;
+  $('#pointTitle').textContent='MAYDAY — УКВ 16 канал';openPanel('point');
+  $('#pointBody').innerHTML=`<div class="badbox"><b>По-русски</b><p style="font-size:16px;line-height:1.5">${ru}</p></div><div class="warnbox"><b>English</b><p style="font-size:16px;line-height:1.5">${en}</p></div><p class="muted small">Если есть DSC: красная кнопка DISTRESS на рации (держать 5 с), потом голосом на 16 канале. Повторяйте каждые 1–2 минуты, пока не ответят. Координаты — точки падения.</p><div class="row"><button id="mayCopy">Скопировать</button></div>`;
+  $('#mayCopy').onclick=()=>navigator.clipboard?.writeText(ru+'\n\n'+en).then(()=>toast('Скопировано'))};
+
+/* ===== ночной режим по солнцу ===== */
+function sunAlt(lat,lon,ms=Date.now()){const d=ms/864e5-10957.5,g=rad(357.529+.98560028*d),q=280.459+.98564736*d,Ls=rad(q+1.915*Math.sin(g)+.02*Math.sin(2*g)),e=rad(23.439-3.6e-7*d);
+  const ra=Math.atan2(Math.cos(e)*Math.sin(Ls),Math.cos(Ls)),dec=Math.asin(Math.sin(e)*Math.sin(Ls)),gm=((18.697374558+24.06570982441908*d)%24+24)%24,H=rad(gm*15+lon)-ra;
+  return deg(Math.asin(Math.sin(rad(lat))*Math.sin(dec)+Math.cos(rad(lat))*Math.cos(dec)*Math.cos(H)))}
+function autoNight(){if(!S.autoNight)return;const c=G.pos||[map.getCenter().lat,map.getCenter().lng],night=sunAlt(c[0],c[1])<-4;
+  if(night!==S.night){S.night=night;saveS();document.body.classList.toggle('night',night);$('#sNight').checked=night;if(S.base==='kurs')setBase('kurs');toast(night?'Стемнело: включил ночной режим':'Рассвело: дневной режим')}}
+setInterval(autoNight,300000);setTimeout(autoNight,1500);
+
+/* ===== долгое нажатие на карту: пеленг/дистанция и действия ===== */
+const LP={t:null,x:0,y:0,suppress:false};
+function lpMenu(ll){const me=G.pos;let info=`<b>${fmtC(ll.lat,1)}<br>${fmtC(ll.lng,0)}</b>`;
+  if(me){const d=dist(me,[ll.lat,ll.lng]);info+=`<br>от лодки: ${f0(brg(me,[ll.lat,ll.lng]))}°, ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}`;if(G.sog>.5)info+=`, ≈${fmtHM(d/NM/G.sog*36e5)} при ${f1(G.sog)} уз`}
+  const w=WM.g?isWater(ll.lat,ll.lng):null;if(w===false)info+='<br><span style="color:#c00">суша</span>';
+  const pop=L.popup({closeButton:true,autoPan:true}).setLatLng(ll).setContent(`<div style="font-size:13px;line-height:1.4">${info}<div style="display:grid;gap:6px;margin-top:8px"><button data-a="go">➜ Идти сюда</button><button data-a="wx">Прогноз здесь</button><button data-a="rt">＋ В маршрут</button></div></div>`).openOn(map);
+  const el=pop.getElement();el.querySelectorAll('button').forEach(b=>b.onclick=()=>{map.closePopup();const a=b.dataset.a;
+    if(a==='go')navStart('point',[[ll.lat,ll.lng]],0,'Точка '+fmtC(ll.lat,1));else if(a==='wx')showPoint(ll);else{RT.pts.push([ll.lat,ll.lng]);routeChanged();toast(`Точка ${RT.pts.length} добавлена в маршрут`)}})}
+const mc=map.getContainer();
+mc.addEventListener('touchstart',e=>{if(e.touches.length!==1)return clearTimeout(LP.t);const t=e.touches[0];LP.x=t.clientX;LP.y=t.clientY;clearTimeout(LP.t);
+  LP.t=setTimeout(()=>{LP.suppress=true;setTimeout(()=>LP.suppress=false,700);navigator.vibrate?.(30);const r=mc.getBoundingClientRect();lpMenu(map.containerPointToLatLng([LP.x-r.left,LP.y-r.top]))},600)},{passive:true});
+mc.addEventListener('touchmove',e=>{const t=e.touches[0];if(Math.hypot(t.clientX-LP.x,t.clientY-LP.y)>10)clearTimeout(LP.t)},{passive:true});
+mc.addEventListener('touchend',()=>clearTimeout(LP.t));
+map.on('contextmenu',e=>{LP.suppress=true;setTimeout(()=>LP.suppress=false,300);lpMenu(e.latlng)});
+
 /* ===== клик по карте ===== */
-map.on('click',e=>{if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}showPoint(e.latlng)});
+map.on('click',e=>{if(LP.suppress)return;if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}showPoint(e.latlng)});
 
 /* ===== старт ===== */
 LOG.push(...store.get('log',[]).slice(-100));
