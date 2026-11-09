@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1724">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Курс">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Курс — погода и навигация</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--bg:#0b1724;--panel:#102233;--panel2:#15293d;--line:#24405a;--text:#e6eef5;--muted:#8aa1b5;--accent:#3fb6ff;--warn:#ffb020;--danger:#ff4d4f;--ok:#4cc38a}
+body.night{--bg:#000;--panel:#140000;--panel2:#1d0000;--line:#3a0a0a;--text:#ff5a4a;--muted:#a8332b;--accent:#ff3b30;--warn:#ff3b30;--ok:#ff6a5a;--danger:#ff2a1a}
+body.night .leaflet-tile-pane{filter:grayscale(1) brightness(.4) sepia(1) hue-rotate(-45deg) saturate(5)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+#map{position:fixed;inset:0;background:#0d2236}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px;cursor:pointer;white-space:nowrap}
+button.on{background:var(--accent);color:#001321;border-color:var(--accent)}
+button.primary{background:var(--accent);color:#001321;border-color:var(--accent);font-weight:600}
+input,select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;min-height:42px;max-width:100%}
+input[type=range]{padding:0;border:0;background:none;min-height:auto}
+input[type=checkbox],input[type=radio]{min-height:auto;width:20px;height:20px;accent-color:var(--accent)}
+label{display:flex;gap:8px;align-items:center;margin:6px 0}
+hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+#top{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;background:linear-gradient(var(--bg),rgba(11,23,36,0))}
+body.night #top{background:linear-gradient(#000,rgba(0,0,0,0))}
+.brand{font-weight:700;font-size:16px;flex:none;line-height:1.1}
+.brand small{font-weight:400;color:var(--muted);font-size:11px;display:block}
+#top nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1}
+#top nav::-webkit-scrollbar{display:none}
+#status{position:fixed;z-index:1000;right:10px;top:calc(env(safe-area-inset-top) + 64px);display:flex;flex-direction:column;gap:6px;align-items:flex-end;pointer-events:none}
+.chip{background:rgba(16,34,51,.92);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px}
+.chip.warn{border-color:var(--warn);color:var(--warn)}
+.chip.bad{border-color:var(--danger);color:#fff;background:rgba(200,30,30,.9)}
+#hud{position:fixed;z-index:1000;left:10px;top:calc(env(safe-area-inset-top) + 64px);background:rgba(16,34,51,.94);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;gap:14px;align-items:center;font-variant-numeric:tabular-nums;max-width:calc(100vw - 20px)}
+#hud.stale{border-color:var(--danger);box-shadow:0 0 0 2px var(--danger)}
+#hud b{font-size:22px;display:block}
+#hud span{color:var(--muted);font-size:11px}
+#timebar{position:fixed;z-index:1000;left:0;right:0;bottom:0;padding:8px 10px calc(env(safe-area-inset-bottom) + 8px);background:linear-gradient(rgba(11,23,36,0),var(--bg) 35%);display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:center}
+body.night #timebar{background:linear-gradient(rgba(0,0,0,0),#000 35%)}
+#timeLabel{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+#timeLabel b{color:var(--text);font-size:13px}
+#legend{height:8px;border-radius:4px;width:120px}
+.leaflet-bottom{bottom:88px}
+.leaflet-control-attribution{font-size:10px;background:rgba(11,23,36,.7)!important;color:var(--muted)}
+.leaflet-control-attribution a{color:var(--muted)}
+.nmscale{background:rgba(11,23,36,.75);color:var(--text);font-size:11px;padding:2px 6px;border:2px solid var(--text);border-top:0;line-height:1.2}
+.panel{position:fixed;z-index:1100;left:0;right:0;bottom:0;max-height:55vh;overflow:auto;background:var(--panel);border-top:1px solid var(--line);border-radius:16px 16px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 16px);box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+.panel h2{margin:0 0 10px;font-size:17px;padding-right:48px}
+.panel h3{margin:14px 0 6px;font-size:14px}
+.panel .close{position:absolute;top:8px;right:8px;min-width:44px}
+.panel p{margin:6px 0}
+@media (min-width:820px){.panel{left:auto;right:12px;top:70px;bottom:100px;width:420px;max-height:none;border:1px solid var(--line);border-radius:16px}}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.note{font-size:12.5px;color:var(--muted);border-left:3px solid var(--warn);padding:4px 8px;margin:10px 0}
+.warnbox{border:1px solid var(--warn);background:rgba(255,176,32,.08);border-radius:10px;padding:8px 10px;margin:8px 0}
+.badbox{border:1px solid var(--danger);background:rgba(255,77,79,.1);border-radius:10px;padding:8px 10px;margin:8px 0}
+.okbox{border:1px solid var(--ok);background:rgba(76,195,138,.08);border-radius:10px;padding:8px 10px;margin:8px 0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+th,td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
+th{color:var(--muted);font-weight:500}
+tr.bad td{background:rgba(255,77,79,.13)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.conf{font-size:11px;padding:1px 6px;border-radius:999px;border:1px solid var(--line)}
+.conf.hi{color:var(--ok);border-color:var(--ok)}.conf.mid{color:var(--warn);border-color:var(--warn)}.conf.lo{color:var(--danger);border-color:var(--danger)}
+#toast{position:fixed;z-index:2000;left:50%;top:calc(env(safe-area-inset-top) + 70px);transform:translate(-50%,-20px);opacity:0;transition:.25s;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;max-width:min(92vw,460px);pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#alarm{position:fixed;inset:0;z-index:3000;background:rgba(200,0,0,.88);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-size:28px;font-weight:800;text-align:center;animation:blink 1s infinite;padding:20px}
+#alarm button{font-size:20px;padding:14px 30px;background:#fff;color:#a00;border:0}
+@keyframes blink{50%{background:rgba(120,0,0,.9)}}
+[hidden]{display:none!important}
+.wp{background:var(--accent);color:#001321;border:2px solid #fff;border-radius:50%;display:flex!important;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.chart{width:100%;height:auto;display:block;margin:6px 0}
+.windows button{margin:3px 0;width:100%;text-align:left;white-space:normal}
+details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<header id="top">
+  <div class="brand">Курс<small>v0.2 · тест</small></div>
+  <nav>
+    <button data-panel="route" id="btnRoute">Переход</button>
+    <button id="btnGps">GPS</button>
+    <button data-panel="layers">Слои</button>
+    <button data-panel="anchor" id="btnAnchor">Якорь</button>
+    <button data-panel="ais" id="btnAis">AIS</button>
+    <button data-panel="boat">Лодка</button>
+    <button data-panel="help" aria-label="Помощь">?</button>
+  </nav>
+</header>
+
+<div id="hud" hidden>
+  <div><b id="hSog">—</b><span>уз, скорость</span></div>
+  <div><b id="hCog">—</b><span>курс</span></div>
+  <div class="small"><div id="hPos">—</div><span id="hAcc"></span></div>
+  <button id="btnFollow" title="Держать лодку в центре">⊙</button>
+</div>
+<div id="status"></div>
+
+<footer id="timebar">
+  <select id="model" aria-label="Модель прогноза">
+    <option value="ecmwf_ifs025">ECMWF · мир</option>
+    <option value="icon_seamless">ICON-EU · 7 км</option>
+    <option value="gfs_seamless">GFS · мир</option>
+    <option value="metno_seamless">MET Nordic · 1 км</option>
+    <option value="dmi_seamless">HARMONIE · 2 км</option>
+    <option value="ecmwf_aifs025_single">AIFS · нейросеть ECMWF</option>
+  </select>
+  <button id="play" aria-label="Проиграть">▶</button>
+  <input type="range" id="time" min="0" max="0" value="0" aria-label="Время прогноза">
+  <div id="timeLabel"><b id="tl">Прогноз загружается…</b><span style="display:flex;gap:6px;align-items:center;flex:none">0<span id="legend"></span>40 уз</span></div>
+</footer>
+
+<section class="panel" id="p-layers" hidden>
+  <button class="close">✕</button>
+  <h2>Слои карты</h2>
+  <label><input type="radio" name="base" value="osm"> OpenStreetMap: работает без ключа, просмотренное сохраняется для офлайна</label>
+  <label><input type="radio" name="base" value="yandex"> Яндекс Карты (нужен ключ в «Лодка» → «Ключи»)</label>
+  <label><input type="radio" name="base" value="topo"> Рельеф берега (OpenTopoMap)</label>
+  <hr>
+  <label><input type="checkbox" id="chkSea"> Буи, маяки, огни (OpenSeaMap)</label>
+  <label><input type="checkbox" id="chkWind"> Ветер на карте</label>
+  <label><input type="checkbox" id="chkTrack"> Мой трек</label>
+  <p class="note">Глубин и изобат пока нет: открытых карт глубин Ладоги нет, официальные зашифрованы. Не для навигации: на борту штатный плоттер или бумажная карта.</p>
+</section>
+
+<section class="panel" id="p-point" hidden>
+  <button class="close">✕</button>
+  <h2 id="pointTitle">Прогноз в точке</h2>
+  <div id="pointBody"></div>
+</section>
+
+<section class="panel" id="p-route" hidden>
+  <button class="close">✕</button>
+  <h2>Переход</h2>
+  <div class="row">
+    <button id="rAdd">＋ Ставить точки</button>
+    <button id="rUndo">↶ Точку</button>
+    <button id="rRev" title="Обратный маршрут">⇅</button>
+    <button id="rClear">Очистить</button>
+  </div>
+  <div class="row"><label>Выход <input id="rDep" type="datetime-local"></label></div>
+  <div class="row">
+    <button class="primary" id="rWx">Погода по маршруту</button>
+    <button id="rGpx">Сохранить GPX</button>
+    <label class="small" style="margin:0"><input type="file" id="rImp" accept=".gpx" hidden><button id="rImpBtn" type="button">Открыть GPX</button></label>
+  </div>
+  <div id="rSum"></div>
+  <div id="rWin" class="windows"></div>
+  <div id="rLegs" class="scroll"></div>
+</section>
+
+<section class="panel" id="p-anchor" hidden>
+  <button class="close">✕</button>
+  <h2>Якорная вахта</h2>
+  <div class="row"><label>Радиус <input id="aR" type="number" min="10" max="500" step="5" style="width:84px"> м</label></div>
+  <div class="row">
+    <button class="primary" id="aSetGps">Якорь здесь (GPS)</button>
+    <button id="aSetMap">В центре карты</button>
+    <button id="aOff">Поднять</button>
+  </div>
+  <p id="aState" class="muted">Якорь не брошен.</p>
+  <p class="note">Тревога срабатывает, если лодка дважды подряд вышла за круг, и если GPS молчит дольше минуты. Экран должен быть включён: программа сама держит его включённым. Если свернуть браузер, телефон может остановить GPS. Фоновая вахта будет в версии-приложении.</p>
+</section>
+
+<section class="panel" id="p-ais" hidden>
+  <button class="close">✕</button>
+  <h2>AIS</h2>
+  <div class="warnbox small">Интернет-AIS собирают береговые станции. Суда бывают с опозданием на минуты, а часть не видна совсем. Это не замена вахте и своему приёмнику. У каждого судна показан возраст данных.</div>
+  <div class="row"><input id="aisKey" placeholder="Ключ aisstream.io" style="flex:1"><button id="aisSave">Сохранить</button></div>
+  <div class="row"><button class="primary" id="aisOn">Включить</button><button id="aisOff">Выключить</button></div>
+  <p>Статус: <b id="aisStatus">выкл</b> · судов: <b id="aisCount">0</b></p>
+  <div id="aisList" class="scroll"></div>
+  <p class="muted small">Ключ бесплатный: aisstream.io → вход через GitHub → API Keys. Свой приёмник на лодке подключим через Wi-Fi-шлюз (Signal K) в следующей версии.</p>
+</section>
+
+<section class="panel" id="p-boat" hidden>
+  <button class="close">✕</button>
+  <h2>Лодка и пределы</h2>
+  <div class="row"><label>Название <input id="bName" style="width:160px"></label></div>
+  <div class="row"><label>Тип <select id="bType"><option value="sail">Парусная</option><option value="motor">Моторная</option></select></label>
+    <label>Крейсерская <input id="bSpeed" type="number" step="0.5" min="1" max="30" style="width:70px"> уз</label></div>
+  <div class="row"><label>Осадка <input id="bDraft" type="number" step="0.1" min="0.2" max="5" style="width:70px"> м</label>
+    <label>Мотор <input id="bMotor" type="number" step="0.5" min="0" max="30" style="width:70px"> уз</label></div>
+  <h3>Мои пределы (выше — красным)</h3>
+  <div class="row"><label>Ветер <input id="sWind" type="number" style="width:64px"> уз</label><label>Порывы <input id="sGust" type="number" style="width:64px"> уз</label><label>Волна <input id="sWave" type="number" step="0.1" style="width:64px"> м</label></div>
+  <h3>Режимы</h3>
+  <label><input type="checkbox" id="sNight"> Ночной режим (красный, не слепит)</label>
+  <label><input type="checkbox" id="sSaver"> Экономия батареи (без анимации, GPS реже)</label>
+  <details><summary>Ключи сервисов</summary>
+    <label class="small" style="display:block">Яндекс Tiles API<br><input id="sYa" style="width:100%" placeholder="developer.tech.yandex.ru → Подключить API → Tiles API"></label>
+  </details>
+  <div class="row"><button class="primary" id="sSave">Сохранить</button><button id="sTrack">Стереть трек</button><button id="sLog">Журнал ошибок</button></div>
+  <p class="muted small">Всё хранится только на этом устройстве, без регистрации. Настройки не сбрасываются.</p>
+</section>
+
+<section class="panel" id="p-help" hidden>
+  <button class="close">✕</button>
+  <h2>Как пользоваться</h2>
+  <p><b>1. Погода.</b> Нажмите на воду, и откроется прогноз в точке: график сразу по нескольким моделям. Если модели спорят, программа об этом скажет. Внизу шкала времени и выбор модели.</p>
+  <p><b>2. Переход.</b> «Переход» → «＋ Ставить точки» → нажимайте на карту. Затем «Погода по маршруту». Программа посчитает, когда вы будете на каждом участке с учётом скорости вашей лодки при этом ветре, и покажет погоду именно на это время. Она же предложит лучшие окна выхода.</p>
+  <p><b>3. На воде.</b> «GPS» показывает скорость, курс и трек. «Якорь» включает тревогу, если лодку тащит. «AIS» показывает суда рядом.</p>
+  <p><b>Без интернета.</b> Перед выходом откройте переход и нажмите «Погода по маршруту»: прогноз сохранится. Карта сохраняется там, где вы её уже смотрели. Вверху справа видно, насколько свежий прогноз.</p>
+  <p><b>Цвета.</b> Синий и зелёный — слабый ветер. Жёлтый — свежий. Оранжевый и красный — сильный. Фиолетовый — шторм.</p>
+  <p class="note">Тестовая версия. Решения принимает шкипер.</p>
+</section>
+
+<div id="toast"></div>
+<div id="alarm" hidden><div id="alarmTitle">⚓ ЯКОРЬ ПОЛЗЁТ</div><div id="alarmDist" style="font-size:20px"></div><button id="alarmStop">Я на палубе</button></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+'use strict';
+/* ===== журнал ошибок (жалоба: «поддержка молчит», нечего им отправить) ===== */
+const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.length>200)LOG.shift();try{localStorage.setItem('kurs.log',JSON.stringify(LOG))}catch(e){}}
+window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
+window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
+
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
+const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,saver:false,base:'osm',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
+  boat:{name:'',type:'sail',speed:5.5,motor:5,draft:1.8}},store.get('settings',{}));
+const saveS=()=>store.set('settings',S);
+function toast(m,ms=4000){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
+
+/* ===== геометрия и форматы ===== */
+const R=6371008.8, NM=1852, rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+function dist(a,b){const dLa=rad(b[0]-a[0]),dLo=rad(b[1]-a[1]);const h=Math.sin(dLa/2)**2+Math.cos(rad(a[0]))*Math.cos(rad(b[0]))*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(h)))}
+function brg(a,b){const y=Math.sin(rad(b[1]-a[1]))*Math.cos(rad(b[0]));const x=Math.cos(rad(a[0]))*Math.sin(rad(b[0]))-Math.sin(rad(a[0]))*Math.cos(rad(b[0]))*Math.cos(rad(b[1]-a[1]));return (deg(Math.atan2(y,x))+360)%360}
+const lerpPt=(a,b,f)=>[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f];
+const RUMB=['С','ССВ','СВ','ВСВ','В','ВЮВ','ЮВ','ЮЮВ','Ю','ЮЮЗ','ЮЗ','ЗЮЗ','З','ЗСЗ','СЗ','ССЗ'];
+const rumb=d=>d==null||isNaN(d)?'—':RUMB[Math.round((((d%360)+360)%360)/22.5)%16];
+function fmtC(v,lat){const h=lat?(v>=0?'N':'S'):(v>=0?'E':'W');v=Math.abs(v);const d=Math.floor(v),m=(v-d)*60;return `${d}°${m.toFixed(3).padStart(6,'0')}′${h}`}
+const fmtT=ts=>new Date(ts*1000).toLocaleString('ru-RU',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+const fmtHM=ms=>{const m=Math.round(ms/60000);return `${Math.floor(m/60)} ч ${String(m%60).padStart(2,'0')} мин`};
+const ago=ms=>{const m=Math.round((Date.now()-ms)/60000);return m<1?'только что':m<60?`${m} мин назад`:m<1440?`${Math.round(m/60)} ч назад`:`${Math.round(m/1440)} сут назад`};
+const f1=v=>v==null||isNaN(v)?'—':(Math.round(v*10)/10).toString().replace('.',',');
+const f0=v=>v==null||isNaN(v)?'—':Math.round(v);
+const uniq=a=>[...new Set(a)];
+function offBow(windFrom,course){return Math.abs(((windFrom-course)%360+540)%360-180)}
+function sail(a){return a<40?'в лоб, галсами':a<70?'бейдевинд':a<110?'галфвинд':a<150?'бакштаг':'фордевинд'}
+const STOPS=[[0,[80,100,190]],[4,[55,140,200]],[8,[50,170,150]],[12,[90,180,70]],[16,[220,200,60]],[20,[235,140,40]],[25,[220,60,50]],[30,[180,40,140]],[40,[110,30,110]]];
+function rgb(v){if(!(v>=0))v=0;for(let i=1;i<STOPS.length;i++){if(v<=STOPS[i][0]){const[a,ca]=STOPS[i-1],[b,cb]=STOPS[i],t=(v-a)/(b-a);return ca.map((c,k)=>Math.round(c+(cb[k]-c)*t))}}return STOPS[STOPS.length-1][1]}
+const css=v=>`rgb(${rgb(v).join(',')})`;
+$('#legend').style.background=`linear-gradient(90deg,${STOPS.map(s=>`rgb(${s[1].join(',')}) ${s[0]/40*100}%`).join(',')})`;
+async function getJSON(u){const r=await fetch(u);if(!r.ok){let t='';try{t=(await r.json()).reason||''}catch(e){}throw new Error(`сервер ответил ${r.status} ${t}`)}return r.json()}
+const MODEL_NAME={ecmwf_ifs025:'ECMWF',icon_seamless:'ICON',gfs_seamless:'GFS',metno_seamless:'MET Nordic',dmi_seamless:'HARMONIE',ecmwf_aifs025_single:'AIFS'};
+const MODEL_COLOR={ecmwf_ifs025:'#3fb6ff',icon_seamless:'#4cc38a',gfs_seamless:'#ffb020',metno_seamless:'#c78bff',dmi_seamless:'#ff7a9a',ecmwf_aifs025_single:'#e6eef5'};
+const CMP=['ecmwf_ifs025','icon_seamless','gfs_seamless'];
+
+/* ===== скорость лодки при ветре (упрощённые поляры крейсерской яхты) ===== */
+function boatSpeed(tws,twa){const B=S.boat;
+  if(B.type==='motor')return B.speed;
+  if(tws==null||isNaN(tws))return B.speed;
+  if(tws<4)return B.motor>0?B.motor:B.speed*.3;                // штиль: под мотором
+  const g=Math.min(1.1,Math.max(.45,tws/11));                    // слабый ветер медленнее, свежий — до +10 %
+  const h=twa<40?.62:twa<60?.85:twa<110?1:twa<150?.95:.8;       // «в лоб» — эффективная скорость галсами
+  let v=B.speed*g*h;if(tws>22)v*=.9;                             // рифы
+  return Math.max(1,v)}
+
+/* ===== карта ===== */
+const view=store.get('view',{c:[60.25,31.0],z:8});
+const map=L.map('map',{zoomControl:false}).setView(view.c,view.z);
+map.attributionControl.setPrefix(false);
+map.attributionControl.addAttribution('Погода <a href="https://open-meteo.com">Open-Meteo</a>');
+L.control.zoom({position:'bottomright'}).addTo(map);
+const NmScale=L.Control.extend({options:{position:'bottomleft'},onAdd(){this._d=L.DomUtil.create('div','nmscale');map.on('moveend zoomend',()=>this.upd());setTimeout(()=>this.upd());return this._d},
+  upd(){const y=map.getSize().y/2,a=map.containerPointToLatLng([0,y]),b=map.containerPointToLatLng([100,y]),nm=dist([a.lat,a.lng],[b.lat,b.lng])/NM;
+    const nice=[.05,.1,.2,.25,.5,1,2,5,10,20,50,100].reverse().find(v=>v<=nm)||.05;this._d.style.width=Math.round(100*nice/nm)+'px';this._d.textContent=(nice<1?String(nice).replace('.',','):nice)+' миль'}});
+new NmScale().addTo(map);
+map.on('moveend',()=>{const c=map.getCenter();store.set('view',{c:[c.lat,c.lng],z:map.getZoom()})});
+const bases={
+  osm:()=>L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}),
+  topo:()=>L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,subdomains:'abc',attribution:'© OpenTopoMap, OSM'}),
+  yandex:()=>L.tileLayer('https://tiles.api-maps.yandex.ru/v1/tiles/?x={x}&y={y}&z={z}&lang=ru_RU&l=map&projection=web_mercator&apikey='+encodeURIComponent(S.yandexKey),{maxZoom:19,attribution:'© Яндекс'})
+};
+let baseLayer=null;
+function setBase(k){if(k==='yandex'&&!S.yandexKey){toast('Для Яндекса нужен ключ: «Лодка» → «Ключи сервисов»');k='osm'}
+  if(baseLayer)map.removeLayer(baseLayer);baseLayer=bases[k]().addTo(map);baseLayer.bringToBack();
+  let errs=0;baseLayer.on('tileerror',()=>{if(++errs===4)toast(navigator.onLine?'Карта не грузится: проверьте ключ или сеть':'Нет сети: видна только сохранённая часть карты')});
+  S.base=k;saveS();$$('input[name=base]').forEach(r=>r.checked=r.value===k)}
+const seaLayer=L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenSeaMap'});
+function setSea(on){S.seamarks=on;saveS();$('#chkSea').checked=on;on?seaLayer.addTo(map):map.removeLayer(seaLayer)}
+
+/* ===== строка состояния: свежесть прогноза, сеть, GPS ===== */
+const ST={};function chip(k,txt,cls){ST[k]=txt?{txt,cls}:null;$('#status').innerHTML=Object.values(ST).filter(Boolean).map(c=>`<div class="chip ${c.cls||''}">${c.txt}</div>`).join('')}
+function netChip(){chip('net',navigator.onLine?null:'Нет сети: работаю из памяти','warn')}
+addEventListener('online',()=>{netChip();loadGrid(true)});addEventListener('offline',netChip);
+
+/* ===== ветер: сетка, поле, частицы ===== */
+const W={g:null,idx:0,timeSet:false,loading:false,play:null};
+const pane=map.createPane('wind');pane.style.zIndex=350;pane.style.pointerEvents='none';
+const cvF=L.DomUtil.create('canvas','',pane), cvP=L.DomUtil.create('canvas','',pane);
+let cw=0,ch=0,dpr=1;
+function sizeCv(){const s=map.getSize();dpr=Math.min(window.devicePixelRatio||1,2);cw=s.x;ch=s.y;
+  for(const c of[cvF,cvP]){c.width=cw*dpr;c.height=ch*dpr;c.style.width=cw+'px';c.style.height=ch+'px';c.getContext('2d').setTransform(dpr,0,0,dpr,0,0)}
+  const tl=map.containerPointToLayerPoint([0,0]);L.DomUtil.setPosition(cvF,tl);L.DomUtil.setPosition(cvP,tl)}
+function buildGrid(raw){const{N,times,spd,dir,gst}=raw,T=times.length,K=N*N,U=[],V=[],G=[];
+  for(let t=0;t<T;t++){const u=new Float32Array(K),v=new Float32Array(K),g=new Float32Array(K);
+    for(let k=0;k<K;k++){const s=spd[k][t],d=dir[k][t];if(s==null||d==null){u[k]=v[k]=NaN}else{u[k]=-s*Math.sin(rad(d));v[k]=-s*Math.cos(rad(d))}g[k]=gst[k][t]??NaN}
+    U.push(u);V.push(v);G.push(g)}
+  return{...raw,U,V,G}}
+function freshChip(){const g=W.g;if(!g)return;const age=Date.now()-g.fetched;chip('wx',`Прогноз ${MODEL_NAME[g.model]}: ${ago(g.fetched)}`,age>6*3600e3?'warn':'')}
+async function loadGrid(force){
+  if(!S.wind){clearWind();return}
+  const vb=map.getBounds(),z=map.getZoom(),g=W.g;
+  if(!force&&g&&g.model===S.model&&Math.abs(g.z-z)<1&&vb.getSouth()>=g.s&&vb.getNorth()<=g.n&&vb.getWest()>=g.w&&vb.getEast()<=g.e&&Date.now()-g.fetched<3600e3){drawField();return}
+  if(W.loading)return;W.loading=true;
+  const b=vb.pad(0.25),N=11,s=b.getSouth(),n=b.getNorth(),w=b.getWest(),e=b.getEast(),la=[],lo=[];
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){la.push((s+(n-s)*i/(N-1)).toFixed(3));lo.push((w+(e-w)*j/(N-1)).toFixed(3))}
+  const model=S.model;
+  try{
+    let js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${model}`);
+    if(!Array.isArray(js))js=[js];
+    const raw={model,s,n,w,e,N,z,fetched:Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)};
+    W.g=buildGrid(raw);store.set('grid',raw);setupTime();drawField();freshChip();netChip();
+  }catch(err){
+    logE('grid '+err.message);chip('net','Нет связи с прогнозом: работаю из памяти','warn');
+    const c=store.get('grid',null);
+    if(c&&(!W.g||W.g.fetched<c.fetched)){W.g=buildGrid(c);setupTime();drawField();toast('Нет сети: показываю сохранённый прогноз')}
+    else if(!W.g){$('#tl').textContent='Прогноз не загрузился';toast('Прогноз не загрузился: '+err.message)}
+    freshChip()}
+  finally{W.loading=false}}
+function sample(lat,lon,t=W.idx){const g=W.g;if(!g)return null;
+  const fx=(lon-g.w)/(g.e-g.w)*(g.N-1),fy=(lat-g.s)/(g.n-g.s)*(g.N-1);if(fx<0||fy<0||fx>g.N-1||fy>g.N-1)return null;
+  const x0=Math.min(Math.floor(fx),g.N-2),y0=Math.min(Math.floor(fy),g.N-2),ax=fx-x0,ay=fy-y0,N=g.N;
+  const bl=a=>a[y0*N+x0]*(1-ax)*(1-ay)+a[y0*N+x0+1]*ax*(1-ay)+a[(y0+1)*N+x0]*(1-ax)*ay+a[(y0+1)*N+x0+1]*ax*ay;
+  const u=bl(g.U[t]),v=bl(g.V[t]);if(isNaN(u)||isNaN(v))return null;
+  return{u,v,spd:Math.hypot(u,v),dir:(deg(Math.atan2(-u,-v))+360)%360,gust:bl(g.G[t])}}
+function clearWind(){sizeCv();cvF.getContext('2d').clearRect(0,0,cw,ch);cvP.getContext('2d').clearRect(0,0,cw,ch)}
+function drawField(){sizeCv();const c=cvF.getContext('2d');c.clearRect(0,0,cw,ch);if(!S.wind||!W.g)return;
+  const st=8,gw=Math.ceil(cw/st)+1,gh=Math.ceil(ch/st)+1,off=document.createElement('canvas');off.width=gw;off.height=gh;
+  const oc=off.getContext('2d'),img=oc.createImageData(gw,gh);
+  for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){const ll=map.containerPointToLatLng([x*st,y*st]),s=sample(ll.lat,ll.lng);if(!s)continue;
+    const[r,g,b]=rgb(s.spd),o=(y*gw+x)*4;img.data[o]=r;img.data[o+1]=g;img.data[o+2]=b;img.data[o+3]=110}
+  oc.putImageData(img,0,0);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(off,0,0,gw,gh,-st/2,-st/2,gw*st,gh*st);
+  if(S.saver)drawArrows(c);
+  resetParts();cvF.style.opacity=1;cvP.style.opacity=1}
+function drawArrows(c){c.fillStyle=document.body.classList.contains('night')?'#ff5a4a':'rgba(255,255,255,.9)';
+  for(let y=30;y<ch;y+=60)for(let x=30;x<cw;x+=60){const ll=map.containerPointToLatLng([x,y]),s=sample(ll.lat,ll.lng);if(!s)continue;
+    c.save();c.translate(x,y);c.rotate(rad(s.dir+180));c.beginPath();c.moveTo(0,-9);c.lineTo(5,7);c.lineTo(0,3);c.lineTo(-5,7);c.closePath();c.fill();c.restore()}}
+let parts=[],paused=false;
+const newP=()=>({x:Math.random()*cw,y:Math.random()*ch,age:Math.random()*90|0});
+function resetParts(){parts=S.saver?[]:Array.from({length:Math.min(2200,Math.round(cw*ch/800))},newP)}
+(function frame(){requestAnimationFrame(frame);if(paused||S.saver||!S.wind||!W.g||!parts.length)return;
+  const c=cvP.getContext('2d');c.save();c.setTransform(1,0,0,1,0,0);c.globalCompositeOperation='destination-in';c.fillStyle='rgba(0,0,0,.9)';c.fillRect(0,0,cvP.width,cvP.height);c.restore();
+  c.globalCompositeOperation='source-over';c.strokeStyle=document.body.classList.contains('night')?'rgba(255,80,60,.8)':'rgba(255,255,255,.85)';c.lineWidth=1.1;c.beginPath();
+  for(const p of parts){if(p.age++>90){Object.assign(p,newP(),{age:0});continue}
+    const ll=map.containerPointToLatLng([p.x,p.y]),s=sample(ll.lat,ll.lng);if(!s){Object.assign(p,newP(),{age:0});continue}
+    const nx=p.x+s.u*.11,ny=p.y-s.v*.11;c.moveTo(p.x,p.y);c.lineTo(nx,ny);p.x=nx;p.y=ny;if(nx<0||ny<0||nx>cw||ny>ch)Object.assign(p,newP(),{age:0})}
+  c.stroke()})();
+let gridT=null;
+map.on('movestart zoomstart',()=>{paused=true;cvP.getContext('2d').clearRect(0,0,cw,ch)});
+map.on('zoomstart',()=>{cvF.style.opacity=0});
+map.on('moveend',()=>{paused=false;drawField();updT();clearTimeout(gridT);gridT=setTimeout(()=>loadGrid(),500)});
+map.on('resize',()=>drawField());
+function setupTime(){const t=W.g.times,r=$('#time');r.max=t.length-1;
+  if(!W.timeSet){const now=Date.now()/1000;let b=0;t.forEach((x,i)=>{if(Math.abs(x-now)<Math.abs(t[b]-now))b=i});W.idx=b;W.timeSet=true}
+  W.idx=Math.min(W.idx,t.length-1);r.value=W.idx;updT()}
+function updT(){if(!W.g)return;const ts=W.g.times[W.idx],c=map.getCenter(),s=sample(c.lat,c.lng);
+  $('#tl').textContent=`${fmtT(ts)} · ${MODEL_NAME[W.g.model]}`+(s?` · центр ${f0(s.spd)} уз ${rumb(s.dir)}`:'')}
+$('#time').addEventListener('input',e=>{W.idx=+e.target.value;updT();drawField()});
+$('#play').onclick=()=>{if(W.play){clearInterval(W.play);W.play=null;$('#play').textContent='▶';return}
+  $('#play').textContent='❚❚';W.play=setInterval(()=>{if(!W.g)return;W.idx=(W.idx+1)%W.g.times.length;$('#time').value=W.idx;updT();drawField()},700)};
+$('#model').value=S.model;$('#model').onchange=e=>{S.model=e.target.value;saveS();loadGrid(true);if(RT.fc)routeWx()};
+
+/* ===== панели ===== */
+let openName=null;
+function openPanel(n){$$('.panel').forEach(p=>p.hidden=p.id!=='p-'+n);openName=n;$$('#top [data-panel]').forEach(b=>b.classList.toggle('on',b.dataset.panel===n));if(n==='ais')aisList()}
+function closePanel(){$$('.panel').forEach(p=>p.hidden=true);openName=null;$$('#top [data-panel]').forEach(b=>b.classList.remove('on'));setAdding(false);if(ptMarker){map.removeLayer(ptMarker);ptMarker=null}anchorBtn()}
+$$('#top [data-panel]').forEach(b=>b.onclick=()=>openName===b.dataset.panel?closePanel():openPanel(b.dataset.panel));
+$$('.panel .close').forEach(b=>b.onclick=closePanel);
+$$('input[name=base]').forEach(r=>r.onchange=()=>setBase(r.value));
+$('#chkSea').onchange=e=>setSea(e.target.checked);
+$('#chkWind').onchange=e=>{S.wind=e.target.checked;saveS();S.wind?loadGrid(true):clearWind()};
+$('#chkTrack').onchange=e=>{S.track=e.target.checked;saveS();S.track?G.line.addTo(map):map.removeLayer(G.line)};
+
+/* ===== прогноз в точке ===== */
+let ptMarker=null;
+async function showPoint(ll){
+  if(ptMarker)map.removeLayer(ptMarker);ptMarker=L.circleMarker(ll,{radius:7,color:'#fff',weight:2,fillColor:'#3fb6ff',fillOpacity:1}).addTo(map);
+  openPanel('point');$('#pointTitle').textContent=`${fmtC(ll.lat,1)} ${fmtC(ll.lng,0)}`;const body=$('#pointBody');
+  const models=uniq([...CMP,S.model]);body.innerHTML=`<p class="muted">Сравниваю ${models.map(m=>MODEL_NAME[m]).join(', ')}…</p>`;
+  const la=ll.lat.toFixed(3),lo=ll.lng.toFixed(3);
+  const [a,m]=await Promise.allSettled([
+    getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${models}`),
+    getJSON(`https://marine-api.open-meteo.com/v1/marine?latitude=${la}&longitude=${lo}&hourly=wave_height,wave_direction,wave_period&forecast_days=5&timeformat=unixtime`)]);
+  if(a.status!=='fulfilled'){body.innerHTML=`<p class="badbox">Прогноз не загрузился (${a.reason.message}). ${navigator.onLine?'':'Нет сети: прогноз в точке доступен только по сохранённому маршруту и на карте.'}</p>`;return}
+  const h=a.value.hourly,t=h.time,now=Date.now()/1000;let i0=t.findIndex(x=>x>=now-1800);if(i0<0)i0=0;
+  const sp=k=>h['wind_speed_10m_'+k]||[],gu=k=>h['wind_gusts_10m_'+k]||[],dr=k=>h['wind_direction_10m_'+k]||[];
+  const mh=m.status==='fulfilled'&&m.value.hourly&&m.value.hourly.wave_height&&m.value.hourly.wave_height.some(v=>v!=null)?m.value.hourly:null;
+  const main=S.model;
+  let spread=0,spAt=null;for(let i=i0;i<Math.min(t.length,i0+72);i++){const vs=models.map(k=>sp(k)[i]).filter(v=>v!=null);if(vs.length>1){const d=Math.max(...vs)-Math.min(...vs);if(d>spread){spread=d;spAt=t[i]}}}
+  let html='';
+  html+=spread>=8?`<div class="badbox">⚠ Модели сильно спорят: до <b>${f0(spread)} уз</b> разницы (${fmtT(spAt)}). Прогнозу верить нельзя, закладывайте худший вариант.</div>`
+       :spread>=5?`<div class="warnbox">Модели расходятся до ${f0(spread)} уз (${fmtT(spAt)}). Уверенность средняя.</div>`
+       :`<div class="okbox small">Модели согласны (разброс до ${f0(spread)} уз за 72 ч). Уверенность высокая.</div>`;
+  html+=chart(t,i0,Math.min(t.length,i0+120),[...models.map(k=>({v:sp(k),c:MODEL_COLOR[k]})),{v:gu(main),c:MODEL_COLOR[main],dash:1}],dr(main));
+  html+=`<div class="row small">${models.map(k=>`<span><span class="dot" style="background:${MODEL_COLOR[k]}"></span>${MODEL_NAME[k]}</span>`).join('')}<span class="muted">пунктир — порывы ${MODEL_NAME[main]}</span></div>`;
+  html+='<div class="scroll"><table><tr><th>Время</th>'+models.map(k=>`<th>${MODEL_NAME[k]}</th>`).join('')+'<th>Откуда</th><th>Волна</th></tr>';
+  for(let i=i0;i<Math.min(t.length,i0+48);i+=3){const d=dr(main)[i];const wi=mh?mh.time.indexOf(t[i]):-1;const wv=wi>=0?mh.wave_height[wi]:null,wp=wi>=0?mh.wave_period[wi]:null;
+    html+=`<tr><td>${fmtT(t[i])}</td>`+models.map(k=>{const s=sp(k)[i],g=gu(k)[i],bad=s>S.windMax||g>S.gustMax;return `<td style="${bad?'color:var(--danger);font-weight:600':''}"><span class="dot" style="background:${css(s)}"></span>${f0(s)}<span class="muted">/${f0(g)}</span></td>`}).join('')+
+      `<td>${rumb(d)} ${f0(d)}°</td><td style="${wv>S.waveMax?'color:var(--danger);font-weight:600':''}">${wv!=null?f1(wv)+' м'+(wp?` <span class="muted">${f0(wp)} с</span>`:''):'—'}</td></tr>`}
+  html+='</table></div><p class="muted small">Ветер, уз: средний/порыв. Красным — выше ваших пределов («Лодка»).</p>';
+  const pr=h['pressure_msl_'+main];if(pr&&pr[i0]!=null&&pr[i0+12]!=null){const dp=pr[i0+12]-pr[i0];html+=`<p class="small">Давление ${f0(pr[i0])} гПа, за 12 ч ${dp>0?'+':''}${f1(dp)}${dp<=-4?' — <b style="color:var(--warn)">быстро падает: жди усиления ветра</b>':''}</p>`}
+  if(!mh)html+='<p class="note">Волну в этой точке морская модель не считает.</p>';
+  body.innerHTML=html}
+function chart(t,a,b,series,dirs){const Wd=360,H=170,P=26;let mx=10;series.forEach(s=>{for(let i=a;i<b;i++)if(s.v[i]>mx)mx=s.v[i]});mx=Math.ceil(mx/5)*5;
+  const X=i=>P+(i-a)/(b-a-1)*(Wd-P-6),Y=v=>H-22-(v/mx)*(H-40);let g=`<svg class="chart" viewBox="0 0 ${Wd} ${H}" font-size="9" fill="var(--muted)">`;
+  for(let v=0;v<=mx;v+=5){g+=`<line x1="${P}" x2="${Wd-6}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="2" y="${Y(v)+3}">${v}</text>`}
+  if(S.windMax<=mx)g+=`<line x1="${P}" x2="${Wd-6}" y1="${Y(S.windMax)}" y2="${Y(S.windMax)}" stroke="var(--danger)" stroke-dasharray="2 4"/>`;
+  for(let i=a;i<b;i++){const d=new Date(t[i]*1000);if(d.getHours()===0){g+=`<line x1="${X(i)}" x2="${X(i)}" y1="10" y2="${H-22}" stroke="var(--line)"/><text x="${X(i)+2}" y="${H-12}">${d.toLocaleDateString('ru-RU',{weekday:'short',day:'numeric'})}</text>`}}
+  series.forEach(s=>{let p='';for(let i=a;i<b;i++)if(s.v[i]!=null)p+=(p?'L':'M')+X(i).toFixed(1)+','+Y(s.v[i]).toFixed(1);g+=`<path d="${p}" fill="none" stroke="${s.c}" stroke-width="${s.dash?1:1.8}" ${s.dash?'stroke-dasharray="3 3"':''}/>`});
+  for(let i=a;i<b;i+=6){const d=dirs[i];if(d==null)continue;g+=`<g transform="translate(${X(i)},${H-4}) rotate(${d+180})"><path d="M0,-5 L3,3 L0,1 L-3,3Z" fill="var(--text)"/></g>`}
+  return g+'</svg>'}
+
+/* ===== переход: маршрут, погода на время прохождения, окна выхода ===== */
+const RT={pts:store.get('route',[]),adding:false,layer:L.layerGroup().addTo(map),fc:null};
+{const c=store.get('routefc',null);if(c&&JSON.stringify(c.pts)===JSON.stringify(RT.pts))RT.fc=c}
+(function(){const d=new Date();d.setMinutes(0,0,0);d.setHours(d.getHours()+1);setDep(d)})();
+function setDep(d){$('#rDep').value=new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
+function setAdding(on){RT.adding=on;$('#rAdd').classList.toggle('on',on);$('#rAdd').textContent=on?'✓ Готово':'＋ Ставить точки';map.getContainer().style.cursor=on?'crosshair':''}
+$('#rAdd').onclick=()=>setAdding(!RT.adding);
+$('#rUndo').onclick=()=>{RT.pts.pop();routeChanged()};
+$('#rRev').onclick=()=>{RT.pts.reverse();routeChanged()};
+$('#rClear').onclick=()=>{if(RT.pts.length&&!confirmTwice('rClear'))return;RT.pts=[];routeChanged()};
+function confirmTwice(id){const b=$('#'+id);if(b.dataset.sure){delete b.dataset.sure;b.textContent='Очистить';return true}b.dataset.sure=1;b.textContent='Точно?';setTimeout(()=>{delete b.dataset.sure;b.textContent='Очистить'},3000);return false}
+$('#rDep').onchange=()=>renderRoute();
+$('#rWx').onclick=()=>routeWx();
+$('#rGpx').onclick=()=>{if(RT.pts.length<2)return toast('Нужно минимум две точки');
+  const x=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Kurs" xmlns="http://www.topografix.com/GPX/1/1"><rte><name>${S.boat.name||'Переход'} ${new Date().toLocaleDateString('ru-RU')}</name>${RT.pts.map((p,i)=>`<rtept lat="${p[0].toFixed(6)}" lon="${p[1].toFixed(6)}"><name>WP${i+1}</name></rtept>`).join('')}</rte></gpx>`;
+  download('route.gpx',x,'application/gpx+xml')};
+$('#rImpBtn').onclick=()=>$('#rImp').click();
+$('#rImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;const x=new DOMParser().parseFromString(await f.text(),'application/xml');
+  const pts=[...x.querySelectorAll('rtept,wpt')];const use=pts.length?pts:[...x.querySelectorAll('trkpt')].filter((p,i,a)=>i%Math.max(1,Math.floor(a.length/50))===0);
+  RT.pts=use.map(p=>[+p.getAttribute('lat'),+p.getAttribute('lon')]).filter(p=>!isNaN(p[0]));routeChanged();if(RT.pts.length)map.fitBounds(RT.pts,{padding:[40,40]});toast(`Загружено точек: ${RT.pts.length}`);e.target.value=''};
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+function routeChanged(){store.set('route',RT.pts);RT.fc=null;store.set('routefc',null);$('#rWin').innerHTML='';renderRoute()}
+function depTs(){const v=$('#rDep').value;return v?new Date(v).getTime():Date.now()}
+function legs(){const L2=[];let cum=0;for(let i=1;i<RT.pts.length;i++){const a=RT.pts[i-1],b=RT.pts[i],d=dist(a,b);L2.push({a,b,d,c:brg(a,b),cum});cum+=d}return L2}
+function drawRoute(colors){RT.layer.clearLayers();
+  RT.pts.forEach((p,i)=>{if(i>0)L.polyline([RT.pts[i-1],p],{color:colors?.[i-1]||'#3fb6ff',weight:5,opacity:.95}).addTo(RT.layer);
+    const m=L.marker(p,{draggable:true,icon:L.divIcon({className:'wp',html:String(i+1),iconSize:[26,26]})}).addTo(RT.layer);
+    m.on('dragend',e=>{const l=e.target.getLatLng();RT.pts[i]=[l.lat,l.lng];routeChanged()})})}
+async function routeWx(){if(RT.pts.length<2)return toast('Поставьте минимум две точки');
+  $('#rSum').innerHTML='<p class="muted">Считаю погоду вдоль маршрута по нескольким моделям…</p>';
+  const smp=[];for(const [li,l] of legs().entries()){const n=Math.max(1,Math.ceil(l.d/NM/4));for(let k=0;k<n;k++){smp.push({li,p:lerpPt(l.a,l.b,(k+.5)/n),len:l.d/n})}}
+  if(smp.length>120){toast('Маршрут очень длинный: беру каждую вторую точку');for(let i=smp.length-1;i>0;i-=2){smp[i-1].len+=smp[i].len;smp.splice(i,1)}}
+  const models=uniq([S.model,...CMP]);const la=smp.map(s=>s.p[0].toFixed(3)),lo=smp.map(s=>s.p[1].toFixed(3));
+  try{const [a,m]=await Promise.allSettled([
+      getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${models}`),
+      getJSON(`https://marine-api.open-meteo.com/v1/marine?latitude=${la}&longitude=${lo}&hourly=wave_height&forecast_days=5&timeformat=unixtime`)]);
+    if(a.status!=='fulfilled')throw a.reason;let A=a.value;if(!Array.isArray(A))A=[A];
+    let M=m.status==='fulfilled'?m.value:null;if(M&&!Array.isArray(M))M=[M];
+    const r1=v=>v==null?null:Math.round(v*10)/10;
+    const fc={pts:RT.pts,fetched:Date.now(),model:S.model,models,times:A[0].hourly.time,smp:smp.map((s,i)=>{const h=A[i].hourly,o={li:s.li,len:s.len,p:s.p};
+      for(const k of models){o['s_'+k]=h['wind_speed_10m_'+k].map(r1);o['g_'+k]=h['wind_gusts_10m_'+k].map(r1)}
+      o.d=h['wind_direction_10m_'+S.model];o.w=M&&M[i]&&M[i].hourly?M[i].hourly.wave_height:null;return o})};
+    RT.fc=fc;if(!store.set('routefc',fc))toast('Прогноз маршрута большой, не поместился в память');renderRoute();bestWindows();
+  }catch(err){logE('route '+err.message);$('#rSum').innerHTML=`<p class="badbox">Погода не загрузилась (${err.message}).</p>`;if(RT.fc){renderRoute();toast('Показываю сохранённый прогноз маршрута')}}}
+/* ход вдоль маршрута: время на каждом отрезке считается по скорости лодки при ветре в момент, когда она там будет */
+function evalRoute(dep){const fc=RT.fc,L2=legs();if(!fc)return null;
+  const rows=L2.map(l=>({...l,spd:null,gst:null,dir:null,wave:null,eta:null,spread:0,boat:0,time:0}));let t=dep;const m=fc.model;
+  for(const s of fc.smp){let i=fc.times.findIndex(x=>x>=t/1000-1800);if(i<0)return null;
+    const v=s['s_'+m][i],g=s['g_'+m][i],d=s.d[i],w=s.w?s.w[i]:null,r=rows[s.li];if(!r)continue;
+    const twa=d!=null?offBow(d,r.c):90,bs=boatSpeed(v,twa),dt=s.len/(bs*NM/3600000);
+    const vs=fc.models.map(k=>s['s_'+k][i]).filter(x=>x!=null),spr=vs.length>1?Math.max(...vs)-Math.min(...vs):0;
+    if(r.eta==null)r.eta=t;
+    if(r.spd==null||g>r.gst){r.spd=v;r.gst=g;r.dir=d}if(w!=null&&(r.wave==null||w>r.wave))r.wave=w;r.spread=Math.max(r.spread,spr);r.time+=dt;
+    t+=dt}
+  rows.forEach(r=>r.boat=r.d/NM/(r.time/3600000));rows.arrive=t;return rows}
+function conf(s){return s<4?'<span class="conf hi">уверенно</span>':s<8?'<span class="conf mid">средне</span>':'<span class="conf lo">модели спорят</span>'}
+function renderRoute(){const L2=legs(),total=L2.reduce((s,l)=>s+l.d,0),dep=depTs();
+  const rows=RT.fc?evalRoute(dep):null;
+  drawRoute(rows?rows.map(r=>r.spd!=null?css(r.spd):null):null);
+  if(!L2.length){$('#rSum').innerHTML='<p class="muted">Нажмите «＋ Ставить точки» и ставьте точки на карте. Точки можно двигать пальцем. Или откройте свой GPX.</p>';$('#rLegs').innerHTML='';return}
+  let sum='';
+  if(!rows){const dur=total/(S.boat.speed*NM/3600000);sum=`<p><b>${f1(total/NM)} миль</b> · при ${f1(S.boat.speed)} уз ≈ <b>${fmtHM(dur)}</b></p>`;
+    if(RT.fc)sum+='<p class="warnbox">Выход за горизонтом прогноза (5 суток).</p>';else sum+='<p class="muted small">Нажмите «Погода по маршруту», и время посчитается по ветру с вашей скоростью.</p>'}
+  else{const dur=rows.arrive-dep,mg=Math.max(...rows.map(r=>r.gst||0)),mw=Math.max(...rows.map(r=>r.wave||0)),ms=Math.max(...rows.map(r=>r.spread||0)),head=rows.filter(r=>r.dir!=null&&offBow(r.dir,r.c)<40).length;
+    const bad=mg>S.gustMax||rows.some(r=>r.spd>S.windMax)||mw>S.waveMax;
+    sum=`<div class="${bad?'badbox':'okbox'}"><b>${bad?'⚠ Выше ваших пределов':'✓ В пределах'}</b> · ${f1(total/NM)} миль · в пути <b>${fmtHM(dur)}</b> · приход <b>${fmtT(rows.arrive/1000)}</b><br>
+      <span class="small">порывы до ${f0(mg)} уз${mw?` · волна до ${f1(mw)} м`:''}${head?` · ${head} уч. в лоб`:''} · прогноз ${conf(ms)}</span></div>
+      <p class="muted small">Прогноз ${MODEL_NAME[RT.fc.model]} получен ${ago(RT.fc.fetched)}, сохранён для работы без сети.</p>`}
+  $('#rSum').innerHTML=sum;
+  let t='<table><tr><th>Уч.</th><th>Миль</th><th>Курс</th>'+(rows?'<th>Начало</th><th>Ветер</th><th>К ветру</th><th>Ход</th><th>Волна</th><th>Прогноз</th>':'')+'</tr>';
+  (rows||L2).forEach((r,i)=>{const bad=rows&&(r.spd>S.windMax||r.gst>S.gustMax||r.wave>S.waveMax);
+    t+=`<tr class="${bad?'bad':''}"><td>${i+1}→${i+2}</td><td>${f1(r.d/NM)}</td><td>${f0(r.c)}°</td>`+(rows?`<td>${r.eta?fmtT(r.eta/1000):'—'}</td><td><span class="dot" style="background:${css(r.spd)}"></span>${f0(r.spd)}/${f0(r.gst)} ${rumb(r.dir)}</td><td>${r.dir!=null?sail(offBow(r.dir,r.c)):'—'}</td><td>${f1(r.boat)} уз</td><td>${r.wave!=null?f1(r.wave)+' м':'—'}</td><td>${conf(r.spread)}</td>`:'')+'</tr>'});
+  $('#rLegs').innerHTML=t+'</table>'+(rows?`<p class="muted small">Ветер — средний/порыв в худшей точке участка на время вашего прохода. «Ход» — скорость ${S.boat.type==='sail'?'под парусом при этом ветре (в штиль — мотор)':'под мотором'}. «Прогноз» — насколько согласны модели.</p>`:'')}
+function bestWindows(){const fc=RT.fc;if(!fc)return;const now=Date.now(),res=[];
+  for(let h=0;h<=96;h++){const dep=Math.ceil(now/3600000)*3600000+h*3600000,rows=evalRoute(dep);if(!rows)break;
+    const mg=Math.max(...rows.map(r=>r.gst||0)),ms=Math.max(...rows.map(r=>r.spd||0)),mw=Math.max(...rows.map(r=>r.wave||0)),head=rows.filter(r=>r.dir!=null&&offBow(r.dir,r.c)<40).length;
+    const night=new Date(dep).getHours();const over=(mg>S.gustMax?20:0)+(ms>S.windMax?20:0)+(mw>S.waveMax?20:0);
+    res.push({dep,mg,mw,head,dur:rows.arrive-dep,score:over+mg+.5*ms+4*head+8*mw+(rows.arrive-dep)/3600000*.8+((night<5||night>22)?3:0)})}
+  if(!res.length){$('#rWin').innerHTML='';return}
+  res.sort((a,b)=>a.score-b.score);const pick=[];for(const r of res){if(pick.every(p=>Math.abs(p.dep-r.dep)>=6*3600000))pick.push(r);if(pick.length===3)break}
+  $('#rWin').innerHTML='<p class="small"><b>Лучшие окна выхода</b> (на 4 суток, учтены ваши пределы, время в пути и ночь):</p>'+pick.map(p=>`<button data-dep="${p.dep}">${fmtT(p.dep/1000)} · в пути ${fmtHM(p.dur)} · порывы до ${f0(p.mg)} уз${p.mw?` · волна ${f1(p.mw)} м`:''}${p.head?` · ${p.head} уч. в лоб`:''}</button>`).join('');
+  $$('#rWin button').forEach(b=>b.onclick=()=>{setDep(new Date(+b.dataset.dep));renderRoute()})}
+
+/* ===== GPS со сторожем (жалоба: «теряет GPS и молчит») ===== */
+const G={watch:null,pos:null,prev:null,sog:null,cog:null,acc:null,last:0,follow:true,marker:null,accC:null,track:store.get('track',[]),saved:0,wake:null,warned:false};
+G.line=L.polyline(G.track,{color:'#ff8a3d',weight:3,opacity:.85});
+const boatHTML='<svg width="30" height="30" viewBox="-15 -15 30 30"><path d="M0,-13 L7,10 L0,6 L-7,10Z" fill="#ff8a3d" stroke="#fff" stroke-width="2"/></svg>';
+async function wake(on){try{if(on&&'wakeLock' in navigator&&!G.wake){G.wake=await navigator.wakeLock.request('screen');G.wake.addEventListener('release',()=>G.wake=null)}else if(!on&&G.wake){await G.wake.release();G.wake=null}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&G.watch!=null)wake(true)});
+function gpsStart(){G.watch=navigator.geolocation.watchPosition(onPos,e=>{logE('gps '+e.message);toast('GPS: '+(e.code===1?'нет разрешения. Разрешите геолокацию для сайта в настройках браузера':e.message))},{enableHighAccuracy:true,maximumAge:S.saver?5000:1000,timeout:30000})}
+$('#btnGps').onclick=()=>{
+  if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);G.watch=null;$('#btnGps').classList.remove('on');$('#hud').hidden=true;chip('gps',null);wake(false);store.set('track',G.track);return}
+  if(!('geolocation' in navigator))return toast('В этом браузере нет GPS');
+  audio();gpsStart();G.last=Date.now();$('#btnGps').classList.add('on');$('#hud').hidden=false;G.follow=true;wake(true);toast('Ищу спутники…')};
+$('#btnFollow').onclick=()=>{G.follow=true;if(G.pos)map.panTo(G.pos)};
+map.on('dragstart',()=>{G.follow=false});
+function onPos(p){const c=p.coords,ll=[c.latitude,c.longitude];let sog=c.speed!=null?c.speed*3600/NM:null,cog=c.heading!=null&&!isNaN(c.heading)?c.heading:null;
+  if(G.prev){const dt=(p.timestamp-G.prev.t)/1000,d=dist(G.prev.ll,ll);if(dt>0){if(sog==null)sog=d/dt*3600/NM;if(cog==null&&d>3)cog=brg(G.prev.ll,ll)}}
+  G.prev={ll,t:p.timestamp};G.pos=ll;G.sog=sog;if(cog!=null)G.cog=cog;G.acc=c.accuracy;G.last=Date.now();G.warned=false;
+  if(!G.marker){G.marker=L.marker(ll,{icon:L.divIcon({className:'boat',html:boatHTML,iconSize:[30,30]}),zIndexOffset:1000,interactive:false}).addTo(map);G.accC=L.circle(ll,{radius:c.accuracy,color:'#ff8a3d',weight:1,fillOpacity:.06,interactive:false}).addTo(map)}
+  else{G.marker.setLatLng(ll);G.accC.setLatLng(ll).setRadius(c.accuracy)}
+  const sv=G.marker.getElement()?.querySelector('svg');if(sv)sv.style.transform=`rotate(${G.cog||0}deg)`;
+  const last=G.track[G.track.length-1];if(!last||dist(last,ll)>10){G.track.push(ll);if(G.track.length>20000)G.track.shift();G.line.addLatLng(ll);if(Date.now()-G.saved>15000){store.set('track',G.track);G.saved=Date.now()}}
+  if(G.follow)map.panTo(ll);
+  $('#hSog').textContent=f1(sog);$('#hCog').textContent=G.cog!=null?f0(G.cog)+'°':'—';$('#hPos').innerHTML=`${fmtC(ll[0],1)}<br>${fmtC(ll[1],0)}`;
+  const acc=c.accuracy;$('#hAcc').innerHTML=`<span style="color:${acc<15?'var(--ok)':acc<50?'var(--warn)':'var(--danger)'}">точность ±${f0(acc)} м</span>`;
+  $('#hud').classList.remove('stale');chip('gps',acc>50?`GPS неточный: ±${f0(acc)} м`:null,'warn');
+  anchorCheck();aisCpaCheck()}
+setInterval(()=>{if(G.watch==null)return;const s=(Date.now()-G.last)/1000;
+  if(s>20){$('#hud').classList.add('stale');chip('gps',`GPS молчит ${Math.round(s)} с`,'bad')}
+  if(s>60&&!G.warned){G.warned=true;navigator.vibrate?.([300,200,300]);beep();toast('GPS не обновлялся больше минуты. Позиция на экране устарела!',8000);
+    if(A.pos)alarmOn(null,'⚠ GPS ПОТЕРЯН — ЯКОРНАЯ ВАХТА НЕ РАБОТАЕТ');
+    navigator.geolocation.clearWatch(G.watch);gpsStart()}},5000);
+
+/* ===== якорь ===== */
+const A={pos:store.get('anchor',null),r:store.get('anchorR',40),circle:null,line:null,out:0,alarm:false,ac:null,beepT:null};
+$('#aR').value=A.r;
+$('#aR').onchange=e=>{A.r=Math.max(10,+e.target.value||40);store.set('anchorR',A.r);anchorDraw()};
+function audio(){try{A.ac=A.ac||new (window.AudioContext||window.webkitAudioContext)();A.ac.resume()}catch(e){}}
+function beep(){try{audio();const o=A.ac.createOscillator(),g=A.ac.createGain();o.frequency.value=880;o.connect(g);g.connect(A.ac.destination);g.gain.value=.6;o.start();o.stop(A.ac.currentTime+.45)}catch(e){}}
+$('#aSetGps').onclick=()=>{audio();if(!G.pos){toast('Сначала включите GPS и дождитесь позиции');return}A.pos=G.pos.slice();anchorSave()};
+$('#aSetMap').onclick=()=>{audio();const c=map.getCenter();A.pos=[c.lat,c.lng];anchorSave()};
+$('#aOff').onclick=()=>{A.pos=null;anchorSave();alarmOff()};
+function anchorSave(){store.set('anchor',A.pos);A.out=0;anchorDraw();if(A.pos&&G.watch==null)toast('Включите GPS, иначе вахта не работает')}
+function anchorBtn(){$('#btnAnchor').classList.toggle('on',!!A.pos||openName==='anchor')}
+function anchorDraw(){if(A.circle){map.removeLayer(A.circle);A.circle=null}if(A.line){map.removeLayer(A.line);A.line=null}anchorBtn();
+  if(!A.pos){$('#aState').textContent='Якорь не брошен.';return}
+  A.circle=L.circle(A.pos,{radius:A.r,color:'#ffb020',weight:2,fillOpacity:.08}).addTo(map);
+  $('#aState').textContent=`Якорь: ${fmtC(A.pos[0],1)} ${fmtC(A.pos[1],0)}, радиус ${A.r} м.`;anchorCheck()}
+function anchorCheck(){if(!A.pos||!G.pos)return;const d=dist(A.pos,G.pos);
+  if(A.line)A.line.setLatLngs([A.pos,G.pos]);else A.line=L.polyline([A.pos,G.pos],{color:'#ffb020',dashArray:'4 4',weight:2}).addTo(map);
+  $('#aState').textContent=`До якоря ${f0(d)} м из ${A.r} м (точность GPS ±${f0(G.acc)} м).`;
+  if(d>A.r){if(++A.out>=2)alarmOn(d)}else A.out=Math.min(A.out,0)}
+function alarmOn(d,title){$('#alarmTitle').textContent=title||'⚓ ЯКОРЬ ПОЛЗЁТ';$('#alarmDist').textContent=d!=null?`${f0(d)} м от якоря (радиус ${A.r} м)`:'';if(A.alarm)return;A.alarm=true;$('#alarm').hidden=false;
+  const go=()=>{beep();navigator.vibrate?.([400,200,400])};go();A.beepT=setInterval(go,1000)}
+function alarmOff(){A.alarm=false;clearInterval(A.beepT);$('#alarm').hidden=true}
+$('#alarmStop').onclick=()=>{alarmOff();A.out=-15};
+
+/* ===== AIS с возрастом данных ===== */
+const AIS={ws:null,ships:new Map(),layer:L.layerGroup().addTo(map),subT:null,warned:new Set(),retry:0};
+$('#aisKey').value=S.aisKey;
+$('#aisSave').onclick=()=>{S.aisKey=$('#aisKey').value.trim();saveS();toast('Ключ сохранён')};
+$('#aisOn').onclick=()=>{AIS.retry=0;aisConnect()};$('#aisOff').onclick=()=>{AIS.retry=-1;aisDisconnect()};
+const aisSt=m=>{$('#aisStatus').textContent=m;$('#btnAis').classList.toggle('on',!!AIS.ws||openName==='ais')};
+function aisConnect(){S.aisKey=$('#aisKey').value.trim()||S.aisKey;saveS();if(!S.aisKey)return toast('Вставьте ключ aisstream.io');aisDisconnect(true);
+  const ws=new WebSocket('wss://stream.aisstream.io/v0/stream');AIS.ws=ws;aisSt('подключаюсь…');
+  ws.onopen=()=>{aisSub();aisSt('на связи, жду суда…')};
+  ws.onmessage=async ev=>{let tx=typeof ev.data==='string'?ev.data:await ev.data.text(),m;try{m=JSON.parse(tx)}catch(e){return}
+    if(m.error){aisSt('ошибка: '+m.error);logE('ais '+m.error);return}aisMsg(m)};
+  ws.onerror=()=>{aisSt('ошибка соединения');logE('ais ws error')};
+  ws.onclose=()=>{if(AIS.ws===ws){AIS.ws=null;aisSt('отключено');if(AIS.retry>=0&&AIS.retry<5){AIS.retry++;setTimeout(aisConnect,5000*AIS.retry);aisSt(`переподключаюсь (${AIS.retry})…`)}}}}
+function aisDisconnect(keep){if(AIS.ws){const w=AIS.ws;AIS.ws=null;w.close()}if(!keep)aisSt('выкл')}
+function aisSub(){if(!AIS.ws||AIS.ws.readyState!==1)return;const b=map.getBounds().pad(.3);
+  AIS.ws.send(JSON.stringify({APIKey:S.aisKey,BoundingBoxes:[[[b.getSouth(),b.getWest()],[b.getNorth(),b.getEast()]]],FilterMessageTypes:['PositionReport','StandardClassBPositionReport','ShipStaticData']}))}
+map.on('moveend',()=>{clearTimeout(AIS.subT);AIS.subT=setTimeout(aisSub,1500)});
+function aisMsg(m){const md=m.MetaData||{},id=md.MMSI;if(!id)return;let s=AIS.ships.get(id);if(!s){s={id};AIS.ships.set(id,s)}
+  if(md.ShipName&&md.ShipName.trim())s.name=md.ShipName.trim();const msg=m.Message||{},pr=msg.PositionReport||msg.StandardClassBPositionReport;
+  if(pr){s.lat=pr.Latitude;s.lon=pr.Longitude;s.sog=pr.Sog;s.cog=pr.Cog;s.hdg=pr.TrueHeading!=null&&pr.TrueHeading<360?pr.TrueHeading:null;s.t=Date.now()}
+  const sd=msg.ShipStaticData;if(sd){if(sd.Name&&sd.Name.trim())s.name=sd.Name.trim();s.dest=(sd.Destination||'').trim();const D=sd.Dimension||{};s.len=(D.A||0)+(D.B||0)||null}
+  if(s.lat!=null&&Math.abs(s.lat)<=90)aisDraw(s)}
+function shipIcon(s){const age=(Date.now()-(s.t||0))/60000,mv=s.sog>0.5,col=age>10?'#5a6b7a':mv?'#4cc38a':'#8aa1b5',rot=s.hdg??s.cog??0,op=age>3?.55:1;
+  const html=`<svg width="22" height="22" viewBox="-11 -11 22 22" style="transform:rotate(${rot}deg);opacity:${op}"><path d="M0,-9 L6,8 L-6,8Z" fill="${col}" stroke="#05121d" stroke-width="1.5"/>${mv&&age<=10?`<line x1="0" y1="-9" x2="0" y2="${-9-Math.min(30,s.sog*2)}" stroke="${col}" stroke-width="1.5"/>`:''}</svg>`;
+  return L.divIcon({className:'ship',html,iconSize:[22,22]})}
+function aisDraw(s){if(!s.mk){s.mk=L.marker([s.lat,s.lon],{icon:shipIcon(s)}).addTo(AIS.layer);s.mk.bindPopup(()=>aisPopup(s))}else{s.mk.setLatLng([s.lat,s.lon]);s.mk.setIcon(shipIcon(s))}$('#aisCount').textContent=AIS.ships.size}
+function cpa(s){if(!G.pos||G.sog==null||s.sog==null||s.cog==null||s.lat==null)return null;const k=Math.cos(rad(G.pos[0]));
+  const px=(s.lon-G.pos[1])*60*k,py=(s.lat-G.pos[0])*60;const vo=[G.sog*Math.sin(rad(G.cog||0)),G.sog*Math.cos(rad(G.cog||0))],vt=[s.sog*Math.sin(rad(s.cog)),s.sog*Math.cos(rad(s.cog))];
+  const vx=vt[0]-vo[0],vy=vt[1]-vo[1],v2=vx*vx+vy*vy;if(v2<1e-6)return{cpa:Math.hypot(px,py),t:Infinity};const t=-(px*vx+py*vy)/v2;return{cpa:Math.hypot(px+vx*t,py+vy*t),t:t*60}}
+function aisPopup(s){const c=cpa(s),d=G.pos?dist(G.pos,[s.lat,s.lon])/NM:null;
+  return `<b>${s.name||'MMSI '+s.id}</b><br>${f1(s.sog)} уз · ${f0(s.cog)}°${s.len?` · ${s.len} м`:''}${s.dest?`<br>→ ${s.dest}`:''}${d!=null?`<br>до него ${f1(d)} мили`:''}${c&&c.t>0&&c.t<120?`<br>сближение до ${f1(c.cpa)} мили через ${f0(c.t)} мин`:''}<br><span style="color:#888">данные ${ago(s.t)} · интернет-AIS</span>`}
+function aisList(){const arr=[...AIS.ships.values()].filter(s=>s.lat!=null).map(s=>({s,d:G.pos?dist(G.pos,[s.lat,s.lon])/NM:null,c:cpa(s)})).sort((a,b)=>(a.d??1e9)-(b.d??1e9)).slice(0,30);
+  $('#aisList').innerHTML=arr.length?'<table><tr><th>Судно</th><th>Уз</th><th>Миль</th><th>Сближение</th><th>Данные</th></tr>'+arr.map(({s,d,c})=>`<tr><td>${s.name||s.id}</td><td>${f1(s.sog)}</td><td>${f1(d)}</td><td>${c&&c.t>0&&c.t<120?`${f1(c.cpa)} м. через ${f0(c.t)} мин`:'—'}</td><td>${ago(s.t)}</td></tr>`).join('')+'</table>':''}
+function aisCpaCheck(){for(const s of AIS.ships.values()){const c=cpa(s);if(c&&c.t>0&&c.t<15&&c.cpa<0.3&&!AIS.warned.has(s.id)){AIS.warned.add(s.id);toast(`⚠ Сближение: ${s.name||s.id} — ${f1(c.cpa)} мили через ${f0(c.t)} мин`,8000);beep();navigator.vibrate?.([300,150,300])}}}
+setInterval(()=>{const lim=Date.now()-20*60000;for(const[id,s]of AIS.ships){if(s.t&&s.t<lim){if(s.mk)AIS.layer.removeLayer(s.mk);AIS.ships.delete(id)}else if(s.mk)s.mk.setIcon(shipIcon(s))}$('#aisCount').textContent=AIS.ships.size;if(openName==='ais')aisList()},30000);
+
+/* ===== лодка и настройки ===== */
+function fillBoat(){const B=S.boat;$('#bName').value=B.name;$('#bType').value=B.type;$('#bSpeed').value=B.speed;$('#bDraft').value=B.draft;$('#bMotor').value=B.motor;
+  $('#sWind').value=S.windMax;$('#sGust').value=S.gustMax;$('#sWave').value=S.waveMax;$('#sNight').checked=S.night;$('#sSaver').checked=S.saver;$('#sYa').value=S.yandexKey}
+$('#sSave').onclick=()=>{const k=$('#sYa').value.trim(),chK=k!==S.yandexKey;S.yandexKey=k;
+  S.boat={name:$('#bName').value.trim(),type:$('#bType').value,speed:Math.max(1,+$('#bSpeed').value||5),draft:+$('#bDraft').value||1.8,motor:Math.max(0,+$('#bMotor').value||0)};
+  S.windMax=+$('#sWind').value||20;S.gustMax=+$('#sGust').value||25;S.waveMax=+$('#sWave').value||1.2;S.night=$('#sNight').checked;S.saver=$('#sSaver').checked;saveS();
+  document.body.classList.toggle('night',S.night);if(chK&&S.base==='yandex')setBase('yandex');drawField();renderRoute();if(RT.fc)bestWindows();
+  if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);gpsStart()}toast('Сохранено')};
+$('#sNight').onchange=e=>document.body.classList.toggle('night',e.target.checked);
+$('#sTrack').onclick=()=>{G.track=[];G.line.setLatLngs([]);store.set('track',[]);toast('Трек стёрт')};
+$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.2 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
+
+/* ===== клик по карте ===== */
+map.on('click',e=>{if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}showPoint(e.latlng)});
+
+/* ===== старт ===== */
+LOG.push(...store.get('log',[]).slice(-100));
+document.body.classList.toggle('night',S.night);fillBoat();
+setBase(S.base);setSea(S.seamarks);$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
+anchorDraw();renderRoute();sizeCv();netChip();
+{const c=store.get('grid',null);if(c){W.g=buildGrid(c);setupTime();drawField();freshChip()}}
+loadGrid(true);
+if(RT.fc)bestWindows();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(e=>logE('sw '+e.message));
+if(location.protocol==='file:')setTimeout(()=>toast('Откройте программу через адрес http://…, а не файлом: иначе карта OSM блокируется и не работает офлайн',9000),500);
+else if(!store.get('seenIntro2',false)){store.set('seenIntro2',true);setTimeout(()=>openPanel('help'),600)}
+</script>
+</body>
+</html>
