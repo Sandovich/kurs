@@ -57,11 +57,11 @@ body.night #timebar{background:linear-gradient(rgba(0,0,0,0),#000 35%)}
 .leaflet-control-attribution{font-size:10px;background:rgba(11,23,36,.7)!important;color:var(--muted)}
 .leaflet-control-attribution a{color:var(--muted)}
 .nmscale{background:rgba(11,23,36,.75);color:var(--text);font-size:11px;padding:2px 6px;border:2px solid var(--text);border-top:0;line-height:1.2}
-.panel{position:fixed;z-index:1100;left:0;right:0;bottom:0;max-height:55vh;max-height:55dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border-top:1px solid var(--line);border-radius:16px 16px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 16px);box-shadow:0 -10px 40px rgba(0,0,0,.4)}
-.panel h2{margin:0 0 12px;font-size:17px;min-height:30px;display:flex;align-items:center}
+.panel{position:fixed;z-index:1100;left:0;right:0;bottom:0;max-height:55vh;max-height:55dvh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--panel);border-top:1px solid var(--line);border-radius:16px 16px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 16px);box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+.panel h2{position:sticky;top:-14px;z-index:2;background:var(--panel);margin:-14px -14px 10px;padding:10px 10px 10px 14px;gap:10px;font-size:17px;min-height:30px;display:flex;align-items:center;border-bottom:1px solid var(--line)}
 .panel h2+*,.panel h2+div{clear:both}
 .panel h3{margin:14px 0 6px;font-size:14px}
-.panel .close{position:sticky;top:0;float:right;margin:-6px -4px 6px 10px;z-index:3;width:40px;min-width:40px;min-height:40px;padding:0;font-size:16px}
+.panel .close{position:static;float:none;margin:0 0 0 auto;flex:0 0 40px;width:40px;min-width:40px;height:40px;min-height:40px;padding:0;font-size:16px;display:flex;align-items:center;justify-content:center;line-height:1}
 .panel p{margin:6px 0}
 @media (min-width:820px){.panel{left:auto;right:12px;top:70px;bottom:100px;width:420px;max-height:none;border:1px solid var(--line);border-radius:16px}}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
@@ -87,7 +87,13 @@ tr.bad td{background:rgba(255,77,79,.13)}
 [hidden]{display:none!important}
 .wp{background:var(--accent);color:#001321;border:2px solid #fff;border-radius:50%;display:flex!important;align-items:center;justify-content:center;font-size:11px;font-weight:700}
 .chart{width:100%;height:auto;display:block;margin:6px 0}
+.panel .row button{white-space:normal;max-width:100%}
 .windows button{margin:3px 0;width:100%;text-align:left;white-space:normal}
+.cal{display:grid;grid-template-columns:3.6em repeat(8,minmax(0,1fr));gap:3px;font-size:11px;margin:8px 0}
+.cal div{text-align:center;padding:2px 0}
+.cal button{min-height:30px;padding:0;border-radius:6px;font-size:10.5px;border:0;color:#04121c;font-weight:600}
+.cal button.sel{outline:2px solid var(--text);outline-offset:1px}
+.cal .g{background:#4cc38a}.cal .y{background:#ffb020}.cal .r{background:#ff4d4f;color:#fff}.cal .n{background:var(--line);color:var(--muted)}
 details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 </style>
 </head>
@@ -95,7 +101,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <div id="map"></div>
 
 <header id="top">
-  <div class="brand">Курс<small>v0.4 · тест</small></div>
+  <div class="brand">Курс<small>v0.5 · тест</small></div>
   <nav>
     <button data-panel="route" id="btnRoute">Переход</button>
     <button id="btnGps">GPS</button>
@@ -163,6 +169,8 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
     <button id="rGpx">Сохранить GPX</button>
     <label class="small" style="margin:0"><input type="file" id="rImp" accept=".gpx" hidden><button id="rImpBtn" type="button">Открыть GPX</button></label>
   </div>
+  <div class="row"><button id="rEns" style="flex:1">📅 Календарь выхода на 7 суток (51 вариант прогноза)</button></div>
+  <div id="rEnsOut"></div>
   <div id="rSum"></div>
   <div id="rWin" class="windows"></div>
   <div id="rLegs" class="scroll"></div>
@@ -410,6 +418,7 @@ $('#play').onclick=()=>{if(W.play){clearInterval(W.play);W.play=null;$('#play').
 $('#model').value=S.model;$('#model').onchange=e=>{S.model=e.target.value;saveS();loadGrid(true);if(RT.fc)routeWx()};
 
 /* ===== панели ===== */
+$$('.panel').forEach(p=>{const c=p.querySelector(':scope > .close'),h=p.querySelector('h2');if(c&&h)h.appendChild(c)});
 let openName=null;
 function openPanel(n){$$('.panel').forEach(p=>p.hidden=p.id!=='p-'+n);openName=n;$$('#top [data-panel]').forEach(b=>b.classList.toggle('on',b.dataset.panel===n));if(n==='ais')aisList()}
 function closePanel(){$$('.panel').forEach(p=>p.hidden=true);openName=null;$$('#top [data-panel]').forEach(b=>b.classList.remove('on'));setAdding(false);if(ptMarker){map.removeLayer(ptMarker);ptMarker=null}anchorBtn()}
@@ -471,7 +480,7 @@ $('#rUndo').onclick=()=>{RT.pts.pop();routeChanged()};
 $('#rRev').onclick=()=>{RT.pts.reverse();routeChanged()};
 $('#rClear').onclick=()=>{if(RT.pts.length&&!confirmTwice('rClear'))return;RT.pts=[];routeChanged()};
 function confirmTwice(id){const b=$('#'+id);if(b.dataset.sure){delete b.dataset.sure;b.textContent='Очистить';return true}b.dataset.sure=1;b.textContent='Точно?';setTimeout(()=>{delete b.dataset.sure;b.textContent='Очистить'},3000);return false}
-$('#rDep').onchange=()=>renderRoute();
+$('#rDep').onchange=()=>{renderRoute();renderEns()};
 $('#rWx').onclick=()=>routeWx();
 $('#rGpx').onclick=()=>{if(RT.pts.length<2)return toast('Нужно минимум две точки');
   const x=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Kurs" xmlns="http://www.topografix.com/GPX/1/1"><rte><name>${S.boat.name||'Переход'} ${new Date().toLocaleDateString('ru-RU')}</name>${RT.pts.map((p,i)=>`<rtept lat="${p[0].toFixed(6)}" lon="${p[1].toFixed(6)}"><name>WP${i+1}</name></rtept>`).join('')}</rte></gpx>`;
@@ -481,7 +490,7 @@ $('#rImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;const x=new
   const pts=[...x.querySelectorAll('rtept,wpt')];const use=pts.length?pts:[...x.querySelectorAll('trkpt')].filter((p,i,a)=>i%Math.max(1,Math.floor(a.length/50))===0);
   RT.pts=use.map(p=>[+p.getAttribute('lat'),+p.getAttribute('lon')]).filter(p=>!isNaN(p[0]));routeChanged();if(RT.pts.length)map.fitBounds(RT.pts,{padding:[40,40]});toast(`Загружено точек: ${RT.pts.length}`);e.target.value=''};
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
-function routeChanged(){store.set('route',RT.pts);RT.fc=null;store.set('routefc',null);$('#rWin').innerHTML='';renderRoute()}
+function routeChanged(){store.set('route',RT.pts);RT.fc=null;store.set('routefc',null);RT.ens=null;store.set('routeens',null);$('#rWin').innerHTML='';$('#rEnsOut').innerHTML='';renderRoute()}
 function depTs(){const v=$('#rDep').value;return v?new Date(v).getTime():Date.now()}
 function legs(){const L2=[];let cum=0;for(let i=1;i<RT.pts.length;i++){const a=RT.pts[i-1],b=RT.pts[i],d=dist(a,b);L2.push({a,b,d,c:brg(a,b),cum});cum+=d}return L2}
 function drawRoute(colors){RT.layer.clearLayers();
@@ -542,6 +551,37 @@ function bestWindows(){const fc=RT.fc;if(!fc)return;const now=Date.now(),res=[];
   res.sort((a,b)=>a.score-b.score);const pick=[];for(const r of res){if(pick.every(p=>Math.abs(p.dep-r.dep)>=6*3600000))pick.push(r);if(pick.length===3)break}
   $('#rWin').innerHTML='<p class="small"><b>Лучшие окна выхода</b> (на 4 суток, учтены ваши пределы, время в пути и ночь):</p>'+pick.map(p=>`<button data-dep="${p.dep}">${fmtT(p.dep/1000)} · в пути ${fmtHM(p.dur)} · порывы до ${f0(p.mg)} уз${p.mw?` · волна ${f1(p.mw)} м`:''}${p.head?` · ${p.head} уч. в лоб`:''}</button>`).join('');
   $$('#rWin button').forEach(b=>b.onclick=()=>{setDep(new Date(+b.dataset.dep));renderRoute()})}
+
+/* ===== календарь выхода по ансамблю ECMWF (51 вариант) ===== */
+{const c=store.get('routeens',null);if(c&&JSON.stringify(c.pts)===JSON.stringify(RT.pts))RT.ens=c}
+$('#rEns').onclick=()=>ensWx();
+async function ensWx(){if(RT.pts.length<2)return toast('Поставьте минимум две точки');const out=$('#rEnsOut');out.innerHTML='<p class="muted small">Загружаю 51 вариант прогноза ECMWF на 7 суток…</p>';
+  const L2=legs(),total=L2.reduce((a,l)=>a+l.d,0),n=Math.min(10,Math.max(2,Math.ceil(total/NM/5))),pts=[];
+  for(let k=0;k<n;k++){const cum=total*(k+.5)/n,li=Math.max(0,L2.findIndex(l=>cum<=l.cum+l.d));const l=L2[li];pts.push({cum,li,p:lerpPt(l.a,l.b,(cum-l.cum)/l.d)})}
+  try{let A=await getJSON(`https://ensemble-api.open-meteo.com/v1/ensemble?latitude=${pts.map(q=>q.p[0].toFixed(3))}&longitude=${pts.map(q=>q.p[1].toFixed(3))}&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m&models=ecmwf_ifs025&wind_speed_unit=kn&forecast_days=7&timeformat=unixtime`,40000);
+    if(!Array.isArray(A))A=[A];const h0=A[0].hourly,keys=Object.keys(h0).filter(k=>/^wind_speed_10m(_member\d+)?$/.test(k));
+    const ens={pts:RT.pts,fetched:Date.now(),times:h0.time,P:pts.map((q,i)=>({cum:q.cum,li:q.li,p:q.p,m:keys.map(k=>{const sfx=k.slice('wind_speed_10m'.length),h=A[i].hourly;
+      return{s:h[k].map(v=>v==null?null:Math.round(v)),g:h['wind_gusts_10m'+sfx].map(v=>v==null?null:Math.round(v)),d:h['wind_direction_10m'+sfx].map(v=>v==null?null:Math.round(v/5)*5)}})}))};
+    RT.ens=ens;if(!store.set('routeens',ens))toast('Календарь не поместился в память: без сети не сохранится');renderEns()}
+  catch(err){logE('ens '+err.message);out.innerHTML=`<p class="badbox">Не загрузилось: ${err.message}</p>`}}
+function etaAt(dep,cum,li,rows){if(rows&&rows[li]&&rows[li].eta){const r=rows[li];return r.eta+(cum-r.cum)/r.d*r.time}return dep+cum/(S.boat.speed*NM/3600000)}
+function ensEval(dep){const E=RT.ens,M=E.P[0].m.length;let bad=0;const mg=[];
+  const rows=RT.fc?evalRoute(dep):null;const idx=E.P.map(q=>{const ts=etaAt(dep,q.cum,q.li,rows)/1000;const i=E.times.findIndex(x=>x>=ts-1800);return i});if(idx.some(i=>i<0))return null;
+  for(let m=0;m<M;m++){let worst=0,b=false;E.P.forEach((q,j)=>{const x=q.m[m],i=idx[j],s=x.s[i],g=x.g[i],d=x.d[i];if(s==null)return;worst=Math.max(worst,g??s);
+      if(s>S.windMax||(g??0)>S.gustMax)b=true;else if(d!=null){const we=waveEst(s,fetchKm(q.p[0],q.p[1],d));if(we&&we.h>S.waveMax)b=true}});
+    if(b)bad++;mg.push(worst)}
+  mg.sort((a,b)=>a-b);return{p:bad/M,med:mg[Math.floor(M/2)],p90:mg[Math.floor(M*.9)],M}}
+function renderEns(){const E=RT.ens,out=$('#rEnsOut');if(!E){out.innerHTML='';return}
+  const start=new Date();start.setHours(0,0,0,0);const dep0=depTs();let html='<div class="cal"><div></div>'+[0,3,6,9,12,15,18,21].map(h=>`<div>${h}</div>`).join('');
+  for(let d=0;d<7;d++){const day=new Date(start.getTime()+d*864e5);html+=`<div style="text-align:left">${day.toLocaleDateString('ru-RU',{weekday:'short',day:'numeric'})}</div>`;
+    for(let h=0;h<24;h+=3){const t=day.getTime()+h*36e5;if(t<Date.now()-36e5){html+='<div></div>';continue}const r=ensEval(t);
+      if(!r){html+='<button class="n" disabled>·</button>';continue}const c=r.p<.2?'g':r.p<.5?'y':'r';
+      html+=`<button class="${c}${Math.abs(t-dep0)<90*60e3?' sel':''}" data-t="${t}" title="${Math.round(r.p*100)} %">${Math.round(r.p*100)}</button>`}}
+  html+='</div>';
+  const cur=ensEval(dep0);
+  if(cur)html+=`<div class="${cur.p<.2?'okbox':cur.p<.5?'warnbox':'badbox'} small"><b>${cur.p<.2?'Идти':cur.p<.5?'Осторожно':'Не идти'}</b> при выходе ${fmtT(dep0/1000)}: в <b>${Math.round(cur.p*100)} %</b> вариантов прогноза будет выше ваших пределов. Порывы на пути: обычно до ${cur.med} уз, в худших 10 % — до ${cur.p90} уз.</div>`;
+  html+=`<p class="muted small">Число в клетке — вероятность превысить ваши пределы (ветер ${S.windMax}, порывы ${S.gustMax} уз, волна ${f1(S.waveMax)} м) за весь переход при выходе в это время. Зелёный — до 20 %, жёлтый — до 50 %, красный — больше. Нажмите клетку, чтобы выбрать время выхода. Ансамбль ECMWF получен ${ago(E.fetched)}.</p>`;
+  out.innerHTML=html;$$('#rEnsOut .cal button[data-t]').forEach(b=>b.onclick=()=>{setDep(new Date(+b.dataset.t));renderRoute();renderEns()})}
 
 /* ===== GPS со сторожем (жалоба: «теряет GPS и молчит») ===== */
 const G={watch:null,pos:null,prev:null,sog:null,cog:null,acc:null,last:0,follow:true,marker:null,accC:null,track:store.get('track',[]),saved:0,wake:null,warned:false};
@@ -659,11 +699,11 @@ function fillBoat(){const B=S.boat;$('#bName').value=B.name;$('#bType').value=B.
 $('#sSave').onclick=()=>{const k=$('#sYa').value.trim(),chK=k!==S.yandexKey;S.yandexKey=k;
   S.boat={name:$('#bName').value.trim(),type:$('#bType').value,speed:Math.max(1,+$('#bSpeed').value||5),draft:+$('#bDraft').value||1.8,motor:Math.max(0,+$('#bMotor').value||0)};
   S.windMax=+$('#sWind').value||20;S.gustMax=+$('#sGust').value||25;S.waveMax=+$('#sWave').value||1.2;S.night=$('#sNight').checked;S.saver=$('#sSaver').checked;saveS();
-  document.body.classList.toggle('night',S.night);if(chK&&S.base==='yandex')setBase('yandex');drawField();renderRoute();if(RT.fc)bestWindows();
+  document.body.classList.toggle('night',S.night);if(chK&&S.base==='yandex')setBase('yandex');drawField();renderRoute();if(RT.fc)bestWindows();renderEns();
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);gpsStart()}toast('Сохранено')};
 $('#sNight').onchange=e=>document.body.classList.toggle('night',e.target.checked);
 $('#sTrack').onclick=()=>{G.track=[];G.line.setLatLngs([]);store.set('track',[]);toast('Трек стёрт')};
-$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.4 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
+$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.5 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
 
 $$('#p-more [data-go]').forEach(b=>b.onclick=()=>openPanel(b.dataset.go));
 $('#mNight').onclick=()=>{S.night=!S.night;saveS();document.body.classList.toggle('night',S.night);$('#sNight').checked=S.night;if(S.base==='kurs')setBase('kurs')};
@@ -721,6 +761,7 @@ anchorDraw();renderRoute();sizeCv();netChip();
 {const c=store.get('grid',null);if(c){W.g=buildGrid(c);setupTime();drawField();freshChip()}}
 loadGrid(true);
 if(RT.fc)bestWindows();
+if(RT.ens)renderEns();
 if(store.get('aisOn',false))aisStart();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(e=>logE('sw '+e.message));
 if(location.protocol==='file:')setTimeout(()=>toast('Откройте программу через адрес http://…, а не файлом: иначе карта OSM блокируется и не работает офлайн',9000),500);
