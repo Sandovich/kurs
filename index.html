@@ -37,13 +37,22 @@ body.night #top{background:linear-gradient(#000,rgba(0,0,0,0))}
 select{-webkit-appearance:none;appearance:none;background:var(--panel2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238aa1b5'/%3E%3C/svg%3E") no-repeat right 10px center;padding-right:26px;color:var(--text)}
 #top nav{display:flex;gap:5px;flex:1;min-width:0}
 #top nav::-webkit-scrollbar{display:none}
-#status{position:fixed;z-index:1000;right:10px;top:calc(env(safe-area-inset-top) + 64px);display:flex;flex-direction:column;gap:6px;align-items:flex-end;pointer-events:none}
+#status{position:fixed;z-index:1000;right:10px;top:calc(env(safe-area-inset-top) + 64px);max-width:calc(100vw - 20px);display:flex;flex-direction:column;gap:6px;align-items:flex-end;pointer-events:none}
 .chip{background:rgba(16,34,51,.92);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px}
 .chip.warn{border-color:var(--warn);color:var(--warn)}
 .chip.bad{border-color:var(--danger);color:#fff;background:rgba(200,30,30,.9)}
 #hud{position:fixed;z-index:1000;left:10px;top:calc(env(safe-area-inset-top) + 64px);background:rgba(16,34,51,.94);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;gap:14px;align-items:center;font-variant-numeric:tabular-nums;max-width:calc(100vw - 20px)}
 #hud.stale{border-color:var(--danger);box-shadow:0 0 0 2px var(--danger)}
 #hud b{font-size:22px;display:block}
+#navd{position:fixed;z-index:1000;left:10px;right:10px;top:calc(env(safe-area-inset-top) + 136px);max-width:420px;background:rgba(16,34,51,.95);border:1px solid var(--line);border-radius:12px;padding:6px 10px 8px;font-variant-numeric:tabular-nums}
+#navd.mob{border-color:var(--danger);box-shadow:0 0 0 2px var(--danger)}
+#navd .nt{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600}
+#navd .nt button{min-height:34px;width:34px;padding:0}
+#navd .ng{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}
+#navd b{font-size:19px;display:block;line-height:1.1;white-space:nowrap}
+body:has(#mob:not([hidden])) .leaflet-bottom.leaflet-left{left:80px}
+#navd span{color:var(--muted);font-size:11px}
+#mob{position:fixed;z-index:1001;left:10px;bottom:calc(env(safe-area-inset-bottom) + 96px);width:64px;height:64px;min-height:64px;padding:0;border-radius:50%;background:#e01e1e;color:#fff;border:3px solid #fff;font-weight:800;font-size:16px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
 #hud span{color:var(--muted);font-size:11px}
 #timebar{position:fixed;z-index:1000;left:0;right:0;bottom:0;padding:8px 10px calc(env(safe-area-inset-bottom) + 8px);background:linear-gradient(rgba(11,23,36,0),var(--bg) 35%);display:grid;grid-template-columns:minmax(0,9.5em) 44px minmax(0,1fr);gap:8px;align-items:center}
 #timebar select{width:100%;min-width:0;text-overflow:ellipsis}
@@ -101,7 +110,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <div id="map"></div>
 
 <header id="top">
-  <div class="brand">Курс<small>v0.5.1 · тест</small></div>
+  <div class="brand">Курс<small>v0.6 · тест</small></div>
   <nav>
     <button data-panel="route" id="btnRoute">Переход</button>
     <button id="btnGps">GPS</button>
@@ -118,6 +127,17 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <button id="btnFollow" title="Держать лодку в центре">⊙</button>
 </div>
 <div id="status"></div>
+<div id="navd" hidden>
+  <div class="nt"><span id="nName">—</span><button id="nStop" title="Закончить ведение">✕</button></div>
+  <div class="ng">
+    <div><b id="nBrg">—</b><span>пеленг</span></div>
+    <div><b id="nDtw">—</b><span>миль до</span></div>
+    <div><b id="nXte">—</b><span>уход с линии</span></div>
+    <div><b id="nEta">—</b><span>прибытие</span></div>
+  </div>
+  <div class="small muted" id="nNote"></div>
+</div>
+<button id="mob" hidden aria-label="Человек за бортом">MOB</button>
 
 <footer id="timebar">
   <select id="model" aria-label="Модель прогноза">
@@ -166,6 +186,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <div class="row"><label>Выход <input id="rDep" type="datetime-local"></label></div>
   <div class="row">
     <button class="primary" id="rWx">Погода по маршруту</button>
+    <button id="rGo">▶ Вести по маршруту</button>
     <button id="rGpx">Сохранить GPX</button>
     <label class="small" style="margin:0"><input type="file" id="rImp" accept=".gpx" hidden><button id="rImpBtn" type="button">Открыть GPX</button></label>
   </div>
@@ -418,6 +439,11 @@ $('#play').onclick=()=>{if(W.play){clearInterval(W.play);W.play=null;$('#play').
   $('#play').textContent='❚❚';W.play=setInterval(()=>{if(!W.g)return;W.idx=(W.idx+1)%W.g.times.length;$('#time').value=W.idx;updT();drawField()},700)};
 $('#model').value=S.model;$('#model').onchange=e=>{S.model=e.target.value;saveS();loadGrid(true);if(RT.fc)routeWx()};
 
+/* раскладка верхних блоков: HUD → панель ведения → плашки, без наложений */
+function layoutTop(){const base=$('#top').getBoundingClientRect().bottom+6;let y=base;
+  for(const id of ['#hud','#navd']){const e=$(id);if(e.hidden)continue;e.style.top=y+'px';y=e.getBoundingClientRect().bottom+6}
+  $('#status').style.top=(y===base?base:y)+'px'}
+new MutationObserver(layoutTop).observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden']});addEventListener('resize',layoutTop);setTimeout(layoutTop,50);
 /* ===== панели ===== */
 $$('.panel').forEach(p=>{const c=p.querySelector(':scope > .close'),h=p.querySelector('h2');if(c&&h)h.appendChild(c)});
 let openName=null;
@@ -434,7 +460,7 @@ $('#chkTrack').onchange=e=>{S.track=e.target.checked;saveS();S.track?G.line.addT
 let ptMarker=null;
 async function showPoint(ll){
   if(ptMarker)map.removeLayer(ptMarker);ptMarker=L.circleMarker(ll,{radius:7,color:'#fff',weight:2,fillColor:'#3fb6ff',fillOpacity:1}).addTo(map);
-  openPanel('point');$('#pointTitle').textContent=`${fmtC(ll.lat,1)} ${fmtC(ll.lng,0)}`;const body=$('#pointBody');
+  openPanel('point');$('#pointTitle').textContent=`${fmtC(ll.lat,1)} ${fmtC(ll.lng,0)}`;const body=$('#pointBody');PT.last=[ll.lat,ll.lng];
   const models=uniq([...CMP,S.model]);body.innerHTML=`<p class="muted">Сравниваю ${models.map(m=>MODEL_NAME[m]).join(', ')}…</p>`;
   const la=ll.lat.toFixed(3),lo=ll.lng.toFixed(3);
   const [a,m]=await Promise.allSettled([
@@ -460,7 +486,7 @@ async function showPoint(ll){
   const pr=h['pressure_msl_'+main];if(pr&&pr[i0]!=null&&pr[i0+12]!=null){const dp=pr[i0+12]-pr[i0];html+=`<p class="small">Давление ${f0(pr[i0])} гПа, за 12 ч ${dp>0?'+':''}${f1(dp)}${dp<=-4?' — <b style="color:var(--warn)">быстро падает: жди усиления ветра</b>':''}</p>`}
   if(est){const d0=dr(main)[i0],F=fetchKm(ll.lat,ll.lng,d0);html+=`<p class="note">«По разгону» — своя оценка волны: сколько километров воды ветер прошёл до этой точки (сейчас с ${rumb(d0)}: ${f0(F)} км). На Ладоге и в заливе это надёжнее морской модели. Расчёт для глубокой воды: на мелководье юга Ладоги волна ниже, но круче.</p>`}
   if(!mh&&!est)html+='<p class="note">Волну в этой точке морская модель не считает.</p>';
-  body.innerHTML=html}
+  body.innerHTML=`<div class="row"><button id="ptGo">➜ Идти сюда</button></div>`+html;$('#ptGo').onclick=()=>{navStart('point',[PT.last],0,'Точка '+fmtC(PT.last[0],1));closePanel()}}
 function chart(t,a,b,series,dirs){const Wd=360,H=170,P=26;let mx=10;series.forEach(s=>{for(let i=a;i<b;i++)if(s.v[i]>mx)mx=s.v[i]});mx=Math.ceil(mx/5)*5;
   const X=i=>P+(i-a)/(b-a-1)*(Wd-P-6),Y=v=>H-22-(v/mx)*(H-40);let g=`<svg class="chart" viewBox="0 0 ${Wd} ${H}" font-size="9" fill="var(--muted)">`;
   for(let v=0;v<=mx;v+=5){g+=`<line x1="${P}" x2="${Wd-6}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="2" y="${Y(v)+3}">${v}</text>`}
@@ -612,9 +638,9 @@ async function wake(on){try{if(on&&'wakeLock' in navigator&&!G.wake){G.wake=awai
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&G.watch!=null)wake(true)});
 function gpsStart(){G.watch=navigator.geolocation.watchPosition(onPos,e=>{logE('gps '+e.message);toast('GPS: '+(e.code===1?'нет разрешения. Разрешите геолокацию для сайта в настройках браузера':e.message))},{enableHighAccuracy:true,maximumAge:S.saver?5000:1000,timeout:30000})}
 $('#btnGps').onclick=()=>{
-  if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);G.watch=null;$('#btnGps').classList.remove('on');$('#hud').hidden=true;chip('gps',null);wake(false);store.set('track',G.track);return}
+  if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);G.watch=null;$('#btnGps').classList.remove('on');$('#hud').hidden=true;$('#mob').hidden=true;chip('gps',null);wake(false);store.set('track',G.track);return}
   if(!('geolocation' in navigator))return toast('В этом браузере нет GPS');
-  audio();gpsStart();G.last=Date.now();G.first=null;G.start=Date.now();$('#btnGps').classList.add('on');$('#hud').hidden=false;G.follow=true;wake(true);toast('Ищу спутники…')};
+  audio();gpsStart();G.last=Date.now();G.first=null;G.start=Date.now();$('#btnGps').classList.add('on');$('#hud').hidden=false;$('#mob').hidden=false;G.follow=true;wake(true);toast('Ищу спутники…')};
 $('#btnFollow').onclick=()=>{G.follow=true;if(G.pos)map.panTo(G.pos)};
 map.on('dragstart',()=>{G.follow=false});
 function onPos(p){const c=p.coords,ll=[c.latitude,c.longitude];let sog=c.speed!=null?c.speed*3600/NM:null,cog=c.heading!=null&&!isNaN(c.heading)?c.heading:null;
@@ -628,13 +654,71 @@ function onPos(p){const c=p.coords,ll=[c.latitude,c.longitude];let sog=c.speed!=
   $('#hSog').textContent=f1(sog);$('#hCog').textContent=G.cog!=null?f0(G.cog)+'°':'—';$('#hPos').innerHTML=`${fmtC(ll[0],1)}<br>${fmtC(ll[1],0)}`;
   const acc=c.accuracy;$('#hAcc').innerHTML=`<span style="color:${acc<15?'var(--ok)':acc<50?'var(--warn)':'var(--danger)'}">точность ±${f0(acc)} м</span>`;
   $('#hud').classList.remove('stale');chip('gps',acc>50?`GPS неточный: ±${f0(acc)} м`:null,'warn');
-  anchorCheck();aisCpaCheck()}
+  anchorCheck();aisCpaCheck();navUpdate();shoreCheck()}
 setInterval(()=>{if(G.watch==null)return;const s=(Date.now()-G.last)/1000;
   if(!G.pos){const w=Math.round((Date.now()-G.start)/1000);chip('gps',w<45?`Жду первую позицию GPS… ${w} с`:'Нет позиции. Проверьте: Настройки → Конфиденциальность → Службы геолокации → Safari: «При использовании» и «Точная геопозиция»',w<45?'warn':'bad');return}
   if(s>20){$('#hud').classList.add('stale');chip('gps',`GPS молчит ${Math.round(s)} с`,'bad')}
   if(s>60&&!G.warned){G.warned=true;navigator.vibrate?.([300,200,300]);beep();toast('GPS не обновлялся больше минуты. Позиция на экране устарела!',8000);
     if(A.pos)alarmOn(null,'⚠ GPS ПОТЕРЯН — ЯКОРНАЯ ВАХТА НЕ РАБОТАЕТ');
     navigator.geolocation.clearWatch(G.watch);gpsStart()}},5000);
+
+/* ===== ведение: MOB, точка, маршрут; панель приборов; тревоги ===== */
+const PT={last:null};
+const NAV=Object.assign({mode:null,pts:[],idx:0,name:'',mobT:0,arrNm:.1,xteNm:.15,xteWarned:false},store.get('nav',{}));
+const navSave=()=>store.set('nav',{mode:NAV.mode,pts:NAV.pts,idx:NAV.idx,name:NAV.name,mobT:NAV.mobT});
+const navLayer=L.layerGroup().addTo(map);
+function navStart(mode,pts,idx,name){Object.assign(NAV,{mode,pts,idx,name,xteWarned:false});navSave();$('#navd').hidden=false;$('#navd').classList.toggle('mob',mode==='mob');
+  if(G.watch==null)$('#btnGps').click();navUpdate();toast(mode==='mob'?'MOB! Не теряйте человека из виду. Курс на точку падения — на панели.':'Ведение включено: '+name,6000)}
+function navStop(){NAV.mode=null;navSave();$('#navd').hidden=true;navLayer.clearLayers();chip('nav',null)}
+$('#nStop').onclick=()=>{if(NAV.mode==='mob'&&!confirm('Человек поднят на борт? Закончить MOB?'))return;navStop()};
+$('#rGo').onclick=()=>{if(RT.pts.length<2)return toast('Сначала постройте маршрут');let i=1;
+  if(G.pos){let best=1e12;RT.pts.forEach((p,k)=>{const d=dist(G.pos,p);if(d<best){best=d;i=Math.max(1,k)}})}
+  navStart('route',RT.pts.map(p=>p.slice()),i,'Маршрут');closePanel()};
+$('#mob').onclick=()=>{if(!G.pos){beep();toast('Нет позиции GPS! Бросьте круг, назначьте наблюдателя, запомните ориентиры.',9000);return}
+  NAV.mobT=Date.now();const log=store.get('mobLog',[]);log.push({t:NAV.mobT,p:G.pos});store.set('mobLog',log);logE('MOB '+G.pos.map(v=>v.toFixed(5)).join(','));
+  beep();navigator.vibrate?.([600,200,600]);navStart('mob',[G.pos.slice()],0,'ЧЕЛОВЕК ЗА БОРТОМ')};
+/* смещение от линии a→b (метры; >0 — лодка правее линии) и доля пройденного */
+function xtk(a,b,p){const k=Math.cos(rad(a[0])),m=111320,bx=(b[1]-a[1])*k*m,by=(b[0]-a[0])*m,px=(p[1]-a[1])*k*m,py=(p[0]-a[0])*m;
+  const L2=bx*bx+by*by||1;return{t:(px*bx+py*by)/L2,xte:(px*by-py*bx)/Math.sqrt(L2)}}
+function nowIdx(){if(!W.g)return 0;const n=Date.now()/1000;let b=0;W.g.times.forEach((x,i)=>{if(Math.abs(x-n)<Math.abs(W.g.times[b]-n))b=i});return b}
+function navUpdate(){if(!NAV.mode)return;$('#navd').hidden=false;const tgt=NAV.pts[NAV.idx];if(!tgt)return;
+  navLayer.clearLayers();const me=G.pos,col=NAV.mode==='mob'?'#ff2a2a':'#d63ce0';
+  if(NAV.mode==='route'){L.polyline(NAV.pts,{color:col,weight:2,opacity:.5,dashArray:'6 6'}).addTo(navLayer);if(NAV.idx>0)L.polyline([NAV.pts[NAV.idx-1],tgt],{color:col,weight:4,opacity:.9}).addTo(navLayer)}
+  L.circleMarker(tgt,{radius:9,color:col,weight:3,fillOpacity:.25}).addTo(navLayer);
+  if(NAV.mode==='mob')L.circle(tgt,{radius:30,color:col,weight:1,fillOpacity:.1}).addTo(navLayer);
+  let label=NAV.name+(NAV.mode==='route'?` · точка ${NAV.idx+1} из ${NAV.pts.length}`:'');
+  if(NAV.mode==='mob'){const sec=Math.round((Date.now()-NAV.mobT)/1000);label+=` · ${sec<60?sec+' с':Math.floor(sec/60)+' мин '+(sec%60)+' с'} назад`}
+  $('#nName').textContent=label;
+  if(!me){['#nBrg','#nDtw','#nXte','#nEta'].forEach(i=>$(i).textContent='—');$('#nNote').textContent='Жду позицию GPS…';return}
+  L.polyline([me,tgt],{color:col,weight:2,dashArray:'4 6'}).addTo(navLayer);
+  const d=dist(me,tgt),b=brg(me,tgt),dnm=d/NM,vmg=G.sog!=null&&G.cog!=null?G.sog*Math.cos(rad(G.cog-b)):null;
+  $('#nBrg').textContent=f0(b)+'°';
+  if(d<1000){$('#nDtw').textContent=f0(d);$('#nDtw').nextElementSibling.textContent='метров до'}else{$('#nDtw').textContent=dnm<10?f1(dnm):f0(dnm);$('#nDtw').nextElementSibling.textContent='миль до'}
+  const note=[];
+  if(NAV.mode==='route'&&NAV.idx>0){const x=xtk(NAV.pts[NAV.idx-1],tgt,me),ax=Math.abs(x.xte);
+    $('#nXte').textContent=ax<10?'0':`${x.xte>0?'◀ ':''}${ax<1000?f0(ax)+' м':f1(ax/NM)+' мили'}${x.xte<0?' ▶':''}`;
+    if(ax/NM>NAV.xteNm){chip('nav',`Ушли с линии на ${f0(ax)} м`,'warn');if(!NAV.xteWarned){NAV.xteWarned=true;beep();navigator.vibrate?.([200,100,200]);toast(`Ушли с линии на ${f0(ax)} м — держите ${x.xte>0?'левее':'правее'}`,6000)}}
+    else{NAV.xteWarned=false;chip('nav',null)}
+    if(dnm<NAV.arrNm||x.t>1){if(NAV.idx<NAV.pts.length-1){NAV.idx++;navSave();beep();toast(`Точка ${NAV.idx} пройдена. Новый курс ${f0(brg(me,NAV.pts[NAV.idx]))}°`,6000);return navUpdate()}
+      if(dnm<NAV.arrNm){beep();toast('Прибыли! Маршрут пройден.',8000);navStop();return}}}
+  else{$('#nXte').textContent='—';if(NAV.mode==='point'&&dnm<NAV.arrNm){beep();toast('Прибыли в точку.',8000);navStop();return}}
+  if(vmg!=null&&vmg>.3){const ms=dnm/vmg*36e5;$('#nEta').textContent=new Date(Date.now()+ms).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});note.push(`в пути ${fmtHM(ms)}, к цели ${f1(vmg)} уз`)}
+  else{$('#nEta').textContent='—';if(G.sog>.5)note.push('удаляетесь от цели или идёте поперёк')}
+  const w=W.g?sample(tgt[0],tgt[1],nowIdx()):null;
+  if(w&&NAV.mode!=='mob'&&offBow(w.dir,b)<50){const k=Math.cos(rad(tgt[0])),Ld=5*NM/111320;
+    for(const h of[w.dir+45,w.dir-45]){const back=rad(h+180);L.polyline([tgt,[tgt[0]+Math.cos(back)*Ld,tgt[1]+Math.sin(back)*Ld/k]],{color:'#9fb4c7',weight:1.5,dashArray:'2 6'}).addTo(navLayer)}
+    note.push(`цель против ветра (${f0(w.spd)} уз с ${rumb(w.dir)}): пунктир — лэйлайны`)}
+  if(NAV.mode==='mob')note.unshift('Бросьте круг, назначьте наблюдателя, подходите против ветра');
+  $('#nNote').textContent=note.join(' · ')}
+/* берег по курсу: луч по маске воды вперёд по курсу */
+let shoreT=0;
+function shoreCheck(){if(!G.pos||G.sog==null||G.sog<1.5||G.cog==null||!WM.g)return;if(isWater(G.pos[0],G.pos[1])!==true)return chip('shore',null);
+  const km=ray(G.pos[0],G.pos[1],G.cog);if(km>50)return chip('shore',null);const min=km/(G.sog*1.852)*60;
+  if(min<8){chip('shore',`Берег по курсу: ${km<1?f0(km*1000)+' м':f1(km)+' км'}, ≈${f0(min)} мин`,min<4?'bad':'warn');
+    if(min<4&&Date.now()-shoreT>120000){shoreT=Date.now();beep();navigator.vibrate?.([300,150,300]);toast('⚠ Берег по курсу через '+f0(min)+' мин! Проверьте курс.',8000)}}
+  else chip('shore',null)}
+if(NAV.mode){$('#navd').hidden=false;$('#navd').classList.toggle('mob',NAV.mode==='mob');setTimeout(navUpdate,800)}
+setInterval(()=>{if(NAV.mode==='mob')navUpdate()},1000);
 
 /* ===== якорь ===== */
 const A={pos:store.get('anchor',null),r:store.get('anchorR',40),circle:null,line:null,out:0,alarm:false,ac:null,beepT:null};
@@ -724,7 +808,7 @@ $('#sSave').onclick=()=>{const k=$('#sYa').value.trim(),chK=k!==S.yandexKey;S.ya
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);gpsStart()}toast('Сохранено')};
 $('#sNight').onchange=e=>document.body.classList.toggle('night',e.target.checked);
 $('#sTrack').onclick=()=>{G.track=[];G.line.setLatLngs([]);store.set('track',[]);toast('Трек стёрт')};
-$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.5 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
+$('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.6 · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
 
 $$('#p-more [data-go]').forEach(b=>b.onclick=()=>openPanel(b.dataset.go));
 $('#mNight').onclick=()=>{S.night=!S.night;saveS();document.body.classList.toggle('night',S.night);$('#sNight').checked=S.night;if(S.base==='kurs')setBase('kurs')};
