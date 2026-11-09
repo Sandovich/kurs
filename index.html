@@ -101,7 +101,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <div id="map"></div>
 
 <header id="top">
-  <div class="brand">Курс<small>v0.5 · тест</small></div>
+  <div class="brand">Курс<small>v0.5.1 · тест</small></div>
   <nav>
     <button data-panel="route" id="btnRoute">Переход</button>
     <button id="btnGps">GPS</button>
@@ -172,6 +172,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <div class="row"><button id="rEns" style="flex:1">📅 Календарь выхода на 7 суток (51 вариант прогноза)</button></div>
   <div id="rEnsOut"></div>
   <div id="rSum"></div>
+  <div id="rBrief"></div>
   <div id="rWin" class="windows"></div>
   <div id="rLegs" class="scroll"></div>
 </section>
@@ -541,16 +542,36 @@ function renderRoute(){const L2=legs(),total=L2.reduce((s,l)=>s+l.d,0),dep=depTs
   let t='<table><tr><th>Уч.</th><th>Миль</th><th>Курс</th>'+(rows?'<th>Начало</th><th>Ветер</th><th>К ветру</th><th>Ход</th><th>Волна</th><th>Прогноз</th>':'')+'</tr>';
   (rows||L2).forEach((r,i)=>{const bad=rows&&(r.spd>S.windMax||r.gst>S.gustMax||r.wave>S.waveMax);
     t+=`<tr class="${bad?'bad':''}"><td>${i+1}→${i+2}</td><td>${f1(r.d/NM)}</td><td>${f0(r.c)}°</td>`+(rows?`<td>${r.eta?fmtT(r.eta/1000):'—'}</td><td><span class="dot" style="background:${css(r.spd)}"></span>${f0(r.spd)}/${f0(r.gst)} ${rumb(r.dir)}</td><td>${r.dir!=null?sail(offBow(r.dir,r.c)):'—'}</td><td>${f1(r.boat)} уз</td><td>${r.wave!=null?f1(r.wave)+' м':'—'}</td><td>${conf(r.spread)}</td>`:'')+'</tr>'});
-  $('#rLegs').innerHTML=t+'</table>'+(rows?`<p class="muted small">Ветер — средний/порыв в худшей точке участка на время вашего прохода. «Ход» — скорость ${S.boat.type==='sail'?'под парусом при этом ветре (в штиль — мотор)':'под мотором'}. «Прогноз» — насколько согласны модели. «Волна» — большее из морской модели и своей оценки по ветру и разгону.</p>`:'')}
+  $('#rLegs').innerHTML=t+'</table>'+(rows?`<p class="muted small">Ветер — средний/порыв в худшей точке участка на время вашего прохода. «Ход» — скорость ${S.boat.type==='sail'?'под парусом при этом ветре (в штиль — мотор)':'под мотором'}. «Прогноз» — насколько согласны модели. «Волна» — большее из морской модели и своей оценки по ветру и разгону.</p>`:'');brief(rows)}
 function bestWindows(){const fc=RT.fc;if(!fc)return;const now=Date.now(),res=[];
   for(let h=0;h<=96;h++){const dep=Math.ceil(now/3600000)*3600000+h*3600000,rows=evalRoute(dep);if(!rows)break;
     const mg=Math.max(...rows.map(r=>r.gst||0)),ms=Math.max(...rows.map(r=>r.spd||0)),mw=Math.max(...rows.map(r=>r.wave||0)),head=rows.filter(r=>r.dir!=null&&offBow(r.dir,r.c)<40).length;
     const night=new Date(dep).getHours();const over=(mg>S.gustMax?20:0)+(ms>S.windMax?20:0)+(mw>S.waveMax?20:0);
     res.push({dep,mg,mw,head,dur:rows.arrive-dep,score:over+mg+.5*ms+4*head+8*mw+(rows.arrive-dep)/3600000*.8+((night<5||night>22)?3:0)})}
   if(!res.length){$('#rWin').innerHTML='';return}
-  res.sort((a,b)=>a.score-b.score);const pick=[];for(const r of res){if(pick.every(p=>Math.abs(p.dep-r.dep)>=6*3600000))pick.push(r);if(pick.length===3)break}
+  res.sort((a,b)=>a.score-b.score);const pick=[];for(const r of res){if(pick.every(p=>Math.abs(p.dep-r.dep)>=6*3600000))pick.push(r);if(pick.length===3)break}RT.best=pick[0];brief();
   $('#rWin').innerHTML='<p class="small"><b>Лучшие окна выхода</b> (на 4 суток, учтены ваши пределы, время в пути и ночь):</p>'+pick.map(p=>`<button data-dep="${p.dep}">${fmtT(p.dep/1000)} · в пути ${fmtHM(p.dur)} · порывы до ${f0(p.mg)} уз${p.mw?` · волна ${f1(p.mw)} м`:''}${p.head?` · ${p.head} уч. в лоб`:''}</button>`).join('');
   $$('#rWin button').forEach(b=>b.onclick=()=>{setDep(new Date(+b.dataset.dep));renderRoute()})}
+
+/* ===== брифинг штурмана (по шаблонам из расчётов; позже — живой текст от ИИ на своём сервере) ===== */
+function brief(rows){const el=$('#rBrief');if(rows===undefined)rows=RT.fc?evalRoute(depTs()):null;if(!rows||!rows.length){el.innerHTML='';return}
+  const dep=depTs(),total=rows.reduce((a,r)=>a+r.d,0),dur=rows.arrive-dep,hm=t=>new Date(t).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  const L=[];const ens=RT.ens?ensEval(dep):null;
+  const over=rows.filter(r=>r.spd>S.windMax||r.gst>S.gustMax||r.wave>S.waveMax);
+  let verdict=ens?(ens.p<.2?'Выход нормальный':ens.p<.5?'Выход возможен, но с риском':'Выход не советую'):(over.length?'Выход не советую':'Выход нормальный');
+  L.push(`${verdict}: ${fmtT(dep/1000)}, ${f1(total/NM)} миль, в пути около ${fmtHM(dur)}, приход ${fmtT(rows.arrive/1000)}.`+(ens?` По 51 варианту прогноза риск превысить ваши пределы — ${Math.round(ens.p*100)} %.`:''));
+  const w=rows.reduce((a,r)=>(r.gst||0)>(a.gst||0)?r:a,rows[0]),wi=rows.indexOf(w);
+  if(w.spd!=null)L.push(`Сильнее всего на участке ${wi+1}→${wi+2} (около ${hm(w.eta)}): ветер ${f0(w.spd)} уз, порывы до ${f0(w.gst)}, с ${rumb(w.dir)}, ${sail(offBow(w.dir,w.c))}${w.wave!=null?`, волна до ${f1(w.wave)} м`:''}.`);
+  const sails=uniq(rows.filter(r=>r.dir!=null).map(r=>sail(offBow(r.dir,r.c))));if(sails.length)L.push(`Курсы к ветру: ${sails.join(', ')}.`);
+  const head=rows.map((r,i)=>r.dir!=null&&offBow(r.dir,r.c)<40?(i+1)+'→'+(i+2):null).filter(Boolean);if(head.length)L.push(`В лоб на участках ${head.join(', ')}: закладывайте галсы, путь там примерно в 1,5 раза длиннее и медленнее.`);
+  const calm=rows.map((r,i)=>r.spd!=null&&r.spd<4?(i+1)+'→'+(i+2):null).filter(Boolean);if(calm.length)L.push(`Штиль на участках ${calm.join(', ')}: пойдёте под мотором, проверьте топливо.`);
+  const unsure=rows.map((r,i)=>r.spread>=8?(i+1)+'→'+(i+2):null).filter(Boolean);if(unsure.length)L.push(`Модели спорят на участках ${unsure.join(', ')}: перед выходом обновите прогноз.`);
+  const ah=new Date(rows.arrive).getHours();if(ah>=22||ah<5)L.push('Приход в тёмное время: заранее проверьте огни подхода и место стоянки.');
+  if(RT.best&&Math.abs(RT.best.dep-dep)>3*36e5){L.push(`Если можно сдвинуть выход: ${fmtT(RT.best.dep/1000)} спокойнее, порывы до ${f0(RT.best.mg)} уз${RT.best.mw?`, волна до ${f1(RT.best.mw)} м`:''}.`)}
+  L.push(`Пределы лодки: ветер ${S.windMax}, порывы ${S.gustMax} уз, волна ${f1(S.waveMax)} м. Прогноз ${MODEL_NAME[RT.fc.model]} от ${new Date(RT.fc.fetched).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}.`);
+  const txt=L.join('\n');el.innerHTML=`<div class="${verdict==='Выход нормальный'?'okbox':verdict.startsWith('Выход возможен')?'warnbox':'badbox'}"><b>🧭 Брифинг штурмана</b><div class="small" style="margin-top:6px;white-space:pre-line">${txt}</div><div class="row"><button id="bCopy">Скопировать</button>${navigator.share?'<button id="bShare">Отправить экипажу</button>':''}</div></div>`;
+  $('#bCopy').onclick=()=>{navigator.clipboard?.writeText(txt).then(()=>toast('Брифинг скопирован'),()=>toast('Не удалось скопировать'))};
+  if($('#bShare'))$('#bShare').onclick=()=>navigator.share({title:'Брифинг перехода',text:txt}).catch(()=>{});}
 
 /* ===== календарь выхода по ансамблю ECMWF (51 вариант) ===== */
 {const c=store.get('routeens',null);if(c&&JSON.stringify(c.pts)===JSON.stringify(RT.pts))RT.ens=c}
@@ -581,7 +602,7 @@ function renderEns(){const E=RT.ens,out=$('#rEnsOut');if(!E){out.innerHTML='';re
   const cur=ensEval(dep0);
   if(cur)html+=`<div class="${cur.p<.2?'okbox':cur.p<.5?'warnbox':'badbox'} small"><b>${cur.p<.2?'Идти':cur.p<.5?'Осторожно':'Не идти'}</b> при выходе ${fmtT(dep0/1000)}: в <b>${Math.round(cur.p*100)} %</b> вариантов прогноза будет выше ваших пределов. Порывы на пути: обычно до ${cur.med} уз, в худших 10 % — до ${cur.p90} уз.</div>`;
   html+=`<p class="muted small">Число в клетке — вероятность превысить ваши пределы (ветер ${S.windMax}, порывы ${S.gustMax} уз, волна ${f1(S.waveMax)} м) за весь переход при выходе в это время. Зелёный — до 20 %, жёлтый — до 50 %, красный — больше. Нажмите клетку, чтобы выбрать время выхода. Ансамбль ECMWF получен ${ago(E.fetched)}.</p>`;
-  out.innerHTML=html;$$('#rEnsOut .cal button[data-t]').forEach(b=>b.onclick=()=>{setDep(new Date(+b.dataset.t));renderRoute();renderEns()})}
+  out.innerHTML=html;brief();$$('#rEnsOut .cal button[data-t]').forEach(b=>b.onclick=()=>{setDep(new Date(+b.dataset.t));renderRoute();renderEns()})}
 
 /* ===== GPS со сторожем (жалоба: «теряет GPS и молчит») ===== */
 const G={watch:null,pos:null,prev:null,sog:null,cog:null,acc:null,last:0,follow:true,marker:null,accC:null,track:store.get('track',[]),saved:0,wake:null,warned:false};
