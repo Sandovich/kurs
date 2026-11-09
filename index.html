@@ -58,9 +58,10 @@ body.night #timebar{background:linear-gradient(rgba(0,0,0,0),#000 35%)}
 .leaflet-control-attribution a{color:var(--muted)}
 .nmscale{background:rgba(11,23,36,.75);color:var(--text);font-size:11px;padding:2px 6px;border:2px solid var(--text);border-top:0;line-height:1.2}
 .panel{position:fixed;z-index:1100;left:0;right:0;bottom:0;max-height:55vh;max-height:55dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border-top:1px solid var(--line);border-radius:16px 16px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 16px);box-shadow:0 -10px 40px rgba(0,0,0,.4)}
-.panel h2{margin:0 0 10px;font-size:17px;padding-right:48px}
+.panel h2{margin:0 0 12px;font-size:17px;min-height:30px;display:flex;align-items:center}
+.panel h2+*,.panel h2+div{clear:both}
 .panel h3{margin:14px 0 6px;font-size:14px}
-.panel .close{position:absolute;top:8px;right:8px;min-width:44px}
+.panel .close{position:sticky;top:0;float:right;margin:-6px -4px 6px 10px;z-index:3;width:40px;min-width:40px;min-height:40px;padding:0;font-size:16px}
 .panel p{margin:6px 0}
 @media (min-width:820px){.panel{left:auto;right:12px;top:70px;bottom:100px;width:420px;max-height:none;border:1px solid var(--line);border-radius:16px}}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
@@ -94,7 +95,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <div id="map"></div>
 
 <header id="top">
-  <div class="brand">Курс<small>v0.3 · тест</small></div>
+  <div class="brand">Курс<small>v0.3.1 · тест</small></div>
   <nav>
     <button data-panel="route" id="btnRoute">Переход</button>
     <button id="btnGps">GPS</button>
@@ -220,7 +221,16 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
     <button data-go="boat">⛵ Лодка и пределы</button>
     <button id="mNight">🌙 Ночной режим</button>
     <button data-go="help">? Как пользоваться</button>
+    <button data-go="diag" style="grid-column:1/-1">📡 Проверка связи</button>
   </div>
+</section>
+
+<section class="panel" id="p-diag" hidden>
+  <button class="close">✕</button>
+  <h2>Проверка связи</h2>
+  <p class="muted small">Проверяет, доступны ли из вашей сети все сервисы. Сделайте скриншот результата и пришлите разработчику.</p>
+  <button class="primary" id="dRun">Проверить</button>
+  <div id="dOut" class="scroll" style="margin-top:10px"></div>
 </section>
 
 <section class="panel" id="p-help" hidden>
@@ -272,7 +282,7 @@ const STOPS=[[0,[80,100,190]],[4,[55,140,200]],[8,[50,170,150]],[12,[90,180,70]]
 function rgb(v){if(!(v>=0))v=0;for(let i=1;i<STOPS.length;i++){if(v<=STOPS[i][0]){const[a,ca]=STOPS[i-1],[b,cb]=STOPS[i],t=(v-a)/(b-a);return ca.map((c,k)=>Math.round(c+(cb[k]-c)*t))}}return STOPS[STOPS.length-1][1]}
 const css=v=>`rgb(${rgb(v).join(',')})`;
 $('#legend').style.background=`linear-gradient(90deg,${STOPS.map(s=>`rgb(${s[1].join(',')}) ${s[0]/40*100}%`).join(',')})`;
-async function getJSON(u){const r=await fetch(u);if(!r.ok){let t='';try{t=(await r.json()).reason||''}catch(e){}throw new Error(`сервер ответил ${r.status} ${t}`)}return r.json()}
+async function getJSON(u,ms=20000){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),ms);let r;try{r=await fetch(u,{signal:ac.signal})}catch(e){throw new Error(e.name==='AbortError'?'сервер не ответил за '+ms/1000+' с (блокировка у оператора или плохая связь)':'нет связи с сервером')}finally{clearTimeout(tm)}if(!r.ok){let t='';try{t=(await r.json()).reason||''}catch(e){}throw new Error(`сервер ответил ${r.status} ${t}`)}return r.json()}
 const MODEL_NAME={ecmwf_ifs025:'ECMWF',icon_seamless:'ICON',gfs_seamless:'GFS',metno_seamless:'MET Nordic',dmi_seamless:'HARMONIE',ecmwf_aifs025_single:'AIFS'};
 const MODEL_COLOR={ecmwf_ifs025:'#3fb6ff',icon_seamless:'#4cc38a',gfs_seamless:'#ffb020',metno_seamless:'#c78bff',dmi_seamless:'#ff7a9a',ecmwf_aifs025_single:'#e6eef5'};
 const CMP=['ecmwf_ifs025','icon_seamless','gfs_seamless'];
@@ -536,7 +546,7 @@ function gpsStart(){G.watch=navigator.geolocation.watchPosition(onPos,e=>{logE('
 $('#btnGps').onclick=()=>{
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);G.watch=null;$('#btnGps').classList.remove('on');$('#hud').hidden=true;chip('gps',null);wake(false);store.set('track',G.track);return}
   if(!('geolocation' in navigator))return toast('В этом браузере нет GPS');
-  audio();gpsStart();G.last=Date.now();$('#btnGps').classList.add('on');$('#hud').hidden=false;G.follow=true;wake(true);toast('Ищу спутники…')};
+  audio();gpsStart();G.last=Date.now();G.first=null;G.start=Date.now();$('#btnGps').classList.add('on');$('#hud').hidden=false;G.follow=true;wake(true);toast('Ищу спутники…')};
 $('#btnFollow').onclick=()=>{G.follow=true;if(G.pos)map.panTo(G.pos)};
 map.on('dragstart',()=>{G.follow=false});
 function onPos(p){const c=p.coords,ll=[c.latitude,c.longitude];let sog=c.speed!=null?c.speed*3600/NM:null,cog=c.heading!=null&&!isNaN(c.heading)?c.heading:null;
@@ -552,6 +562,7 @@ function onPos(p){const c=p.coords,ll=[c.latitude,c.longitude];let sog=c.speed!=
   $('#hud').classList.remove('stale');chip('gps',acc>50?`GPS неточный: ±${f0(acc)} м`:null,'warn');
   anchorCheck();aisCpaCheck()}
 setInterval(()=>{if(G.watch==null)return;const s=(Date.now()-G.last)/1000;
+  if(!G.pos){const w=Math.round((Date.now()-G.start)/1000);chip('gps',w<45?`Жду первую позицию GPS… ${w} с`:'Нет позиции. Проверьте: Настройки → Конфиденциальность → Службы геолокации → Safari: «При использовании» и «Точная геопозиция»',w<45?'warn':'bad');return}
   if(s>20){$('#hud').classList.add('stale');chip('gps',`GPS молчит ${Math.round(s)} с`,'bad')}
   if(s>60&&!G.warned){G.warned=true;navigator.vibrate?.([300,200,300]);beep();toast('GPS не обновлялся больше минуты. Позиция на экране устарела!',8000);
     if(A.pos)alarmOn(null,'⚠ GPS ПОТЕРЯН — ЯКОРНАЯ ВАХТА НЕ РАБОТАЕТ');
@@ -649,6 +660,24 @@ $('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v0.3 · ${navigator.us
 
 $$('#p-more [data-go]').forEach(b=>b.onclick=()=>openPanel(b.dataset.go));
 $('#mNight').onclick=()=>{S.night=!S.night;saveS();document.body.classList.toggle('night',S.night);$('#sNight').checked=S.night};
+/* ===== проверка связи ===== */
+$('#dRun').onclick=async()=>{const T=[
+  ['Прогноз (Open-Meteo)','https://api.open-meteo.com/v1/forecast?latitude=60&longitude=31&hourly=wind_speed_10m&forecast_days=1'],
+  ['Волна (Open-Meteo Marine)','https://marine-api.open-meteo.com/v1/marine?latitude=60&longitude=29&hourly=wave_height&forecast_days=1'],
+  ['Карта OSM','https://tile.openstreetmap.org/8/146/74.png'],
+  ['Буи OpenSeaMap','https://tiles.openseamap.org/seamark/10/585/297.png'],
+  ['AIS Финляндия (Digitraffic)','https://meri.digitraffic.fi/api/ais/v1/locations?from='+(Date.now()-60000)],
+  ['Библиотека карты (cdnjs)','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'],
+  ['Сайт программы (GitHub)',location.href.split('#')[0]]];
+  const out=$('#dOut');out.innerHTML='<table id="dT"><tr><th>Сервис</th><th>Итог</th><th>Время</th></tr></table>';
+  const meta=`<p class="small muted">${new Date().toLocaleString('ru-RU')} · сеть: ${navigator.onLine?'есть':'нет'} · ${navigator.connection?.effectiveType||''} · ${navigator.userAgent.match(/(iPhone|Android|Windows|Mac)[^;)]*/)?.[0]||''} · Курс v0.3</p>`;
+  out.insertAdjacentHTML('beforeend',meta);
+  for(const[n,u]of T){const tr=document.createElement('tr');tr.innerHTML=`<td>${n}</td><td>…</td><td></td>`;$('#dT').appendChild(tr);
+    const t0=performance.now(),ac=new AbortController(),tm=setTimeout(()=>ac.abort(),15000);
+    try{const r=await fetch(u,{signal:ac.signal,cache:'no-store',headers:u.includes('digitraffic')?{'Digitraffic-User':'Kurs/0.3'}:{}});tr.children[1].innerHTML=r.ok?'<b style="color:var(--ok)">✓ работает</b>':`<b style="color:var(--warn)">ответ ${r.status}</b>`}
+    catch(e){tr.children[1].innerHTML=`<b style="color:var(--danger)">✗ ${e.name==='AbortError'?'не отвечает':'недоступен'}</b>`}
+    finally{clearTimeout(tm);tr.children[2].textContent=Math.round(performance.now()-t0)+' мс'}}
+  logE('diag '+[...$$('#dT tr')].slice(1).map(r=>r.children[0].textContent+'='+r.children[1].textContent).join('; '))};
 /* ===== клик по карте ===== */
 map.on('click',e=>{if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}showPoint(e.latlng)});
 
