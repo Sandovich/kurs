@@ -370,7 +370,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.15';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.16';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1132,7 +1132,9 @@ function dpDraw(){const z=map.getZoom(),sz=map.getSize(),on=S.mcDep!==false&&(MC
   const tl=map.containerPointToLayerPoint([0,0]);L.DomUtil.setPosition(dpCv,tl);dpCv.width=sz.x*r;dpCv.height=sz.y*r;dpCv.style.width=sz.x+'px';dpCv.style.height=sz.y+'px';
   const g=dpCv.getContext('2d');g.setTransform(r,0,0,r,0,0);g.clearRect(0,0,sz.x,sz.y);if(!on)return;
   const b=map.getBounds().pad(.05),fs=z>=14?13:z>=12?12:11,cell=z>=14?20:z>=12?24:30,used=new Set();
-  const pts=MC.depAll.filter(q=>b.contains([q[0],q[1]])).sort((a,c)=>a[2]-c[2]);MC.dpOn=[];
+  // q[4] — до берега, м: цифру у самого берега показываем, только когда надпись целиком помещается на воде (как на морских картах)
+  const mpp=156543.03*Math.cos(map.getCenter().lat*Math.PI/180)/Math.pow(2,z),need=fs*.75*mpp;
+  const pts=MC.depAll.filter(q=>b.contains([q[0],q[1]])&&!(q[4]!=null&&q[4]<need)).sort((a,c)=>a[2]-c[2]);MC.dpOn=[];
   g.font=`600 ${fs}px -apple-system,system-ui,sans-serif`;g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
   const box=[],hh=fs/2+2;for(const q of pts){const c=map.latLngToContainerPoint([q[0],q[1]]),k=Math.floor(c.x/cell)+':'+Math.floor(c.y/cell);if(used.has(k))continue;
     const t=dpTxt(q[2]),hw=g.measureText(t).width/2+3;if(box.some(o=>Math.abs(o[0]-c.x)<o[2]+hw&&Math.abs(o[1]-c.y)<hh*2))continue;used.add(k);box.push([c.x,c.y,hw]);MC.dpOn.push([c.x,c.y,q]);
