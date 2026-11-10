@@ -342,7 +342,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.7';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.8';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -425,35 +425,45 @@ let cw=0,ch=0,dpr=1;
 function sizeCv(){const s=map.getSize();dpr=Math.min(window.devicePixelRatio||1,2);cw=s.x;ch=s.y;
   for(const c of[cvF,cvP]){c.width=cw*dpr;c.height=ch*dpr;c.style.width=cw+'px';c.style.height=ch+'px';c.getContext('2d').setTransform(dpr,0,0,dpr,0,0)}
   const tl=map.containerPointToLayerPoint([0,0]);L.DomUtil.setPosition(cvF,tl);L.DomUtil.setPosition(cvP,tl)}
-function buildGrid(raw){const{N,times,spd,dir,gst}=raw,T=times.length,K=N*N,U=[],V=[],G=[];
+function buildGrid(raw){const{N,times,spd,dir,gst}=raw,T=times.length,K=(raw.Nx||N)*(raw.Ny||N),U=[],V=[],G=[];
   for(let t=0;t<T;t++){const u=new Float32Array(K),v=new Float32Array(K),g=new Float32Array(K);
     for(let k=0;k<K;k++){const s=spd[k][t],d=dir[k][t];if(s==null||d==null){u[k]=v[k]=NaN}else{u[k]=-s*Math.sin(rad(d));v[k]=-s*Math.cos(rad(d))}g[k]=gst[k][t]??NaN}
     U.push(u);V.push(v);G.push(g)}
   return{...raw,U,V,G}}
 function freshChip(){const g=W.g;if(!g)return;const age=Date.now()-g.fetched;chip('wx',`Прогноз ${MODEL_NAME[g.model]}: ${ago(g.fetched)}`,age>6*3600e3?'warn':'')}
-async function loadGrid(force){
+// район плавания: ветер грузим одной сеткой на всю акваторию (Финский залив — Ладога) и держим час.
+// Раньше сетка 9×9 бралась только по видимой части: при отдалении ветер был «маленьким квадратом», а каждое движение карты = 81 запрос (лимит Open-Meteo, ответ 429).
+const WXR={s:59.2,n:62.0,w:26.8,e:33.6,st:.4};
+async function loadGrid(force,retry=0){
   if(!S.wind){clearWind();return}
-  const vb=map.getBounds(),z=map.getZoom(),g=W.g;
-  if(!force&&g&&g.model===S.model&&Math.abs(g.z-z)<1&&vb.getSouth()>=g.s&&vb.getNorth()<=g.n&&vb.getWest()>=g.w&&vb.getEast()<=g.e&&Date.now()-g.fetched<3600e3){drawField();return}
+  const vb=map.getBounds(),z=map.getZoom(),g=W.g,c=map.getCenter();
+  const inReg=c.lat>WXR.s&&c.lat<WXR.n&&c.lng>WXR.w&&c.lng<WXR.e&&vb.getNorth()-vb.getSouth()<(WXR.n-WXR.s)*1.5;
+  const fresh=g&&g.model===S.model&&Date.now()-g.fetched<3600e3;
+  if(!force&&fresh&&(g.reg?inReg:Math.abs(g.z-z)<1&&vb.getSouth()>=g.s&&vb.getNorth()<=g.n&&vb.getWest()>=g.w&&vb.getEast()<=g.e)){drawField();return}
   if(W.loading)return;W.loading=true;
-  const b=vb.pad(0.25),N=9,s=b.getSouth(),n=b.getNorth(),w=b.getWest(),e=b.getEast(),la=[],lo=[];
-  for(let i=0;i<N;i++)for(let j=0;j<N;j++){la.push((s+(n-s)*i/(N-1)).toFixed(3));lo.push((w+(e-w)*j/(N-1)).toFixed(3))}
+  let s,n,w,e,Nx,Ny;
+  if(inReg){({s,n,w,e}=WXR);Ny=Math.round((n-s)/WXR.st)+1;Nx=Math.round((e-w)/WXR.st)+1}
+  else{const b=vb.pad(0.25);s=b.getSouth();n=b.getNorth();w=b.getWest();e=b.getEast();Nx=Ny=9}
+  const la=[],lo=[];for(let i=0;i<Ny;i++)for(let j=0;j<Nx;j++){la.push((s+(n-s)*i/(Ny-1)).toFixed(3));lo.push((w+(e-w)*j/(Nx-1)).toFixed(3))}
   const model=S.model;
   try{
-    let js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${model}`);
+    let js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${model}`,45000);
     if(!Array.isArray(js))js=[js];
-    const raw={model,s,n,w,e,N,z,fetched:Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)};
-    W.g=buildGrid(raw);store.set('grid',raw);setupTime();drawField();freshChip();netChip();
+    const raw={model,s,n,w,e,N:Nx,Nx,Ny,z,reg:inReg,fetched:Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)};
+    W.g=buildGrid(raw);try{store.set('grid',raw)}catch(_){}setupTime();drawField();freshChip();netChip();
   }catch(err){
-    logE('grid '+err.message);chip('net','Нет связи с прогнозом: работаю из памяти','warn');
-    const c=store.get('grid',null);
-    if(c&&(!W.g||W.g.fetched<c.fetched)){W.g=buildGrid(c);setupTime();drawField();toast('Нет сети: показываю сохранённый прогноз')}
-    else if(!W.g){$('#tl').textContent='Прогноз не загрузился';toast('Прогноз не загрузился: '+err.message)}
+    logE('grid '+err.message);
+    const cg=store.get('grid',null);
+    if(cg&&(!W.g||W.g.fetched<cg.fetched)){W.g=buildGrid(cg);setupTime();drawField()}
+    if(W.g)chip('net','Прогноз не обновился, показываю сохранённый · пробую ещё','warn');
+    else{$('#tl').textContent='Прогноз не загрузился, пробую ещё…'}
+    if(retry<3)setTimeout(()=>loadGrid(true,retry+1),[15e3,45e3,120e3][retry]);
+    else if(!W.g)toast('Прогноз не загрузился: '+err.message);
     freshChip()}
   finally{W.loading=false}}
 function sample(lat,lon,t=W.idx){const g=W.g;if(!g)return null;
-  const fx=(lon-g.w)/(g.e-g.w)*(g.N-1),fy=(lat-g.s)/(g.n-g.s)*(g.N-1);if(fx<0||fy<0||fx>g.N-1||fy>g.N-1)return null;
-  const x0=Math.min(Math.floor(fx),g.N-2),y0=Math.min(Math.floor(fy),g.N-2),ax=fx-x0,ay=fy-y0,N=g.N;
+  const Nx=g.Nx||g.N,Ny=g.Ny||g.N,fx=(lon-g.w)/(g.e-g.w)*(Nx-1),fy=(lat-g.s)/(g.n-g.s)*(Ny-1);if(fx<0||fy<0||fx>Nx-1||fy>Ny-1)return null;
+  const x0=Math.min(Math.floor(fx),Nx-2),y0=Math.min(Math.floor(fy),Ny-2),ax=fx-x0,ay=fy-y0,N=Nx;
   const bl=a=>a[y0*N+x0]*(1-ax)*(1-ay)+a[y0*N+x0+1]*ax*(1-ay)+a[(y0+1)*N+x0]*(1-ax)*ay+a[(y0+1)*N+x0+1]*ax*ay;
   const u=bl(g.U[t]),v=bl(g.V[t]);if(isNaN(u)||isNaN(v))return null;
   return{u,v,spd:Math.hypot(u,v),dir:(deg(Math.atan2(-u,-v))+360)%360,gust:bl(g.G[t])}}
@@ -641,8 +651,8 @@ function polarSpeed0(tws,twa){const B=S.boat;if(B.type==='motor'||tws==null)retu
   if(twa<38)return 0;                                          // мёртвый угол: прямо против ветра не идём
   const g=Math.min(1.12,Math.max(.4,tws/11)),h=twa<50?.78:twa<70?.92:twa<110?1:twa<150?.96:.82;
   let v=B.speed*g*h;if(tws>22)v*=.9;return v}
-function gridSample(g,lat,lon,t){const fx=(lon-g.w)/(g.e-g.w)*(g.N-1),fy=(lat-g.s)/(g.n-g.s)*(g.N-1);if(fx<0||fy<0||fx>g.N-1||fy>g.N-1)return null;
-  const x0=Math.min(Math.floor(fx),g.N-2),y0=Math.min(Math.floor(fy),g.N-2),ax=fx-x0,ay=fy-y0,N=g.N;
+function gridSample(g,lat,lon,t){const Nx=g.Nx||g.N,Ny=g.Ny||g.N,fx=(lon-g.w)/(g.e-g.w)*(Nx-1),fy=(lat-g.s)/(g.n-g.s)*(Ny-1);if(fx<0||fy<0||fx>Nx-1||fy>Ny-1)return null;
+  const x0=Math.min(Math.floor(fx),Nx-2),y0=Math.min(Math.floor(fy),Ny-2),ax=fx-x0,ay=fy-y0,N=Nx;
   const bl=a=>a[y0*N+x0]*(1-ax)*(1-ay)+a[y0*N+x0+1]*ax*(1-ay)+a[(y0+1)*N+x0]*(1-ax)*ay+a[(y0+1)*N+x0+1]*ax*ay;
   const u=bl(g.U[t]),v=bl(g.V[t]);if(isNaN(u)||isNaN(v))return null;return{spd:Math.hypot(u,v),dir:(deg(Math.atan2(-u,-v))+360)%360,gust:bl(g.G[t])}}
 async function routeGrid(a,b){const pad=.35,s=Math.min(a[0],b[0])-pad,n=Math.max(a[0],b[0])+pad,w=Math.min(a[1],b[1])-pad*2,e=Math.max(a[1],b[1])+pad*2,N=9,la=[],lo=[];
