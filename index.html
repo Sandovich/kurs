@@ -113,14 +113,14 @@ tr.bad td{background:rgba(255,77,79,.13)}
 .cal button.sel{outline:2px solid var(--text);outline-offset:1px}
 .cal .g{background:#4cc38a}.cal .y{background:#ffb020}.cal .r{background:#ff4d4f;color:#fff}.cal .n{background:var(--line);color:var(--muted)}
 details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
-.lzI{padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.35}.lzI mark{background:rgba(255,107,44,.3);color:inherit;border-radius:3px;padding:0 1px}.lzChips button{padding:6px 9px;font-size:13px;min-height:34px}
+.mcdim{filter:opacity(.25)}.lzI{padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.35}.lzI mark{background:rgba(255,107,44,.3);color:inherit;border-radius:3px;padding:0 1px}.lzChips button{padding:6px 9px;font-size:13px;min-height:34px}
 </style>
 </head>
 <body>
 <div id="map"></div>
 
 <header id="top">
-  <div class="brand"><svg class="bm" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M29 13.5 C 39.5 21, 45 32.5, 46 45 L 29 45 Z" fill="#FF6B2C"/><path d="M25.6 18 L25.6 45 L15.5 45 C 18.5 35.5, 21.5 26.5, 25.6 18 Z" fill="currentColor"/><path d="M13.5 48.4 L50.5 48.4 C 47.5 53.6, 40.5 56.2, 32 56.2 C 23.5 56.2, 16.5 53.6, 13.5 48.4 Z" fill="currentColor"/></svg><span>Курс<small>v0.9.3 · тест</small></span></div>
+  <div class="brand"><svg class="bm" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M29 13.5 C 39.5 21, 45 32.5, 46 45 L 29 45 Z" fill="#FF6B2C"/><path d="M25.6 18 L25.6 45 L15.5 45 C 18.5 35.5, 21.5 26.5, 25.6 18 Z" fill="currentColor"/><path d="M13.5 48.4 L50.5 48.4 C 47.5 53.6, 40.5 56.2, 32 56.2 C 23.5 56.2, 16.5 53.6, 13.5 48.4 Z" fill="currentColor"/></svg><span>Курс<small>v0.9.4 · тест</small></span></div>
   <nav>
     <button data-panel="route" id="btnRoute">Переход</button>
     <button id="btnGps">GPS</button>
@@ -177,7 +177,13 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <label><input type="checkbox" id="chkSea"> Буи, маяки, огни (OpenSeaMap)</label>
   <label><input type="checkbox" id="chkWind"> Ветер на карте</label>
   <label><input type="checkbox" id="chkTrack"> Мой трек</label>
-  <p class="note">Глубин и изобат пока нет: открытых карт глубин Ладоги нет, официальные зашифрованы. Не для навигации: на борту штатный плоттер или бумажная карта.</p>
+  <hr>
+  <h3 style="margin:6px 0">Мои карты (атлас и лоция экипажа)</h3>
+  <p class="small muted" id="mcStat">Листы атласа, привязанные к карте: глубины, изобаты, буи и фарватеры поверх карты, без интернета. Файл хранится только на этом устройстве.</p>
+  <div id="mcList"></div>
+  <div class="row" id="mcOpRow" hidden><label class="small" style="flex:1">Прозрачность <input type="range" id="mcOp" min="30" max="100" step="5" style="width:100%"></label></div>
+  <div class="row"><button id="mcLoad">Загрузить файл карт</button><input type="file" id="mcFile" accept=".json,application/json" hidden><button id="mcDel" hidden>Удалить</button></div>
+  <p class="note">Глубины — только на «Моих картах» из атласа экипажа; оцифровка изобат и тревога «мель по курсу» в разработке. Не для навигации: на борту штатный плоттер или бумажная карта.</p>
 </section>
 
 <section class="panel" id="p-point" hidden>
@@ -315,6 +321,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <p><b>3. На воде.</b> «GPS» показывает скорость, курс и трек. «Якорь» включает тревогу, если лодку тащит. «AIS» показывает суда рядом.</p>
   <p><b>Без интернета.</b> Перед выходом откройте переход и нажмите «Погода по маршруту»: прогноз сохранится. Карта сохраняется там, где вы её уже смотрели. Вверху справа видно, насколько свежий прогноз.</p>
   <p><b>Лоция и штурман.</b> «Ещё» → «Лоция и штурман» → загрузите файл лоции экипажа (kurs-lotsia.json). Спрашивайте обычными словами: «канал Свирицы», «укрытие Приозерск», «мачта 14 м». Кнопка «По маршруту» соберёт мосты, опасности и связь на вашем переходе, и это же попадёт в брифинг. Файл хранится только на телефоне.</p>
+  <p><b>Мои карты.</b> «Слои» → «Мои карты» → загрузите kurs-maps.json: листы атласа экипажа лягут на карту с глубинами и буями. У каждого листа указана точность привязки в метрах. Ползунок меняет прозрачность.</p>
   <p><b>Цвета.</b> Синий и зелёный — слабый ветер. Жёлтый — свежий. Оранжевый и красный — сильный. Фиолетовый — шторм.</p>
   <p class="note">Тестовая версия. Решения принимает шкипер.</p>
 </section>
@@ -331,7 +338,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.3';
+const VER='0.9.4';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -998,6 +1005,26 @@ $$('#p-lotsia [data-lq]').forEach(b=>b.onclick=()=>{$('#lzQ').value='';lzAsk(b.d
 $('#lzPts').onchange=e=>{S.lzPts=e.target.checked;saveS();lzPts()};
 $('#lzDel').onclick=async()=>{await lzIDB('readwrite',st=>st.delete('lotsia')).catch(()=>{});LZ.f=null;LZ.idx=null;lzPts();lzUI();$('#lzOut').innerHTML='';toast('Лоция удалена с устройства')};
 lzIDB('readonly',st=>st.get('lotsia')).then(db=>{if(db)lzSet(db,false)}).catch(e=>logE('lotsia idb '+e.message)).finally(lzUI);
+
+/* ===== мои карты: привязанные листы атласа экипажа (только на устройстве) ===== */
+const MC={sheets:[],ov:{}};map.createPane('mycharts');map.getPane('mycharts').style.zIndex=250;
+function mcRender(){const L0=$('#mcList');$('#mcDel').hidden=!MC.sheets.length;$('#mcOpRow').hidden=!MC.sheets.length;$('#mcLoad').textContent=MC.sheets.length?'Заменить файл карт':'Загрузить файл карт';
+  if(!MC.sheets.length){L0.innerHTML='';return}$('#mcOp').value=Math.round((S.mcOp||.85)*100);
+  L0.innerHTML=MC.sheets.map((x,i)=>`<div class="row" style="flex-wrap:nowrap;gap:8px"><label style="flex:1;min-width:0"><input type="checkbox" data-mci="${i}" ${(S.mcOn||{})[x.id]!==false?'checked':''}> ${lzE(x.name)} <span class="small muted">· точность ≈${x.err_m} м (до ${x.err_max_m})</span></label><button data-mcz="${i}">Показать</button></div>`).join('');
+  L0.querySelectorAll('[data-mci]').forEach(c=>c.onchange=()=>{const x=MC.sheets[+c.dataset.mci];S.mcOn=Object.assign({},S.mcOn,{[x.id]:c.checked});saveS();mcShow()});
+  L0.querySelectorAll('[data-mcz]').forEach(b=>b.onclick=()=>{const x=MC.sheets[+b.dataset.mcz];S.mcOn=Object.assign({},S.mcOn,{[x.id]:true});saveS();mcShow();mcRender();closePanel();map.fitBounds(x.bounds)})}
+async function mcShow(){for(const x of MC.sheets){const on=(S.mcOn||{})[x.id]!==false;let o=MC.ov[x.id];
+    if(on&&!o){try{const url=URL.createObjectURL(await (await fetch(x.img)).blob());o=MC.ov[x.id]=L.imageOverlay(url,x.bounds,{pane:'mycharts',opacity:S.mcOp||.85,interactive:false})}catch(e){logE('mc '+e.message);continue}}
+    if(o){o.setOpacity(S.mcOp||.85);if(on&&!map.hasLayer(o))o.addTo(map);if(!on&&map.hasLayer(o))map.removeLayer(o)}}
+  cvF.classList.toggle('mcdim',Object.values(MC.ov).some(o=>map.hasLayer(o)))}
+async function mcSet(db,save){if(!db||!Array.isArray(db.sheets)||!db.sheets.length||!db.sheets.every(x=>x.img&&x.bounds))throw new Error('нет листов');
+  Object.values(MC.ov).forEach(o=>map.removeLayer(o));MC.ov={};MC.sheets=db.sheets;if(save)await lzIDB('readwrite',st=>st.put(db,'maps'));
+  $('#mcStat').textContent=`${db.name||'Мои карты'}: ${db.sheets.length} лист(ов). Точность — по опорным точкам (маяки, буи, мысы). Хранится только на этом устройстве.`;mcRender();mcShow()}
+$('#mcLoad').onclick=()=>$('#mcFile').click();
+$('#mcFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{await mcSet(JSON.parse(r.result),true);toast(`Мои карты: ${MC.sheets.length} лист(ов) загружено`)}catch(er){logE('maps '+er.message);toast('Не тот файл: нужен kurs-maps.json')}};r.readAsText(f);e.target.value=''};
+$('#mcOp').oninput=e=>{S.mcOp=+e.target.value/100;Object.values(MC.ov).forEach(o=>o.setOpacity(S.mcOp))};$('#mcOp').onchange=()=>saveS();
+$('#mcDel').onclick=async()=>{await lzIDB('readwrite',st=>st.delete('maps')).catch(()=>{});Object.values(MC.ov).forEach(o=>map.removeLayer(o));MC.ov={};cvF.classList.remove('mcdim');MC.sheets=[];mcRender();$('#mcStat').textContent='Мои карты удалены с устройства.'};
+lzIDB('readonly',st=>st.get('maps')).then(db=>{if(db)mcSet(db,false)}).catch(e=>logE('maps idb '+e.message));
 
 $('#mNight').onclick=()=>{S.autoNight=false;S.night=!S.night;saveS();document.body.classList.toggle('night',S.night);$('#sNight').checked=S.night;if(S.base==='kurs')setBase('kurs')};
 /* ===== офлайн-карта района ===== */
