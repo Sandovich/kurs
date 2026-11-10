@@ -17,6 +17,7 @@ body.night{--bg:#000;--panel:#140000;--panel2:#1d0000;--line:#3a0a0a;--text:#ff5
 body.night .leaflet-tile-pane{filter:grayscale(1) contrast(1.3) brightness(.32) sepia(1) hue-rotate(-50deg) saturate(3.5) brightness(.42)}
 body.night #map{background:#000}
 body.night .leaflet-control-zoom a,body.night .leaflet-bar a{background:#140000;color:#ff5a4a;border-color:#3a0a0a}
+.lpAct{display:grid;gap:6px;margin-top:10px;min-width:190px}.lpAct button{min-height:40px;border-radius:10px;border:1px solid #d5dde6;background:#f2f5f8;color:#10202f;font-weight:600;font-size:14px}.lpAct button:hover{background:#e6ecf2}.lpAct .pri{background:#1677d2;border-color:transparent;color:#fff}.lpAct .pri:hover{background:#0f67bb}body.night .lpAct button{background:#2a0000;border-color:#5a0000;color:#ff6a5a}body.night .lpAct .pri{background:#7a0000;color:#ffd0c8}
 body.night .leaflet-popup-content-wrapper,body.night .leaflet-popup-tip{background:#140000;color:#ff5a4a}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;width:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--text);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
@@ -24,6 +25,7 @@ html,body{margin:0;height:100%;width:100%;overflow:hidden;overscroll-behavior:no
 button,select,input{font:inherit;color:inherit}
 button{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px;cursor:pointer;white-space:nowrap}
 #top nav button{flex:1 1 0;min-width:0;padding:6px 4px;font-size:14px;min-height:42px;overflow:hidden;text-overflow:ellipsis}
+#top nav button .ic{display:none;width:20px;height:20px;flex:none}#btnMore{flex:0 0 46px!important;display:inline-flex;align-items:center;justify-content:center;padding:0!important}#top nav #btnMore .ic{display:block}#top nav #btnMore span{display:none}
 button.on{background:var(--accent);color:#001321;border-color:var(--accent)}
 button.primary{background:var(--accent);color:#001321;border-color:var(--accent);font-weight:600}
 input,select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;min-height:42px;max-width:100%}
@@ -37,11 +39,12 @@ body.night #top{background:linear-gradient(#000,rgba(0,0,0,0))}
 .brand small{font-weight:400;color:var(--muted);font-size:11px;display:block}
 .brand{display:flex;align-items:center;gap:7px}.brand .bm{width:26px;height:26px;flex:none}
 @media (max-width:430px){.brand small{display:none}.brand{font-size:14px}}
-@media (min-width:820px){#top{padding:10px 14px;gap:12px;background:none}#top nav{flex:0 1 auto;gap:8px}#top nav button{flex:0 0 auto;padding:8px 16px;font-size:14px;min-height:38px;border-radius:9px;background:rgba(16,34,51,.92);backdrop-filter:blur(6px)}#top nav button.on{background:var(--accent)}#btnMore{flex:0 0 46px!important;font-size:18px;padding:0;overflow:visible;text-overflow:clip}.brand{font-size:17px;margin-right:6px;min-width:60px}.brand small{display:block}
+@media (min-width:820px){#top{padding:12px 16px;gap:14px;background:none}#top nav{flex:0 1 auto;gap:2px;padding:4px;border-radius:14px;background:rgba(12,26,40,.82);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);border:1px solid rgba(255,255,255,.09);box-shadow:0 10px 30px rgba(0,0,0,.28)}#top nav button{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;padding:0 14px;font-size:14px;font-weight:500;letter-spacing:.1px;min-height:38px;border-radius:10px;background:transparent;border:0;color:#e9f0f7;overflow:visible;transition:background .15s,color .15s}#top nav button .ic{display:block;opacity:.9}#top nav button:hover{background:rgba(255,255,255,.08)}#top nav button.on{background:#1677d2;color:#fff}#top nav button.on .ic{opacity:1}#btnMore{flex:0 0 auto!important;padding:0 14px!important}#top nav #btnMore span{display:inline}.brand{padding:6px 12px 6px 8px;border-radius:14px;background:rgba(12,26,40,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.09);box-shadow:0 10px 30px rgba(0,0,0,.28)}.brand{font-size:17px;margin-right:6px;min-width:60px}.brand small{display:block}
  #hud,#navd{max-width:420px}#timebar{left:12px;right:auto;width:460px;border-radius:14px 14px 0 0;padding:10px 12px 10px;background:rgba(16,34,51,.94);border:1px solid var(--line);border-bottom:0}body.night #timebar{background:rgba(20,0,0,.94)}.leaflet-bottom.leaflet-right{bottom:110px}}
 @media (max-width:400px){.brand{display:none}}
 select{-webkit-appearance:none;appearance:none;background:var(--panel2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238aa1b5'/%3E%3C/svg%3E") no-repeat right 10px center;padding-right:26px;color:var(--text)}
 #top nav{display:flex;gap:5px;flex:1;min-width:0}
+@media (min-width:820px){#top nav{flex:0 0 auto}}
 #top nav::-webkit-scrollbar{display:none}
 #status{position:fixed;z-index:1000;right:10px;top:calc(env(safe-area-inset-top) + 64px);max-width:calc(100vw - 20px);display:flex;flex-direction:column;gap:6px;align-items:flex-end;pointer-events:none}
 .chip{background:rgba(16,34,51,.92);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px}
@@ -120,13 +123,13 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <div id="map"></div>
 
 <header id="top">
-  <div class="brand"><svg class="bm" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M29 13.5 C 39.5 21, 45 32.5, 46 45 L 29 45 Z" fill="#FF6B2C"/><path d="M25.6 18 L25.6 45 L15.5 45 C 18.5 35.5, 21.5 26.5, 25.6 18 Z" fill="currentColor"/><path d="M13.5 48.4 L50.5 48.4 C 47.5 53.6, 40.5 56.2, 32 56.2 C 23.5 56.2, 16.5 53.6, 13.5 48.4 Z" fill="currentColor"/></svg><span>Курс<small>v0.9.4 · тест</small></span></div>
+  <div class="brand"><svg class="bm" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M29 13.5 C 39.5 21, 45 32.5, 46 45 L 29 45 Z" fill="#FF6B2C"/><path d="M25.6 18 L25.6 45 L15.5 45 C 18.5 35.5, 21.5 26.5, 25.6 18 Z" fill="currentColor"/><path d="M13.5 48.4 L50.5 48.4 C 47.5 53.6, 40.5 56.2, 32 56.2 C 23.5 56.2, 16.5 53.6, 13.5 48.4 Z" fill="currentColor"/></svg><span>Курс<small id="brandVer">тест</small></span></div>
   <nav>
-    <button data-panel="route" id="btnRoute">Переход</button>
-    <button id="btnGps">GPS</button>
-    <button data-panel="ais" id="btnAis">AIS</button>
-    <button data-panel="layers">Слои</button>
-    <button data-panel="more" id="btnMore" aria-label="Ещё" style="flex:0 0 46px">☰</button>
+    <button data-panel="route" id="btnRoute"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8 17.2c5-1 2.5-6.8 8-9.6"/></svg><span>Переход</span></button>
+    <button id="btnGps"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></svg><span>GPS</span></button>
+    <button data-panel="ais" id="btnAis"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 15.5h17l-2.6 4H6.1z"/><path d="M12 3.5v12M12 4.5l5.5 8H12"/></svg><span>AIS</span></button>
+    <button data-panel="layers"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l8.5 4.6L12 12.7 3.5 8.1z"/><path d="M3.5 12.4l8.5 4.6 8.5-4.6"/><path d="M3.5 16.4l8.5 4.6 8.5-4.6" opacity=".55"/></svg><span>Слои</span></button>
+    <button data-panel="more" id="btnMore" aria-label="Ещё"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></svg><span>Ещё</span></button>
   </nav>
 </header>
 
@@ -293,7 +296,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <h2>Лоция и штурман</h2>
   <p id="lzStat" class="small muted"></p>
   <div id="lzEmpty" hidden>
-    <p class="small">Здесь работает штурман по вашей лоции: атлас, очерки, мосты, УКВ-каналы, стоянки и опасности. Файл лоции хранится только на этом устройстве и на сайт не выкладывается.</p>
+    <p class="small">Штурман по лоции «Курса»: мосты, шлюзы, УКВ-каналы, стоянки, топливо и опасности Невы, Ладоги, Свири, Волхова и Онеги.</p>
   </div>
   <div class="row"><button id="lzLoad">Загрузить файл лоции</button><input type="file" id="lzFile" accept=".json,application/json" hidden></div>
   <div id="lzMain" hidden>
@@ -301,7 +304,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
     <div class="row lzChips" style="gap:6px"><button data-lq="@near">📍 Рядом со мной</button><button data-lq="@route">🧭 По маршруту</button><button data-lq="@mast">⛵ Мосты и ЛЭП под мою мачту</button><button data-lq="#vhf">📻 УКВ</button><button data-lq="#hazard">⚠ Опасности</button><button data-lq="#berth">⚓ Стоянки</button><button data-lq="#fuel">⛽ Топливо</button><button data-lq="#rule">📋 Правила</button></div>
     <label class="small"><input type="checkbox" id="lzPts"> Точки лоции на карте</label>
     <div id="lzOut" style="margin-top:8px"></div>
-    <p class="small muted" style="margin-top:10px">Ответы взяты из вашего атласа. Он может быть устаревшим: перед выходом сверяйтесь с действующими извещениями и диспетчером. Когда появится ИИ-штурман на сервере, он будет отвечать по этой же базе.</p>
+    <p class="small muted" style="margin-top:10px">Лоция «Курса» собрана экипажем по открытым сведениям и пересказана своими словами. Она не заменяет официальные навигационные документы: перед выходом сверяйтесь с извещениями и диспетчером.</p>
     <div class="row"><button id="lzDel">Удалить лоцию с устройства</button></div>
   </div>
 </section>
@@ -339,7 +342,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.5';
+const VER='0.9.5';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -980,7 +983,7 @@ function lzBrief(){const L=[],regs=lzRouteRegions();if(!regs.size)return L;const
 const lzE=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function lzHi(t,q){let h=lzE(t);lzTok(q).filter(w=>w.length>=3).forEach(w=>{h=h.replace(new RegExp('(^|[^а-яa-z0-9])('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'[а-яa-z0-9]*)','gi'),'$1<mark>$2</mark>')});return h}
 function lzRender(list,q,head){const o=$('#lzOut');setTimeout(()=>o.scrollIntoView({block:'start',behavior:'smooth'}),50);if(!list.length){o.innerHTML=(head||'')+'<p class="muted small">В лоции ничего не нашёл. Попробуйте другими словами: название места, «канал», «мост», «мель», «стоянка».</p>';return}
-  o.innerHTML=(head||'')+list.map((x,i)=>`<div class="lzI"><div>${LZ_K[x.k]||'·'} ${lzHi(x.t,q||'')}</div><div class="small muted">${(x.r||[]).map(r=>LZ_R[r]).join(', ')}${x.a?' · '+lzE(x.a.slice(0,80)):''} · ${lzE(x.p)}${x.ll?` · <a href="#" data-lzi="${i}">на карте</a>`:''}</div></div>`).join('');
+  o.innerHTML=(head||'')+list.map((x,i)=>`<div class="lzI"><div>${LZ_K[x.k]||'·'} ${lzHi(x.t,q||'')}</div><div class="small muted">${(x.r||[]).map(r=>LZ_R[r]).join(', ')}${x.a?' · '+lzE(x.a.slice(0,80)):''}${x.p?' · '+lzE(x.p):''}${x.chk?' · <span style="color:var(--warn)">уточнить</span>':''}${x.ll?` · <a href="#" data-lzi="${i}">на карте</a>`:''}</div></div>`).join('');
   o.querySelectorAll('[data-lzi]').forEach(a=>a.onclick=e=>{e.preventDefault();const x=list[+a.dataset.lzi];closePanel();map.flyTo(x.ll,13);L.popup().setLatLng(x.ll).setContent(`<div class="small">${lzE(x.t)}</div>`).openOn(map)})}
 function lzAsk(q){q=(q||'').trim();if(!LZ.f)return;
   if(q==='@near'){const p=G.pos||[map.getCenter().lat,map.getCenter().lng],reg=new Set([lzRegion(p)]);const near=LZ.f.filter(x=>x.ll&&dist(p,x.ll)<40000).sort((a,b)=>dist(p,a.ll)-dist(p,b.ll)).slice(0,8);
@@ -994,23 +997,25 @@ function lzAsk(q){q=(q||'').trim();if(!LZ.f)return;
     if(!m)return lzRender(rows.slice(0,25).map(r=>r[1]),'','<p class="small">Укажите высоту лодки над водой в «Ещё → Лодка и пределы» или в вопросе («мачта 14 м»). Пока — самые низкие мосты и ЛЭП:</p>');
     const low=rows.filter(r=>r[0]<m+1);return lzRender(low.map(r=>r[1]),'',`<p class="small"><b>Высота ${f1(m)} м${regs?' · по району маршрута':''}:</b> ${low.length?`${low.length} мест ниже ${f1(m+1)} м (запас меньше 1 м) — там нужна разводка или не пройти. Высоты даны от расчётного уровня; при высокой воде меньше.`:'по лоции все мосты и ЛЭП выше, запас больше 1 м.'}</p>`)}
   lzRender(lzSearch(q),q.startsWith('#')?'':q,q.startsWith('#')?`<p class="small"><b>${{vhf:'УКВ-каналы и диспетчеры',hazard:'Опасности и запреты',berth:'Стоянки и укрытия',fuel:'Топливо и снабжение',rule:'Правила и контакты'}[q.slice(1)]||''}</b> — сначала ваш район (${[...lzCtxRegions()].map(r=>LZ_R[r]).join(', ')}).</p>`:'')}
-function lzPts(){if(LZ.layer){map.removeLayer(LZ.layer);LZ.layer=null}if(!LZ.f||!S.lzPts)return;LZ.layer=L.layerGroup(LZ.f.filter(x=>x.ll).map(x=>L.circleMarker(x.ll,{radius:5,color:'#FF6B2C',weight:2,fillOpacity:.5}).bindPopup(`<div class="small">${LZ_K[x.k]||''} ${lzE(x.t)}<br><span class="muted">${lzE(x.p)}</span></div>`))).addTo(map)}
-function lzUI(){const has=!!LZ.f;$('#lzEmpty').hidden=has;$('#lzMain').hidden=!has;$('#lzLoad').textContent=has?'Заменить файл лоции':'Загрузить файл лоции';
-  $('#lzStat').textContent=has?`${LZ.meta.name||'Лоция'}: ${LZ.f.length} фактов, ${LZ.f.filter(x=>x.ll).length} с координатами · собрана ${LZ.meta.built||'?'} · только на этом устройстве`:'Лоция не загружена.';$('#lzPts').checked=!!S.lzPts}
-async function lzSet(db,save){if(!db||!Array.isArray(db.facts)||!db.facts.length)throw new Error('нет фактов');LZ.f=db.facts.filter(x=>x&&typeof x.t==='string');LZ.meta={name:db.name,built:db.built,src:db.src};lzIndex();
+function lzPts(){if(LZ.layer){map.removeLayer(LZ.layer);LZ.layer=null}if(!LZ.f||!S.lzPts)return;LZ.layer=L.layerGroup(LZ.f.filter(x=>x.ll).map(x=>L.circleMarker(x.ll,{radius:5,color:'#FF6B2C',weight:2,fillOpacity:.5}).bindPopup(`<div class="small">${LZ_K[x.k]||''} ${lzE(x.t)}${x.p?`<br><span class="muted">${lzE(x.p)}</span>`:''}</div>`))).addTo(map)}
+function lzUI(){const has=!!LZ.f;$('#lzEmpty').hidden=has;$('#lzMain').hidden=!has;$('#lzLoad').textContent=LZ.own?'Вернуть встроенную лоцию':'Загрузить свой файл лоции';$('#lzDel').hidden=!LZ.own;
+  $('#lzStat').textContent=has?`${LZ.meta.name||'Лоция'}: ${LZ.f.length} фактов, ${LZ.f.filter(x=>x.ll).length} с координатами · ${LZ.own?'свой файл, только на этом устройстве':'встроена в «Курс», работает без интернета'}`:'Встроенная лоция готовится — скоро появится в обновлении.';$('#lzPts').checked=!!S.lzPts}
+async function lzSet(db,save){if(!db||!Array.isArray(db.facts)||!db.facts.length)throw new Error('нет фактов');LZ.f=db.facts.filter(x=>x&&typeof x.t==='string');LZ.meta={name:db.name,built:db.built,src:db.src};LZ.own=!!save||!!db.own;if(save)db.own=true;lzIndex();
   if(save)await lzIDB('readwrite',st=>st.put(db,'lotsia'));lzUI();lzPts()}
-$('#lzLoad').onclick=()=>$('#lzFile').click();
+$('#lzLoad').onclick=()=>{if(LZ.own)$('#lzDel').click();else $('#lzFile').click()};
 $('#lzFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{await lzSet(JSON.parse(r.result),true);toast(`Лоция загружена: ${LZ.f.length} фактов`)}catch(er){logE('lotsia '+er.message);toast('Не тот файл: нужен kurs-lotsia.json')}};r.readAsText(f);e.target.value=''};
 $('#lzGo').onclick=()=>lzAsk($('#lzQ').value);$('#lzQ').onkeydown=e=>{if(e.key==='Enter')lzAsk($('#lzQ').value)};
 $$('#p-lotsia [data-lq]').forEach(b=>b.onclick=()=>{$('#lzQ').value='';lzAsk(b.dataset.lq)});
 $('#lzPts').onchange=e=>{S.lzPts=e.target.checked;saveS();lzPts()};
-$('#lzDel').onclick=async()=>{await lzIDB('readwrite',st=>st.delete('lotsia')).catch(()=>{});LZ.f=null;LZ.idx=null;lzPts();lzUI();$('#lzOut').innerHTML='';toast('Лоция удалена с устройства')};
-lzIDB('readonly',st=>st.get('lotsia')).then(db=>{if(db)lzSet(db,false)}).catch(e=>logE('lotsia idb '+e.message)).finally(lzUI);
+$('#lzDel').onclick=async()=>{await lzIDB('readwrite',st=>st.delete('lotsia')).catch(()=>{});LZ.f=null;LZ.idx=null;LZ.own=false;$('#lzOut').innerHTML='';lzBuiltin().then(()=>toast('Свой файл удалён, работает встроенная лоция'))};
+// встроенная лоция «Курса» (своими словами, data/lotsia.json); свой файл экипажа — поверх неё
+async function lzBuiltin(){try{const r=await fetch('data/lotsia.json');if(r.ok)await lzSet(await r.json(),false)}catch(e){logE('lotsia builtin '+e.message)}lzUI();lzPts()}
+lzIDB('readonly',st=>st.get('lotsia')).then(db=>db?lzSet(db,false):lzBuiltin()).catch(e=>{logE('lotsia idb '+e.message);return lzBuiltin()}).finally(lzUI);
 
 /* ===== мои карты: привязанные листы атласа экипажа (только на устройстве) ===== */
 const MC={sheets:[],ov:{},url:{},dep:[],name:''};map.createPane('mycharts');map.getPane('mycharts').style.zIndex=250;
 const mcKey=id=>'mimg:'+id,mcArea=x=>(x.bounds[1][0]-x.bounds[0][0])*(x.bounds[1][1]-x.bounds[0][1]);
-function mcRender(){const L0=$('#mcList');$('#mcDel').hidden=!MC.sheets.length;$('#mcDepRow').hidden=!MC.dep.length;$('#mcDep').checked=S.mcDep!==false;$('#mcOpRow').hidden=!MC.sheets.length;$('#mcLoad').textContent=MC.sheets.length?'Добавить файлы карт':'Загрузить файл карт';
+function mcRender(){const L0=$('#mcList');$('#mcDel').hidden=!MC.sheets.length;$('#mcDepRow').hidden=!(MC.depAll||[]).length;$('#mcDep').checked=S.mcDep!==false;$('#mcOpRow').hidden=!MC.sheets.length;$('#mcLoad').textContent=MC.sheets.length?'Добавить файлы карт':'Загрузить файл карт';
   if(!MC.sheets.length){L0.innerHTML='';return}$('#mcOp').value=Math.round((S.mcOp||.85)*100);
   L0.innerHTML=MC.sheets.map((x,i)=>`<div class="row" style="flex-wrap:nowrap;gap:8px"><label style="flex:1;min-width:0"><input type="checkbox" data-mci="${i}" ${(S.mcOn||{})[x.id]!==false?'checked':''}> ${lzE(x.name)} <span class="small muted">· ±${x.err_m} м${(x.depths||[]).length?` · глубин ${x.depths.length}`:''}</span></label><button data-mcz="${i}">Показать</button></div>`).join('');
   L0.querySelectorAll('[data-mci]').forEach(c=>c.onchange=()=>{const x=MC.sheets[+c.dataset.mci];S.mcOn=Object.assign({},S.mcOn,{[x.id]:c.checked});saveS();mcShow()});
@@ -1027,7 +1032,7 @@ async function mcShow(){if(mcBusy){mcAgain=true;return}mcBusy=true;try{
     MC.ov[x.id].setOpacity(S.mcOp||.85);MC.ov[x.id].bringToFront()}
   cvF.classList.toggle('mcdim',Object.keys(MC.ov).length>0)}catch(e){logE('mc '+e.message)}finally{mcBusy=false;if(mcAgain){mcAgain=false;mcShow()}}}
 map.on('moveend',()=>{if(MC.sheets.length)mcShow()});
-function mcApply(){MC.sheets.sort((a,c)=>a.id.localeCompare(c.id,undefined,{numeric:true}));MC.dep=MC.sheets.flatMap(x=>x.depths||[]);dpDraw();
+function mcApply(){MC.sheets.sort((a,c)=>a.id.localeCompare(c.id,undefined,{numeric:true}));MC.dep=MC.sheets.flatMap(x=>x.depths||[]);dpMerge();
   $('#mcStat').textContent=MC.sheets.length?`${MC.name||'Мои карты'}: ${MC.sheets.length} лист(ов)${MC.dep.length?`, глубин: ${MC.dep.length}`:''}. Точность — по опорным точкам (маяки, буи, мысы). Хранится только на этом устройстве.`:'Мои карты удалены с устройства.';mcRender();mcShow()}
 const mcSave=()=>lzIDB('readwrite',st=>st.put({v:2,name:MC.name,sheets:MC.sheets},'maps'));
 // файл kurs-maps*.json: листы с картинкой (data:image/webp) — картинки кладём в IndexedDB отдельно, список — без них
@@ -1047,19 +1052,22 @@ map.createPane('depths');map.getPane('depths').style.zIndex=440;map.getPane('dep
 const dpCv=document.createElement('canvas');dpCv.className='leaflet-zoom-hide';map.getPane('depths').appendChild(dpCv);
 function dpCol(d){const dr=S.boat.draft||1.8;return d<=dr+.3?'#e0262b':d<=dr+1.5?'#e98a00':S.night?'#8fc2ff':'#1f5fbf'}
 function dpTxt(d){return d<10?(Math.round(d*10)/10).toString().replace('.',','):String(Math.round(d))}
-function dpDraw(){const z=map.getZoom(),sz=map.getSize(),on=S.mcDep!==false&&MC.dep.length&&z>=10,r=devicePixelRatio||1;
+function dpDraw(){const z=map.getZoom(),sz=map.getSize(),on=S.mcDep!==false&&(MC.depAll||[]).length&&z>=10,r=devicePixelRatio||1;
   const tl=map.containerPointToLayerPoint([0,0]);L.DomUtil.setPosition(dpCv,tl);dpCv.width=sz.x*r;dpCv.height=sz.y*r;dpCv.style.width=sz.x+'px';dpCv.style.height=sz.y+'px';
   const g=dpCv.getContext('2d');g.setTransform(r,0,0,r,0,0);g.clearRect(0,0,sz.x,sz.y);if(!on)return;
   const b=map.getBounds().pad(.05),fs=z>=14?13:z>=12?12:11,cell=z>=14?20:z>=12?24:30,used=new Set();
-  const pts=MC.dep.filter(q=>b.contains([q[0],q[1]])).sort((a,c)=>a[2]-c[2]);
+  const pts=MC.depAll.filter(q=>b.contains([q[0],q[1]])).sort((a,c)=>a[2]-c[2]);
   g.font=`600 ${fs}px -apple-system,system-ui,sans-serif`;g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
   for(const q of pts){const c=map.latLngToContainerPoint([q[0],q[1]]),k=Math.floor(c.x/cell)+':'+Math.floor(c.y/cell);if(used.has(k))continue;used.add(k);
     const t=dpTxt(q[2]);g.lineWidth=3;g.strokeStyle=S.night?'rgba(0,0,0,.85)':'rgba(255,255,255,.92)';g.strokeText(t,c.x,c.y);g.fillStyle=dpCol(q[2]);g.fillText(t,c.x,c.y)}}
 map.on('moveend zoomend resize viewreset',dpDraw);
+// встроенные глубины «Курса» (data/depths.json: [lat,lon,м,лист]); листы, загруженные своим файлом, их заменяют
+MC.depB={ids:[],pts:[]};function dpMerge(){const own=new Set(MC.sheets.filter(x=>(x.depths||[]).length).map(x=>x.id));MC.depAll=MC.depB.pts.filter(q=>!own.has(MC.depB.ids[q[3]])).concat(MC.dep);dpDraw()}
+fetch('data/depths.json').then(r=>r.ok?r.json():null).then(d=>{if(d?.pts){MC.depB={ids:d.sheets.map(x=>x.id),pts:d.pts};dpMerge();mcRender()}}).catch(e=>logE('depths '+e.message));
 $('#mcDep').onchange=e=>{S.mcDep=e.target.checked;saveS();dpDraw()};
-let shoalT=0;function shoalCheck(){if(!MC.dep.length||!G.pos||G.sog==null||G.sog<1||G.cog==null)return chip('shoal',null);
+let shoalT=0;function shoalCheck(){if(!(MC.depAll||[]).length||!G.pos||G.sog==null||G.sog<1||G.cog==null)return chip('shoal',null);
   const dr=S.boat.draft||1.8,ahead=Math.max(300,G.sog*NM/60*3);let best=null;
-  for(const q of MC.dep){if(q[2]>dr+.3)continue;const d=dist(G.pos,[q[0],q[1]]);if(d>ahead)continue;let a=Math.abs(((brg(G.pos,[q[0],q[1]])-G.cog)+540)%360-180);
+  for(const q of MC.depAll){if(q[2]>dr+.3)continue;const d=dist(G.pos,[q[0],q[1]]);if(d>ahead)continue;let a=Math.abs(((brg(G.pos,[q[0],q[1]])-G.cog)+540)%360-180);
     if(a<=25&&(!best||d<best.d))best={d,v:q[2]}}
   if(!best)return chip('shoal',null);chip('shoal',`Мель по курсу: ${dpTxt(best.v)} м через ${Math.round(best.d)} м`,'bad');
   if(Date.now()-shoalT>120000){shoalT=Date.now();navigator.vibrate?.([200,100,200]);beep();toast(`⚠ Мель по курсу: ${dpTxt(best.v)} м через ${Math.round(best.d)} м (осадка ${dpTxt(dr)} м)`,7000)}}
@@ -1135,7 +1143,7 @@ const LP={t:null,x:0,y:0,suppress:false};
 function lpMenu(ll){const me=G.pos;let info=`<b>${fmtC(ll.lat,1)}<br>${fmtC(ll.lng,0)}</b>`;
   if(me){const d=dist(me,[ll.lat,ll.lng]);info+=`<br>от лодки: ${f0(brg(me,[ll.lat,ll.lng]))}°, ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}`;if(G.sog>.5)info+=`, ≈${fmtHM(d/NM/G.sog*36e5)} при ${f1(G.sog)} уз`}
   const w=WM.g?isWater(ll.lat,ll.lng):null;if(w===false)info+='<br><span style="color:#c00">суша</span>';
-  const pop=L.popup({closeButton:true,autoPan:true}).setLatLng(ll).setContent(`<div style="font-size:13px;line-height:1.4">${info}<div style="display:grid;gap:6px;margin-top:8px"><button data-a="go">➜ Идти сюда</button><button data-a="wx">Прогноз здесь</button><button data-a="rt">＋ В маршрут</button></div></div>`).openOn(map);
+  const pop=L.popup({closeButton:true,autoPan:true}).setLatLng(ll).setContent(`<div style="font-size:13px;line-height:1.4">${info}<div class="lpAct"><button data-a="go" class="pri">Идти сюда</button><button data-a="wx">Прогноз здесь</button><button data-a="rt">Добавить в маршрут</button></div></div>`).openOn(map);
   const el=pop.getElement();el.querySelectorAll('button').forEach(b=>b.onclick=()=>{map.closePopup();const a=b.dataset.a;
     if(a==='go')navStart('point',[[ll.lat,ll.lng]],0,'Точка '+fmtC(ll.lat,1));else if(a==='wx')showPoint(ll);else{RT.pts.push([ll.lat,ll.lng]);routeChanged();toast(`Точка ${RT.pts.length} добавлена в маршрут`)}})}
 const mc=map.getContainer();
