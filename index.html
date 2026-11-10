@@ -364,7 +364,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.12';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.13';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -761,15 +761,17 @@ function brief(rows){const el=$('#rBrief');if(rows===undefined)rows=RT.fc?evalRo
 
 /* ===== календарь выхода по ансамблю ECMWF (51 вариант) ===== */
 {const c=store.get('routeens',null);if(c&&JSON.stringify(c.pts)===JSON.stringify(RT.pts))RT.ens=c}
-$('#rEns').onclick=()=>ensWx();
-async function ensWx(){if(RT.pts.length<2)return toast('Поставьте минимум две точки');const out=$('#rEnsOut');out.innerHTML='<p class="muted small">Загружаю 51 вариант прогноза ECMWF на 7 суток…</p>';
+// нажали «Календарь» — панель сразу едет к календарю (и ещё раз, когда он построен)
+function ensScroll(){const o=$('#rEnsOut'),pn=$('#p-route');if(!o||!pn)return;requestAnimationFrame(()=>{const h=pn.querySelector('h2'),top=o.getBoundingClientRect().top-pn.getBoundingClientRect().top+pn.scrollTop-(h?h.offsetHeight:0)-8;pn.scrollTo({top,behavior:'smooth'})})}
+$('#rEns').onclick=()=>{if(RT.ens&&JSON.stringify(RT.ens.pts)===JSON.stringify(RT.pts)&&Date.now()-RT.ens.fetched<3*3600e3){renderEns();ensScroll();return}ensWx()};
+async function ensWx(){if(RT.pts.length<2)return toast('Поставьте минимум две точки');const out=$('#rEnsOut');out.innerHTML='<p class="muted small">Загружаю 51 вариант прогноза ECMWF на 7 суток…</p>';ensScroll();
   const L2=legs(),total=L2.reduce((a,l)=>a+l.d,0),n=Math.min(10,Math.max(2,Math.ceil(total/NM/5))),pts=[];
   for(let k=0;k<n;k++){const cum=total*(k+.5)/n,li=Math.max(0,L2.findIndex(l=>cum<=l.cum+l.d));const l=L2[li];pts.push({cum,li,p:lerpPt(l.a,l.b,(cum-l.cum)/l.d)})}
   try{let A=await getJSON(`https://ensemble-api.open-meteo.com/v1/ensemble?latitude=${pts.map(q=>q.p[0].toFixed(3))}&longitude=${pts.map(q=>q.p[1].toFixed(3))}&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m&models=ecmwf_ifs025&wind_speed_unit=kn&forecast_days=7&timeformat=unixtime`,40000);
     if(!Array.isArray(A))A=[A];const h0=A[0].hourly,keys=Object.keys(h0).filter(k=>/^wind_speed_10m(_member\d+)?$/.test(k));
     const ens={pts:RT.pts,fetched:Date.now(),times:h0.time,P:pts.map((q,i)=>({cum:q.cum,li:q.li,p:q.p,m:keys.map(k=>{const sfx=k.slice('wind_speed_10m'.length),h=A[i].hourly;
       return{s:h[k].map(v=>v==null?null:Math.round(v)),g:h['wind_gusts_10m'+sfx].map(v=>v==null?null:Math.round(v)),d:h['wind_direction_10m'+sfx].map(v=>v==null?null:Math.round(v/5)*5)}})}))};
-    RT.ens=ens;if(!store.set('routeens',ens))toast('Календарь не поместился в память: без сети не сохранится');renderEns()}
+    RT.ens=ens;if(!store.set('routeens',ens))toast('Календарь не поместился в память: без сети не сохранится');renderEns();ensScroll()}
   catch(err){logE('ens '+err.message);out.innerHTML=`<p class="badbox">Не загрузилось: ${err.message}</p>`}}
 function etaAt(dep,cum,li,rows){if(rows&&rows[li]&&rows[li].eta){const r=rows[li];return r.eta+(cum-r.cum)/r.d*r.time}return dep+cum/(S.boat.speed*NM/3600000)}
 function ensEval(dep){const E=RT.ens,M=E.P[0].m.length;let bad=0;const mg=[];
