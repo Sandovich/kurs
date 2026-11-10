@@ -342,7 +342,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.6';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.7';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1056,14 +1056,23 @@ function dpDraw(){const z=map.getZoom(),sz=map.getSize(),on=S.mcDep!==false&&(MC
   const tl=map.containerPointToLayerPoint([0,0]);L.DomUtil.setPosition(dpCv,tl);dpCv.width=sz.x*r;dpCv.height=sz.y*r;dpCv.style.width=sz.x+'px';dpCv.style.height=sz.y+'px';
   const g=dpCv.getContext('2d');g.setTransform(r,0,0,r,0,0);g.clearRect(0,0,sz.x,sz.y);if(!on)return;
   const b=map.getBounds().pad(.05),fs=z>=14?13:z>=12?12:11,cell=z>=14?20:z>=12?24:30,used=new Set();
-  const pts=MC.depAll.filter(q=>b.contains([q[0],q[1]])).sort((a,c)=>a[2]-c[2]);
+  const pts=MC.depAll.filter(q=>b.contains([q[0],q[1]])).sort((a,c)=>a[2]-c[2]);MC.dpOn=[];
   g.font=`600 ${fs}px -apple-system,system-ui,sans-serif`;g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
-  for(const q of pts){const c=map.latLngToContainerPoint([q[0],q[1]]),k=Math.floor(c.x/cell)+':'+Math.floor(c.y/cell);if(used.has(k))continue;used.add(k);
-    const t=dpTxt(q[2]);g.lineWidth=3;g.strokeStyle=S.night?'rgba(0,0,0,.85)':'rgba(255,255,255,.92)';g.strokeText(t,c.x,c.y);g.fillStyle=dpCol(q[2]);g.fillText(t,c.x,c.y)}}
+  const box=[],hh=fs/2+2;for(const q of pts){const c=map.latLngToContainerPoint([q[0],q[1]]),k=Math.floor(c.x/cell)+':'+Math.floor(c.y/cell);if(used.has(k))continue;
+    const t=dpTxt(q[2]),hw=g.measureText(t).width/2+3;if(box.some(o=>Math.abs(o[0]-c.x)<o[2]+hw&&Math.abs(o[1]-c.y)<hh*2))continue;used.add(k);box.push([c.x,c.y,hw]);MC.dpOn.push([c.x,c.y,q]);
+    g.lineWidth=3;g.strokeStyle=S.night?'rgba(0,0,0,.85)':'rgba(255,255,255,.92)';g.strokeText(t,c.x,c.y);g.fillStyle=dpCol(q[2]);g.fillText(t,c.x,c.y)}}
 map.on('moveend zoomend resize viewreset',dpDraw);
+// касание цифры глубины: значение + насколько точно стоит на карте
+function dpHit(e){if(S.mcDep===false||!(MC.dpOn||[]).length)return false;const c=map.latLngToContainerPoint(e.latlng);let best=null,bd=17;
+  for(const o of MC.dpOn){const d=Math.hypot(o[0]-c.x,o[1]-c.y);if(d<bd){bd=d;best=o[2]}}if(!best)return false;
+  const sh=best.length>3?(MC.depB.sh||[])[best[3]]:null,dr=S.boat.draft||1.8,v=best[2];
+  const warn=v<=dr+.3?'<span style="color:#e0262b">мельче вашей осадки '+dpTxt(dr)+' м + 0,3</span>':v<=dr+1.5?'<span style="color:#e98a00">запас под килем меньше 1,5 м</span>':'';
+  let acc;if(!sh)acc='из вашего файла карт';else if(sh.est)acc=`<span style="color:#e98a00">место примерное, сдвиг до ${sh.max>=1000?f1(sh.max/1000)+' км':sh.max+' м'}</span> — сверяйтесь с эхолотом`;
+  else acc=`место точное до ±${sh.err_m} м${sh.max>sh.err_m?`, местами до ${sh.max} м`:''}`;
+  L.popup({closeButton:true,autoPan:false,className:'dpPop'}).setLatLng([best[0],best[1]]).setContent(`<div style="font-size:13px;line-height:1.45;max-width:230px"><b style="font-size:17px">${dpTxt(v)} м</b>${warn?'<br>'+warn:''}<br>${acc}${sh?`<br><span style="opacity:.7">лист ${String(sh.n||sh.id).split(' · ')[0].replace(/</g,'&lt;')}</span>`:''}<br><span style="opacity:.7">по атласу 2021 г., дно меняется</span></div>`).openOn(map);return true}
 // встроенные глубины «Курса» (data/depths.json: [lat,lon,м,лист]); листы, загруженные своим файлом, их заменяют
 MC.depB={ids:[],pts:[]};function dpMerge(){const own=new Set(MC.sheets.filter(x=>(x.depths||[]).length).map(x=>x.id));MC.depAll=MC.depB.pts.filter(q=>!own.has(MC.depB.ids[q[3]])).concat(MC.dep);dpDraw()}
-fetch('data/depths.json').then(r=>r.ok?r.json():null).then(d=>{if(d?.pts){MC.depB={ids:d.sheets.map(x=>x.id),pts:d.pts};dpMerge();mcRender()}}).catch(e=>logE('depths '+e.message));
+fetch('data/depths.json').then(r=>r.ok?r.json():null).then(d=>{if(d?.pts){MC.depB={ids:d.sheets.map(x=>x.id),sh:d.sheets,pts:d.pts};dpMerge();mcRender()}}).catch(e=>logE('depths '+e.message));
 $('#mcDep').onchange=e=>{S.mcDep=e.target.checked;saveS();dpDraw()};
 let shoalT=0;function shoalCheck(){if(!(MC.depAll||[]).length||!G.pos||G.sog==null||G.sog<1||G.cog==null)return chip('shoal',null);
   const dr=S.boat.draft||1.8,ahead=Math.max(300,G.sog*NM/60*3);let best=null;
@@ -1226,7 +1235,7 @@ polUi();
 $('#addDone').onclick=()=>{setAdding(false);if(RT.pts.length>1){openPanel('route')}};
 $('#addUndo').onclick=()=>{RT.pts.pop();routeChanged()};
 /* ===== клик по карте ===== */
-map.on('click',e=>{if(LP.suppress)return;if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}showPoint(e.latlng)});
+map.on('click',e=>{if(LP.suppress)return;if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}if(dpHit(e))return;showPoint(e.latlng)});
 
 /* ===== старт ===== */
 LOG.push(...store.get('log',[]).slice(-100));
