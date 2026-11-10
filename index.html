@@ -59,6 +59,7 @@ body.night #top{background:none}
 #top nav button:active{background:rgba(255,255,255,.12)}
 }
 body.night #top nav{background:rgba(20,0,0,.9);border-color:rgba(255,90,74,.25)}body.night #top nav button,body.night #top nav #btnMore{color:#ff5a4a}body.night #top nav button.on{background:#5a0000;color:#ffb0a8}
+.obI b{position:absolute;left:0;right:0;top:20px;text-align:center;font:700 14px/16px system-ui,sans-serif;color:#fff;pointer-events:none}.obI i{position:absolute;left:-6px;right:-6px;top:43px;text-align:center;font:600 10.5px/13px system-ui,sans-serif;font-style:normal;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000;pointer-events:none;white-space:nowrap}.obI.old{opacity:.55}
 .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .mgrid button{display:flex;align-items:center;gap:10px;justify-content:flex-start;text-align:left;white-space:normal;min-height:54px;padding:10px 12px;border-radius:12px;font-size:14px;font-weight:600;line-height:1.2}
 .mgrid button.wide{grid-column:1/-1}
@@ -197,6 +198,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <label><input type="radio" name="base" value="topo"> Рельеф берега (OpenTopoMap)</label>
   <hr>
   <label><input type="checkbox" id="chkSea"> Буи, маяки, огни (OpenSeaMap)</label>
+  <label><input type="checkbox" id="chkObs"> Ветер на станциях — измерен сейчас</label>
   <label><input type="checkbox" id="chkWind"> Ветер на карте</label>
   <label><input type="checkbox" id="chkTrack"> Мой трек</label>
   <hr>
@@ -361,10 +363,10 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.9';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.10';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
-const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
+const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
   boat:{name:'',type:'sail',speed:5.5,motor:5,draft:1.8}},store.get('settings',{}));
 const saveS=()=>store.set('settings',S);
 function toast(m,ms=4000){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
@@ -1267,10 +1269,36 @@ $('#addUndo').onclick=()=>{RT.pts.pop();routeChanged()};
 /* ===== клик по карте ===== */
 map.on('click',e=>{if(LP.suppress)return;if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}if(dpHit(e))return;showPoint(e.latlng)});
 
+
+/* ===== ветер, измеренный на станциях сейчас (не прогноз) =====
+   Финские береговые станции FMI — каждые 10 мин, открытые данные (CC BY 4.0).
+   data/obs.json — станции российского берега (Пулково и др.), если файл собран на сервере. */
+const OB={layer:L.layerGroup(),list:[],t:null,at:0};
+function obsIcon(o){const kn=o.spd,c=rgb(kn),col=`rgb(${c})`,age=Math.round((Date.now()/1000-o.t)/60),old=age>40,g=o.gust!=null&&o.gust>kn+2;
+  return L.divIcon({className:'obI'+(old?' old':''),iconSize:[56,64],iconAnchor:[28,28],html:`<svg viewBox="0 0 56 56" width="56" height="56" aria-hidden="true"><g transform="rotate(${(o.dir+180)%360} 28 28)"><path d="M28 1.5l8 12h-5.5v4h-5v-4H20z" fill="${col}" stroke="#08131d" stroke-width="1.4" stroke-linejoin="round"/></g><circle cx="28" cy="28" r="13.5" fill="#0c1a28" stroke="${col}" stroke-width="2.5"/></svg><b>${f0(kn)}</b>${g?`<i>пор. ${f0(o.gust)}</i>`:''}`})}
+function obsDraw(){OB.layer.clearLayers();if(!S.obs)return;const now=Date.now()/1000;
+  for(const o of OB.list){if(now-o.t>3*3600)continue;const age=Math.round((now-o.t)/60);
+    L.marker([o.lat,o.lon],{icon:obsIcon(o),keyboard:false,zIndexOffset:500}).bindPopup(`<div style="font-size:13px;line-height:1.45"><b>${lzE(o.name)}</b><br>Ветер <b>${f0(o.spd)} уз</b> ${rumb(o.dir)} (${f0(o.dir)}°)${o.gust!=null?`, порывы ${f0(o.gust)} уз`:''}<br><span style="opacity:.75">измерено ${age<1?'только что':age<60?age+' мин назад':fmtHM(age*6e4)+' назад'} · ${o.src}</span></div>`).addTo(OB.layer)}}
+async function obsFmi(){const st=new Date(Date.now()-50*6e4).toISOString().slice(0,17)+'00Z';
+  const r=await fetch(`https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::multipointcoverage&bbox=24.5,59.4,31.5,62.2&parameters=windspeedms,winddirection,windgust&timestep=10&starttime=${st}`);
+  if(!r.ok)throw new Error('FMI '+r.status);const x=new DOMParser().parseFromString(await r.text(),'text/xml');
+  const names={};x.querySelectorAll('pointMember').forEach(m=>{const n=m.getElementsByTagName('gml:name')[0]?.textContent||m.querySelector('name')?.textContent,p=(m.getElementsByTagName('gml:pos')[0]||m.querySelector('pos'))?.textContent.trim().split(/\s+/);if(n&&p)names[(+p[0]).toFixed(4)+','+(+p[1]).toFixed(4)]=n});
+  const pos=(x.getElementsByTagName('gmlcov:positions')[0]||x.querySelector('positions'))?.textContent.trim().split(/\n/).map(l=>l.trim().split(/\s+/).map(Number))||[];
+  const val=(x.getElementsByTagName('gml:doubleOrNilReasonTupleList')[0]||x.querySelector('doubleOrNilReasonTupleList'))?.textContent.trim().split(/\n/).map(l=>l.trim().split(/\s+/).map(Number))||[];
+  const last={};pos.forEach((p,i)=>{const v=val[i];if(!v||isNaN(v[0])||isNaN(v[1]))return;const k=p[0].toFixed(4)+','+p[1].toFixed(4);if(!last[k]||last[k].t<p[2])last[k]={name:names[k]||'Станция FMI',lat:p[0],lon:p[1],t:p[2],spd:v[0]*1.94384,dir:v[1],gust:isNaN(v[2])?null:v[2]*1.94384,src:'Ильматиеслайтос (FMI)'}});
+  return Object.values(last)}
+async function obsOwn(){try{const r=await fetch('data/obs.json',{cache:'no-store'});if(!r.ok)return[];const j=await r.json();return(j.st||[]).filter(o=>o&&isFinite(o.lat)&&isFinite(o.spd)).map(o=>({...o,src:o.src||'метеостанция'}))}catch(e){return[]}}
+async function obsLoad(){if(!S.obs)return;const [a,b]=await Promise.allSettled([obsFmi(),obsOwn()]);
+  if(a.status==='rejected')logE('obs '+a.reason.message);OB.list=[...(a.value||[]),...(b.value||[])];OB.at=Date.now();obsDraw()}
+function obsInit(){$('#chkObs').checked=S.obs;if(S.obs){OB.layer.addTo(map);obsLoad()}
+  $('#chkObs').onchange=e=>{S.obs=e.target.checked;saveS();if(S.obs){OB.layer.addTo(map);obsLoad()}else map.removeLayer(OB.layer)};
+  clearInterval(OB.t);OB.t=setInterval(()=>{if(!document.hidden)obsLoad()},10*6e4);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-OB.at>5*6e4)obsLoad()})}
+
 /* ===== старт ===== */
 LOG.push(...store.get('log',[]).slice(-100));
 document.body.classList.toggle('night',S.night);fillBoat();
-mapStatus();setBase(S.base);setSea(S.seamarks);$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
+mapStatus();setBase(S.base);setSea(S.seamarks);obsInit();$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
 anchorDraw();renderRoute();sizeCv();netChip();
 {const c=store.get('grid',null);if(c){W.g=buildGrid(c);setupTime();drawField();freshChip()}}
 loadGrid(true);
