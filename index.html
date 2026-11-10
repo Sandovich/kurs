@@ -46,6 +46,25 @@ select{-webkit-appearance:none;appearance:none;background:var(--panel2) url("dat
 #top nav{display:flex;gap:5px;flex:1;min-width:0}
 @media (min-width:820px){#top nav{flex:0 0 auto}}
 #top nav::-webkit-scrollbar{display:none}
+/* === единая панель кнопок: телефон — как на компьютере, иконка над подписью === */
+@media (max-width:819px){
+#top{padding:calc(env(safe-area-inset-top) + 8px) 8px 8px;background:none}
+body.night #top{background:none}
+.brand{display:none}
+#top nav{flex:1;gap:2px;padding:4px;border-radius:16px;background:rgba(12,26,40,.86);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);border:1px solid rgba(255,255,255,.09);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+#top nav button,#top nav #btnMore{flex:1 1 0!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;padding:5px 2px!important;border:0;border-radius:12px;background:transparent;color:#e9f0f7;font-size:11.5px;font-weight:600;letter-spacing:.1px;overflow:visible}
+#top nav button .ic,#top nav #btnMore .ic{display:block;width:22px;height:22px}
+#top nav #btnMore span{display:block}
+#top nav button.on{background:#1677d2;color:#fff}
+#top nav button:active{background:rgba(255,255,255,.12)}
+}
+body.night #top nav{background:rgba(20,0,0,.9);border-color:rgba(255,90,74,.25)}body.night #top nav button,body.night #top nav #btnMore{color:#ff5a4a}body.night #top nav button.on{background:#5a0000;color:#ffb0a8}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mgrid button{display:flex;align-items:center;gap:10px;justify-content:flex-start;text-align:left;white-space:normal;min-height:54px;padding:10px 12px;border-radius:12px;font-size:14px;font-weight:600;line-height:1.2}
+.mgrid button.wide{grid-column:1/-1}
+.mgrid .mi{width:22px;height:22px;flex:none;opacity:.9}
+.panel h2 .back{flex:none;display:inline-flex;align-items:center;gap:2px;min-height:36px;padding:0 10px 0 4px;margin-left:-6px;border-radius:10px;font-size:14px;font-weight:600;background:transparent;border:1px solid var(--line)}
+
 #status{position:fixed;z-index:1000;right:10px;top:calc(env(safe-area-inset-top) + 64px);max-width:calc(100vw - 20px);display:flex;flex-direction:column;gap:6px;align-items:flex-end;pointer-events:none}
 .chip{background:rgba(16,34,51,.92);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px}
 .chip.warn{border-color:var(--warn);color:var(--warn)}
@@ -280,14 +299,14 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
 <section class="panel" id="p-more" hidden>
   <button class="close">✕</button>
   <h2>Ещё</h2>
-  <div class="row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-    <button data-go="anchor" id="btnAnchor">⚓ Якорь</button>
-    <button data-go="boat">⛵ Лодка и пределы</button>
-    <button id="mNight">🌙 Ночной режим</button>
-    <button data-go="help">? Как пользоваться</button>
-    <button id="mWatch" style="grid-column:1/-1">⏱ Вахтенный таймер: выкл</button>
-    <button data-go="lotsia" style="grid-column:1/-1">📖 Лоция и штурман</button>
-    <button data-go="diag" style="grid-column:1/-1">📡 Проверка связи</button>
+  <div class="mgrid">
+    <button data-go="anchor" id="btnAnchor"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v13M8 10h8M4.5 13a7.5 7.5 0 0015 0"/></svg><span>Якорь</span></button>
+    <button data-go="boat"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16h17l-2.6 4H6.1z"/><path d="M12 3.5v12.5M12 4.5l6 9.5h-6"/><path d="M12 7l-5 7h5"/></svg><span>Лодка и пределы</span></button>
+    <button id="mNight"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg><span>Ночной режим</span></button>
+    <button data-go="help"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 014.8 1c0 1.7-2.4 2-2.4 3.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg><span>Как пользоваться</span></button>
+    <button id="mWatch" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.8l2.5 1.6M9.5 3h5"/></svg><span>Вахтенный таймер: выкл</span></button>
+    <button data-go="lotsia" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2 2 0 016 4h5v15H6a2 2 0 00-2 1.5z"/><path d="M20 5.5A2 2 0 0018 4h-5v15h5a2 2 0 012 1.5z"/></svg><span>Лоция и штурман</span></button>
+    <button data-go="diag" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a7 7 0 0114 0M8 12a4 4 0 018 0"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><path d="M12 13v7"/></svg><span>Проверка связи</span></button>
   </div>
 </section>
 
@@ -342,7 +361,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.8';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.9';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -947,7 +966,8 @@ $('#sNight').onchange=e=>{document.body.classList.toggle('night',e.target.checke
 $('#sTrack').onclick=()=>{G.track=[];G.line.setLatLngs([]);store.set('track',[]);toast('Трек стёрт')};
 $('#sLog').onclick=()=>download('kurs-log.txt',[`Курс v${VER} · ${navigator.userAgent}`,`онлайн: ${navigator.onLine}`,...(store.get('log',[]))].join('\n'),'text/plain');
 
-$$('#p-more [data-go]').forEach(b=>b.onclick=()=>openPanel(b.dataset.go));
+$$('#p-more [data-go]').forEach(b=>b.onclick=()=>{openPanel(b.dataset.go);const h=$('#p-'+b.dataset.go+' h2');if(h&&!h.querySelector('.back')){const k=document.createElement('button');k.className='back';k.setAttribute('aria-label','Назад в «Ещё»');k.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg><span>Ещё</span>';k.onclick=e=>{e.stopPropagation();openPanel('more')};h.prepend(k)}$$('.panel h2 .back').forEach(x=>x.hidden=false);$('#btnMore').classList.add('on')});
+$$('#top [data-panel]').forEach(b=>b.addEventListener('click',()=>$$('.panel h2 .back').forEach(x=>x.hidden=true)));
 /* ===== лоция экипажа: база фактов из атласа (только на устройстве) + штурман-поиск ===== */
 const LZ={f:null,meta:null,idx:null,df:null,layer:null};
 const lzIDB=(mode,fn)=>new Promise((ok,no)=>{const r=indexedDB.open('kurs',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onerror=()=>no(r.error||new Error('IndexedDB не открылась'));
@@ -1234,7 +1254,7 @@ setInterval(presCheck,30*60000);setTimeout(presCheck,5000);
 
 /* ===== вахтенный таймер «осмотрись» ===== */
 const WT={min:store.get('watchMin',0),t:null,esc:null};
-function wtLabel(){$('#mWatch').textContent=WT.min?`⏱ Вахта: каждые ${WT.min} мин`:'⏱ Вахтенный таймер: выкл';$('#mWatch').classList.toggle('on',!!WT.min);chip('watch',WT.min?`⏱ вахта ${WT.min} мин`:null)}
+function wtLabel(){$('#mWatch span').textContent=WT.min?`Вахта: каждые ${WT.min} мин`:'Вахтенный таймер: выкл';$('#mWatch').classList.toggle('on',!!WT.min);chip('watch',WT.min?`⏱ вахта ${WT.min} мин`:null)}
 function wtArm(){clearTimeout(WT.t);clearTimeout(WT.esc);if(!WT.min)return;WT.t=setTimeout(()=>{beep();navigator.vibrate?.([300,150,300]);
   $('#alarmTitle').textContent='⏱ ОСМОТРИСЬ';$('#alarmDist').textContent='Горизонт, паруса, курс, AIS, экипаж. Нажмите кнопку — таймер пойдёт заново.';$('#alarm').hidden=false;$('#alarm').style.animation='none';
   WT.esc=setTimeout(()=>{$('#alarm').style.animation='';alarmOn(null,'⏱ ВАХТА НЕ ОТВЕТИЛА')},60000)},WT.min*60000)}
