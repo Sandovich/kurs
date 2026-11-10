@@ -182,6 +182,7 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
     <option value="metno_seamless">MET Nordic 1 км</option>
     <option value="dmi_seamless">HARMONIE 2 км</option>
     <option value="ecmwf_aifs025_single">AIFS (ИИ)</option>
+    <option value="fmi_harmonie">FMI HARMONIE 2,5 км (запасной)</option>
   </select>
   <button id="play" aria-label="Проиграть">▶</button>
   <input type="range" id="time" min="0" max="0" value="0" aria-label="Время прогноза">
@@ -363,7 +364,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.10';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.11';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -392,8 +393,8 @@ function rgb(v){if(!(v>=0))v=0;for(let i=1;i<STOPS.length;i++){if(v<=STOPS[i][0]
 const css=v=>`rgb(${rgb(v).join(',')})`;
 $('#legend').style.background=`linear-gradient(90deg,${STOPS.map(s=>`rgb(${s[1].join(',')}) ${s[0]/40*100}%`).join(',')})`;
 async function getJSON(u,ms=20000){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),ms);let r;try{r=await fetch(u,{signal:ac.signal})}catch(e){throw new Error(e.name==='AbortError'?'сервер не ответил за '+ms/1000+' с (блокировка у оператора или плохая связь)':'нет связи с сервером')}finally{clearTimeout(tm)}if(!r.ok){let t='';try{t=(await r.json()).reason||''}catch(e){}throw new Error(`сервер ответил ${r.status} ${t}`)}return r.json()}
-const MODEL_NAME={ecmwf_ifs025:'ECMWF',icon_seamless:'ICON',gfs_seamless:'GFS',metno_seamless:'MET Nordic',dmi_seamless:'HARMONIE',ecmwf_aifs025_single:'AIFS'};
-const MODEL_COLOR={ecmwf_ifs025:'#3fb6ff',icon_seamless:'#4cc38a',gfs_seamless:'#ffb020',metno_seamless:'#c78bff',dmi_seamless:'#ff7a9a',ecmwf_aifs025_single:'#e6eef5'};
+const MODEL_NAME={fmi_harmonie:'HARMONIE (FMI)',ecmwf_ifs025:'ECMWF',icon_seamless:'ICON',gfs_seamless:'GFS',metno_seamless:'MET Nordic',dmi_seamless:'HARMONIE',ecmwf_aifs025_single:'AIFS'};
+const MODEL_COLOR={fmi_harmonie:'#7fd3c3',ecmwf_ifs025:'#3fb6ff',icon_seamless:'#4cc38a',gfs_seamless:'#ffb020',metno_seamless:'#c78bff',dmi_seamless:'#ff7a9a',ecmwf_aifs025_single:'#e6eef5'};
 const CMP=['ecmwf_ifs025','icon_seamless','gfs_seamless'];
 
 /* ===== скорость лодки при ветре (упрощённые поляры крейсерской яхты) ===== */
@@ -454,12 +455,23 @@ function buildGrid(raw){const{N,times,spd,dir,gst}=raw,T=times.length,K=(raw.Nx|
 function freshChip(){const g=W.g;if(!g)return;const age=Date.now()-g.fetched;chip('wx',`Прогноз ${MODEL_NAME[g.model]}: ${ago(g.fetched)}`,age>6*3600e3?'warn':'')}
 // район плавания: ветер грузим одной сеткой на всю акваторию (Финский залив — Ладога) и держим час.
 // Раньше сетка 9×9 бралась только по видимой части: при отдалении ветер был «маленьким квадратом», а каждое движение карты = 81 запрос (лимит Open-Meteo, ответ 429).
+// запасной источник прогноза — Финский метеоинститут (HARMONIE, ~2,5 км, открытые данные CC BY 4.0): не зависим от одного Open-Meteo
+async function fmiGrid(la,lo){const pts=la.map((a,i)=>[+a,+lo[i]]),ch=[];for(let i=0;i<pts.length;i+=95)ch.push(pts.slice(i,i+95));
+  const parts=await Promise.all(ch.map(async c=>{const q=c.map(p=>`latlon=${p[0].toFixed(3)},${p[1].toFixed(3)}`).join('&');
+    const r=await fetch(`https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::harmonie::surface::point::multipointcoverage&${q}&parameters=windspeedms,winddirection,windgust&timestep=60`);
+    if(!r.ok)throw new Error('FMI прогноз '+r.status);const x=new DOMParser().parseFromString(await r.text(),'text/xml');
+    const tx=n=>(x.getElementsByTagName(n)[0]||x.querySelector(n.split(':')[1]))?.textContent.trim().split(/\n/).map(l=>l.trim().split(/\s+/).map(Number))||[];
+    return{pos:tx('gmlcov:positions'),val:tx('gml:doubleOrNilReasonTupleList')}}));
+  const by=new Map();for(const{pos,val}of parts)pos.forEach((p,i)=>{const k=p[0].toFixed(2)+','+p[1].toFixed(2);if(!by.has(k))by.set(k,[]);by.get(k).push([p[2],...(val[i]||[])])});
+  const first=by.values().next().value;if(!first)throw new Error('FMI прогноз пустой');const times=first.map(r=>r[0]),kn=v=>v==null||isNaN(v)?null:v*1.94384;
+  const rows=pts.map(p=>by.get(p[0].toFixed(2)+','+p[1].toFixed(2))||[]);
+  return rows.map(r=>({hourly:{time:times,wind_speed_10m:times.map((t,i)=>kn(r[i]?.[1])),wind_direction_10m:times.map((t,i)=>r[i]&&!isNaN(r[i][2])?r[i][2]:null),wind_gusts_10m:times.map((t,i)=>kn(r[i]?.[3]))}}))}
 const WXR={s:59.2,n:62.0,w:26.8,e:33.6,st:.4};
 async function loadGrid(force,retry=0){
   if(!S.wind){clearWind();return}
   const vb=map.getBounds(),z=map.getZoom(),g=W.g,c=map.getCenter();
   const inReg=c.lat>WXR.s&&c.lat<WXR.n&&c.lng>WXR.w&&c.lng<WXR.e&&vb.getNorth()-vb.getSouth()<(WXR.n-WXR.s)*1.5;
-  const fresh=g&&g.model===S.model&&Date.now()-g.fetched<3600e3;
+  const fresh=g&&(g.want||g.model)===S.model&&Date.now()-g.fetched<3600e3;
   if(!force&&fresh&&(g.reg?inReg:Math.abs(g.z-z)<1&&vb.getSouth()>=g.s&&vb.getNorth()<=g.n&&vb.getWest()>=g.w&&vb.getEast()<=g.e)){drawField();return}
   if(W.loading)return;W.loading=true;
   let s,n,w,e,Nx,Ny;
@@ -468,9 +480,12 @@ async function loadGrid(force,retry=0){
   const la=[],lo=[];for(let i=0;i<Ny;i++)for(let j=0;j<Nx;j++){la.push((s+(n-s)*i/(Ny-1)).toFixed(3));lo.push((w+(e-w)*j/(Nx-1)).toFixed(3))}
   const model=S.model;
   try{
-    let js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${model}`,45000);
+    let js,used=model;
+    if(model==='fmi_harmonie')js=await fmiGrid(la,lo);
+    else try{js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${model}`,45000)}
+      catch(e1){logE('open-meteo '+e1.message+' → FMI');js=await fmiGrid(la,lo);used='fmi_harmonie';toast('Основной прогноз не ответил — показываю финский HARMONIE')}
     if(!Array.isArray(js))js=[js];
-    const raw={model,s,n,w,e,N:Nx,Nx,Ny,z,reg:inReg,fetched:Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)};
+    const raw={model:used,want:model,s,n,w,e,N:Nx,Nx,Ny,z,reg:inReg,fetched:Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)};
     W.g=buildGrid(raw);try{store.set('grid',raw)}catch(_){}setupTime();drawField();freshChip();netChip();
   }catch(err){
     logE('grid '+err.message);
@@ -1298,7 +1313,7 @@ function obsInit(){$('#chkObs').checked=S.obs;if(S.obs){OB.layer.addTo(map);obsL
 /* ===== старт ===== */
 LOG.push(...store.get('log',[]).slice(-100));
 document.body.classList.toggle('night',S.night);fillBoat();
-mapStatus();setBase(S.base);setSea(S.seamarks);obsInit();$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
+mapStatus();setBase(S.base);setSea(S.seamarks);obsInit();map.attributionControl.addAttribution('FMI (CC BY 4.0)');$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
 anchorDraw();renderRoute();sizeCv();netChip();
 {const c=store.get('grid',null);if(c){W.g=buildGrid(c);setupTime();drawField();freshChip()}}
 loadGrid(true);
