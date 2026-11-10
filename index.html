@@ -364,7 +364,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.11';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.12';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -481,6 +481,9 @@ async function loadGrid(force,retry=0){
   const model=S.model;
   try{
     let js,used=model;
+    // общий файл прогноза: собирается на GitHub раз в 3 часа для всех — телефон не тратит запросы и грузит мгновенно
+    if(inReg&&!force&&(model==='ecmwf_ifs025'||model==='icon_seamless')){try{const r=await fetch(WXRAW+'grid_'+model+'.json');if(r.ok){const sg=await r.json();
+      if(sg&&sg.times&&Date.now()-sg.fetched<4*3600e3&&sg.spd.length===sg.Nx*sg.Ny){W.g=buildGrid(sg);try{store.set('grid',sg)}catch(_){}setupTime();drawField();freshChip();netChip();return}}}catch(e){logE('shared grid '+e.message)}}
     if(model==='fmi_harmonie')js=await fmiGrid(la,lo);
     else try{js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${model}`,45000)}
       catch(e1){logE('open-meteo '+e1.message+' → FMI');js=await fmiGrid(la,lo);used='fmi_harmonie';toast('Основной прогноз не ответил — показываю финский HARMONIE')}
@@ -1302,7 +1305,8 @@ async function obsFmi(){const st=new Date(Date.now()-50*6e4).toISOString().slice
   const val=(x.getElementsByTagName('gml:doubleOrNilReasonTupleList')[0]||x.querySelector('doubleOrNilReasonTupleList'))?.textContent.trim().split(/\n/).map(l=>l.trim().split(/\s+/).map(Number))||[];
   const last={};pos.forEach((p,i)=>{const v=val[i];if(!v||isNaN(v[0])||isNaN(v[1]))return;const k=p[0].toFixed(4)+','+p[1].toFixed(4);if(!last[k]||last[k].t<p[2])last[k]={name:names[k]||'Станция FMI',lat:p[0],lon:p[1],t:p[2],spd:v[0]*1.94384,dir:v[1],gust:isNaN(v[2])?null:v[2]*1.94384,src:'Ильматиеслайтос (FMI)'}});
   return Object.values(last)}
-async function obsOwn(){try{const r=await fetch('data/obs.json',{cache:'no-store'});if(!r.ok)return[];const j=await r.json();return(j.st||[]).filter(o=>o&&isFinite(o.lat)&&isFinite(o.spd)).map(o=>({...o,src:o.src||'метеостанция'}))}catch(e){return[]}}
+const WXRAW='https://raw.githubusercontent.com/Sandovich/kurs/data/';
+async function obsOwn(){try{const r=await fetch(WXRAW+'obs.json',{cache:'no-store'});if(!r.ok)return[];const j=await r.json();return(j.st||[]).filter(o=>o&&isFinite(o.lat)&&isFinite(o.spd)).map(o=>({...o,src:o.src||'метеостанция'}))}catch(e){return[]}}
 async function obsLoad(){if(!S.obs)return;const [a,b]=await Promise.allSettled([obsFmi(),obsOwn()]);
   if(a.status==='rejected')logE('obs '+a.reason.message);OB.list=[...(a.value||[]),...(b.value||[])];OB.at=Date.now();obsDraw()}
 function obsInit(){$('#chkObs').checked=S.obs;if(S.obs){OB.layer.addTo(map);obsLoad()}

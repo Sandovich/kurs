@@ -1,6 +1,6 @@
 // Курс — офлайн-кэш. Оболочка: из кэша. Карта OSM/OpenSeaMap: что смотрели — сохраняется (по правилам OSM кэшировать просмотренное можно, массово скачивать нельзя).
 // Яндекс не кэшируем: условия API это не разрешают явно. Погода: сначала сеть, без сети — последний ответ.
-const V='kurs-v0.9.11', SHELL=['./','./index.html','./manifest.webmanifest','./icon.svg',
+const V='kurs-v0.9.12', SHELL=['./','./index.html','./manifest.webmanifest','./icon.svg',
  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js','https://unpkg.com/protomaps-leaflet@5.1.0/dist/protomaps-leaflet.js'];
 const TILES='kurs-tiles', WX='kurs-wx', MAPC='kurs-map', MAX_TILES=6000;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
