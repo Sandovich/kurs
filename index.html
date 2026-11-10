@@ -60,6 +60,13 @@ body.night #top{background:none}
 }
 body.night #top nav{background:rgba(20,0,0,.9);border-color:rgba(255,90,74,.25)}body.night #top nav button,body.night #top nav #btnMore{color:#ff5a4a}body.night #top nav button.on{background:#5a0000;color:#ffb0a8}
 .obI b{position:absolute;left:0;right:0;top:20px;text-align:center;font:700 14px/16px system-ui,sans-serif;color:#fff;pointer-events:none}.obI i{position:absolute;left:-6px;right:-6px;top:43px;text-align:center;font:600 10.5px/13px system-ui,sans-serif;font-style:normal;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000;pointer-events:none;white-space:nowrap}.obI.old{opacity:.55}
+.lzChips{gap:6px;flex-wrap:wrap}.lzChips button{min-height:38px;padding:6px 12px;border-radius:999px;font-size:13.5px;font-weight:600}
+.lzRegs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.lzRegs button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;white-space:normal;text-align:left;min-height:64px;padding:10px 12px;border-radius:12px}.lzRegs button b{font-size:15px}.lzRegs button span{font-size:12px;color:var(--muted)}.lzRegs button.cur{border-color:#1677d2;box-shadow:inset 0 0 0 1px #1677d2}.lzRegs button:last-child{grid-column:1/-1}
+.lzNav{display:flex;align-items:center;gap:10px;margin:2px 0 8px}.lzNav .back{min-height:34px;padding:0 10px;border-radius:10px;font-size:13.5px;background:transparent}.lzNav b{font-size:16px}
+.lzCats{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px;scrollbar-width:none}.lzCats::-webkit-scrollbar{display:none}.lzCats button{flex:none;min-height:36px;padding:6px 11px;border-radius:999px;font-size:13px;font-weight:600}.lzCats button span{opacity:.7;font-weight:500;margin-left:3px}.lzCats button.on{background:var(--c);border-color:var(--c);color:#081420}
+.lzI{padding:11px 0;border-bottom:1px solid var(--line)}.lzT{line-height:1.45}.lzTag{display:inline-block;vertical-align:1px;margin-right:7px;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.2px;color:#081420;background:var(--c)}
+.lzM{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;font-size:12px;color:var(--muted)}.lzM button{flex:none;min-height:32px;padding:0 12px;border-radius:9px;font-size:12.5px;font-weight:600}
+body.night .lzTag{background:transparent;color:var(--c);border:1px solid var(--c)}
 .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .mgrid button{display:flex;align-items:center;gap:10px;justify-content:flex-start;text-align:left;white-space:normal;min-height:54px;padding:10px 12px;border-radius:12px;font-size:14px;font-weight:600;line-height:1.2}
 .mgrid button.wide{grid-column:1/-1}
@@ -320,15 +327,14 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <div id="lzEmpty" hidden>
     <p class="small">Штурман по лоции «Курса»: мосты, шлюзы, УКВ-каналы, стоянки, топливо и опасности Невы, Ладоги, Свири, Волхова и Онеги.</p>
   </div>
-  <div class="row"><button id="lzLoad">Загрузить файл лоции</button><input type="file" id="lzFile" accept=".json,application/json" hidden></div>
   <div id="lzMain" hidden>
     <div class="row" style="flex-wrap:nowrap"><input id="lzQ" style="flex:1;min-width:0" placeholder="Спросите: канал Свирицы, мост 14 м, укрытие Приозерск" enterkeyhint="search"><button class="primary" id="lzGo">Спросить</button></div>
-    <div class="row lzChips" style="gap:6px"><button data-lq="@near">📍 Рядом со мной</button><button data-lq="@route">🧭 По маршруту</button><button data-lq="@mast">⛵ Мосты и ЛЭП под мою мачту</button><button data-lq="#vhf">📻 УКВ</button><button data-lq="#hazard">⚠ Опасности</button><button data-lq="#berth">⚓ Стоянки</button><button data-lq="#fuel">⛽ Топливо</button><button data-lq="#rule">📋 Правила</button></div>
+    <div class="row lzChips"><button data-lq="@home" class="on">Оглавление</button><button data-lq="@near">Рядом со мной</button><button data-lq="@route">По маршруту</button><button data-lq="@mast">Мосты под мою мачту</button></div>
     <label class="small"><input type="checkbox" id="lzPts"> Точки лоции на карте</label>
     <div id="lzOut" style="margin-top:8px"></div>
     <p class="small muted" style="margin-top:10px">Лоция «Курса» собрана экипажем по открытым сведениям и пересказана своими словами. Она не заменяет официальные навигационные документы: перед выходом сверяйтесь с извещениями и диспетчером.</p>
-    <div class="row"><button id="lzDel">Удалить лоцию с устройства</button></div>
   </div>
+  <div class="row" style="margin-top:8px"><button id="lzLoad" style="min-height:38px;font-size:13px">Загрузить файл лоции</button><button id="lzDel" style="min-height:38px;font-size:13px">Удалить лоцию с устройства</button><input type="file" id="lzFile" accept=".json,application/json" hidden></div>
 </section>
 
 <section class="panel" id="p-diag" hidden>
@@ -364,7 +370,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.13';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.14';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1002,6 +1008,22 @@ const LZ_SYN={'укв':['канал','позыв','радио','диспе','с�
  'укрыт':['стоян','бухта','якор','марин','гавань','причал','убежи'],'стоян':['марин','причал','бухта','якор','гавань','яхт'],'ночев':['стоян','марин','причал','бухта'],'заправ':['топли','азс','пзс'],'топли':['заправ','азс','пзс'],
  'мель':['банка','глуби','мелко','опасн','камни'],'опасн':['мель','банка','камни','затон','сети','запре'],'глуби':['осадк','изоба','гаран'],'шлюз':['камер','шлюз'],'разво':['мост','развод'],'погран':['пропу','погранз','фсб']};
 const LZ_K={vhf:'📻',bridge:'🌉',lock:'🚪',hazard:'⚠',berth:'⚓',fuel:'⛽',depth:'〰',wx:'🌬',light:'💡',rule:'📋',info:'·'};
+// разделы лоции: название, короткая метка, цвет метки
+const LZ_C={hazard:['Опасности и запреты','опасно','#e5484d'],bridge:['Мосты, ЛЭП, разводка','мост','#c78bff'],lock:['Шлюзы','шлюз','#3fb6ff'],vhf:['Связь: УКВ и диспетчеры','связь','#2ee59d'],
+  berth:['Стоянки и укрытия','стоянка','#ffb020'],fuel:['Топливо и снабжение','топливо','#ff7a45'],depth:['Глубины и фарватер','глубина','#4cc3ff'],light:['Маяки и огни','огни','#ffd84d'],
+  wx:['Погода и волна','погода','#8fd1ff'],rule:['Правила и контакты','правила','#a8b8c8'],info:['Общее','общее','#7f93a6']};
+const LZ_RO=['spb','neva','fin','lad','svir','volh','oneg'];
+function lzTag(k){const c=LZ_C[k]||LZ_C.info;return `<span class="lzTag" style="--c:${c[2]}">${c[1]}</span>`}
+function lzHome(){const o=$('#lzOut'),cur=lzRegion(G.pos||[map.getCenter().lat,map.getCenter().lng]);
+  const regs=[cur,...LZ_RO.filter(r=>r!==cur)].filter(r=>LZ_R[r]);
+  o.innerHTML=`<p class="small muted" style="margin:2px 0 8px">Выберите район — внутри разделы: опасности, мосты, шлюзы, связь, стоянки.</p><div class="lzRegs">${regs.map(r=>{const n=LZ.f.filter(x=>(x.r||[]).includes(r)).length;
+    return `<button data-lr="${r}"${r===cur?' class="cur"':''}><b>${LZ_R[r]}</b><span>${n} записей${r===cur?' · вы здесь':''}</span></button>`}).join('')}<button data-lr="*"><b>Общее для всех районов</b><span>${LZ.f.filter(x=>!(x.r||[]).length).length} записей · правила, огни, связь</span></button></div>`;
+  o.querySelectorAll('[data-lr]').forEach(b=>b.onclick=()=>lzRegView(b.dataset.lr))}
+function lzRegView(r,k){const o=$('#lzOut'),inR=x=>r==='*'?!(x.r||[]).length:(x.r||[]).includes(r),all=LZ.f.filter(inR);
+  const cats=Object.keys(LZ_C).map(c=>[c,all.filter(x=>(x.k||'info')===c).length]).filter(c=>c[1]);if(!k)k=cats[0]&&cats[0][0];
+  const list=all.filter(x=>(x.k||'info')===k).sort((a,b)=>(b.top?1:0)-(a.top?1:0));
+  const head=`<div class="lzNav"><button class="back" data-lback>‹ Районы</button><b>${r==='*'?'Общее':LZ_R[r]}</b></div><div class="lzCats">${cats.map(c=>`<button data-lc="${c[0]}"${c[0]===k?' class="on"':''} style="--c:${LZ_C[c[0]][2]}">${LZ_C[c[0]][0]} <span>${c[1]}</span></button>`).join('')}</div>`;
+  lzRender(list,'',head,true);o.querySelector('[data-lback]').onclick=()=>lzHome();o.querySelectorAll('[data-lc]').forEach(b=>b.onclick=()=>lzRegView(r,b.dataset.lc))}
 const LZ_R={fin:'Финский залив',spb:'Петербург',neva:'Нева',lad:'Ладога',volh:'Волхов',svir:'Свирь',oneg:'Онега'};
 function lzRegion(ll){const[a,o]=ll;if(o>34.4&&a>60.6)return'oneg';if(o>32.85&&a>60.25&&a<61.25)return'svir';if(a<60.05&&o>31.25&&o<33)return'volh';
   if(o<30.15)return'fin';if(a<60.02&&o<30.55)return'spb';if(a<60.0&&o<31.25)return'neva';return'lad'}
@@ -1034,10 +1056,10 @@ function lzBrief(){const L=[],regs=lzRouteRegions();if(!regs.size)return L;const
   return L}
 const lzE=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function lzHi(t,q){let h=lzE(t);lzTok(q).filter(w=>w.length>=3).forEach(w=>{h=h.replace(new RegExp('(^|[^а-яa-z0-9])('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'[а-яa-z0-9]*)','gi'),'$1<mark>$2</mark>')});return h}
-function lzRender(list,q,head){const o=$('#lzOut');setTimeout(()=>o.scrollIntoView({block:'start',behavior:'smooth'}),50);if(!list.length){o.innerHTML=(head||'')+'<p class="muted small">В лоции ничего не нашёл. Попробуйте другими словами: название места, «канал», «мост», «мель», «стоянка».</p>';return}
-  o.innerHTML=(head||'')+list.map((x,i)=>`<div class="lzI"><div>${LZ_K[x.k]||'·'} ${lzHi(x.t,q||'')}</div><div class="small muted">${(x.r||[]).map(r=>LZ_R[r]).join(', ')}${x.a?' · '+lzE(x.a.slice(0,80)):''}${x.p?' · '+lzE(x.p):''}${x.chk?' · <span style="color:var(--warn)">уточнить</span>':''}${x.ll?` · <a href="#" data-lzi="${i}">на карте</a>`:''}</div></div>`).join('');
+function lzRender(list,q,head,keep){const o=$('#lzOut');if(!keep)setTimeout(()=>o.scrollIntoView({block:'start',behavior:'smooth'}),50);if(!list.length){o.innerHTML=(head||'')+'<p class="muted small">В лоции ничего не нашёл. Попробуйте другими словами: название места, «канал», «мост», «мель», «стоянка».</p>';return}
+  o.innerHTML=(head||'')+list.map((x,i)=>`<div class="lzI"><div class="lzT">${lzTag(x.k)}${lzHi(x.t,q||'')}</div><div class="lzM"><span>${(x.r||[]).map(r=>LZ_R[r]).join(' · ')||'все районы'}${x.chk?' · <span style="color:var(--warn)">проверить на месте</span>':''}</span>${x.ll?`<button data-lzi="${i}">На карте</button>`:''}</div></div>`).join('');
   o.querySelectorAll('[data-lzi]').forEach(a=>a.onclick=e=>{e.preventDefault();const x=list[+a.dataset.lzi];closePanel();map.flyTo(x.ll,13);L.popup().setLatLng(x.ll).setContent(`<div class="small">${lzE(x.t)}</div>`).openOn(map)})}
-function lzAsk(q){q=(q||'').trim();if(!LZ.f)return;
+function lzAsk(q){q=(q||'').trim();if(!LZ.f)return;if(!q||q==='@home')return lzHome();if(!q.startsWith('@'))$$('#p-lotsia [data-lq]').forEach(x=>x.classList.remove('on'));
   if(q==='@near'){const p=G.pos||[map.getCenter().lat,map.getCenter().lng],reg=new Set([lzRegion(p)]);const near=LZ.f.filter(x=>x.ll&&dist(p,x.ll)<40000).sort((a,b)=>dist(p,a.ll)-dist(p,b.ll)).slice(0,8);
     const more=['#hazard','#berth','#vhf'].flatMap(k=>lzSearch(k,{reg,n:200}).filter(x=>(x.r||[]).includes([...reg][0])).slice(0,6));
     return lzRender([...new Set([...near,...more])],'',`<p class="small"><b>${G.pos?'Вы':'Центр карты'} — район «${LZ_R[[...reg][0]]}».</b> Ближайшее и главное из лоции:</p>`)}
@@ -1050,14 +1072,14 @@ function lzAsk(q){q=(q||'').trim();if(!LZ.f)return;
     const low=rows.filter(r=>r[0]<m+1);return lzRender(low.map(r=>r[1]),'',`<p class="small"><b>Высота ${f1(m)} м${regs?' · по району маршрута':''}:</b> ${low.length?`${low.length} мест ниже ${f1(m+1)} м (запас меньше 1 м) — там нужна разводка или не пройти. Высоты даны от расчётного уровня; при высокой воде меньше.`:'по лоции все мосты и ЛЭП выше, запас больше 1 м.'}</p>`)}
   lzRender(lzSearch(q),q.startsWith('#')?'':q,q.startsWith('#')?`<p class="small"><b>${{vhf:'УКВ-каналы и диспетчеры',hazard:'Опасности и запреты',berth:'Стоянки и укрытия',fuel:'Топливо и снабжение',rule:'Правила и контакты'}[q.slice(1)]||''}</b> — сначала ваш район (${[...lzCtxRegions()].map(r=>LZ_R[r]).join(', ')}).</p>`:'')}
 function lzPts(){if(LZ.layer){map.removeLayer(LZ.layer);LZ.layer=null}if(!LZ.f||!S.lzPts)return;LZ.layer=L.layerGroup(LZ.f.filter(x=>x.ll).map(x=>L.circleMarker(x.ll,{radius:5,color:'#FF6B2C',weight:2,fillOpacity:.5}).bindPopup(`<div class="small">${LZ_K[x.k]||''} ${lzE(x.t)}${x.p?`<br><span class="muted">${lzE(x.p)}</span>`:''}</div>`))).addTo(map)}
-function lzUI(){const has=!!LZ.f;$('#lzEmpty').hidden=has;$('#lzMain').hidden=!has;$('#lzLoad').textContent=LZ.own?'Вернуть встроенную лоцию':'Загрузить свой файл лоции';$('#lzDel').hidden=!LZ.own;
+function lzUI(){const has=!!LZ.f;if(has&&!$('#lzOut').innerHTML)setTimeout(lzHome,0);$('#lzEmpty').hidden=has;$('#lzMain').hidden=!has;$('#lzLoad').textContent=LZ.own?'Вернуть встроенную лоцию':'Загрузить свой файл лоции';$('#lzDel').hidden=!LZ.own;
   $('#lzStat').textContent=has?`${LZ.meta.name||'Лоция'}: ${LZ.f.length} фактов, ${LZ.f.filter(x=>x.ll).length} с координатами · ${LZ.own?'свой файл, только на этом устройстве':'встроена в «Курс», работает без интернета'}`:'Встроенная лоция готовится — скоро появится в обновлении.';$('#lzPts').checked=!!S.lzPts}
 async function lzSet(db,save){if(!db||!Array.isArray(db.facts)||!db.facts.length)throw new Error('нет фактов');LZ.f=db.facts.filter(x=>x&&typeof x.t==='string');LZ.meta={name:db.name,built:db.built,src:db.src};LZ.own=!!save||!!db.own;if(save)db.own=true;lzIndex();
   if(save)await lzIDB('readwrite',st=>st.put(db,'lotsia'));lzUI();lzPts()}
 $('#lzLoad').onclick=()=>{if(LZ.own)$('#lzDel').click();else $('#lzFile').click()};
 $('#lzFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{await lzSet(JSON.parse(r.result),true);toast(`Лоция загружена: ${LZ.f.length} фактов`)}catch(er){logE('lotsia '+er.message);toast('Не тот файл: нужен kurs-lotsia.json')}};r.readAsText(f);e.target.value=''};
 $('#lzGo').onclick=()=>lzAsk($('#lzQ').value);$('#lzQ').onkeydown=e=>{if(e.key==='Enter')lzAsk($('#lzQ').value)};
-$$('#p-lotsia [data-lq]').forEach(b=>b.onclick=()=>{$('#lzQ').value='';lzAsk(b.dataset.lq)});
+$$('#p-lotsia [data-lq]').forEach(b=>b.onclick=()=>{$('#lzQ').value='';$$('#p-lotsia [data-lq]').forEach(x=>x.classList.toggle('on',x===b));if(b.dataset.lq==='@home')return lzHome();lzAsk(b.dataset.lq)});
 $('#lzPts').onchange=e=>{S.lzPts=e.target.checked;saveS();lzPts()};
 $('#lzDel').onclick=async()=>{await lzIDB('readwrite',st=>st.delete('lotsia')).catch(()=>{});LZ.f=null;LZ.idx=null;LZ.own=false;$('#lzOut').innerHTML='';lzBuiltin().then(()=>toast('Свой файл удалён, работает встроенная лоция'))};
 // встроенная лоция «Курса» (своими словами, data/lotsia.json); свой файл экипажа — поверх неё
