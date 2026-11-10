@@ -482,7 +482,7 @@ async function loadGrid(force,retry=0){
   try{
     let js,used=model;
     // общий файл прогноза: собирается на GitHub раз в 3 часа для всех — телефон не тратит запросы и грузит мгновенно
-    if(inReg&&!force&&(model==='ecmwf_ifs025'||model==='icon_seamless')){try{const r=await fetch(WXRAW+'grid_'+model+'.json');if(r.ok){const sg=await r.json();
+    if(inReg&&(model==='ecmwf_ifs025'||model==='icon_seamless')){try{const r=await fetch(WXRAW+'grid_'+model+'.json');if(r.ok){const sg=await r.json();
       if(sg&&sg.times&&Date.now()-sg.fetched<4*3600e3&&sg.spd.length===sg.Nx*sg.Ny){W.g=buildGrid(sg);try{store.set('grid',sg)}catch(_){}setupTime();drawField();freshChip();netChip();return}}}catch(e){logE('shared grid '+e.message)}}
     if(model==='fmi_harmonie')js=await fmiGrid(la,lo);
     else try{js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${model}`,45000)}
