@@ -1,6 +1,6 @@
 // Курс — офлайн-кэш. Оболочка: из кэша. Карта OSM/OpenSeaMap: что смотрели — сохраняется (по правилам OSM кэшировать просмотренное можно, массово скачивать нельзя).
 // Яндекс не кэшируем: условия API это не разрешают явно. Погода: сначала сеть, без сети — последний ответ.
-const V='kurs-v0.9.20', SHELL=['./','./index.html','./manifest.webmanifest','./icon.svg',
+const V='kurs-v0.9.21', SHELL=['./','./index.html','./manifest.webmanifest','./icon.svg',
  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js','https://unpkg.com/protomaps-leaflet@5.1.0/dist/protomaps-leaflet.js'];
 const TILES='kurs-tiles', WX='kurs-wx', MAPC='kurs-map', MAX_TILES=6000;
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
@@ -12,7 +12,7 @@ self.addEventListener('fetch',e=>{
     e.respondWith(caches.open(TILES).then(async c=>{const hit=await c.match(e.request);if(hit)return hit;
       try{const r=await fetch(e.request);if(r.ok){c.put(e.request,r.clone());trim()}return r}catch(err){return new Response('',{status:504})}}));return}
   if(/open-meteo\.com$/.test(u.host)){
-    e.respondWith(fetch(e.request).then(r=>{if(r.ok){const cl=r.clone();caches.open(WX).then(async c=>{await c.put(e.request,cl);const k=await c.keys();if(k.length>80)for(const q of k.slice(0,k.length-80))await c.delete(q)})}return r}).catch(()=>caches.open(WX).then(c=>c.match(e.request)).then(r=>r||Response.error())));return}
+    e.respondWith(fetch(e.request).then(r=>{if(r.ok){const cl=r.clone();caches.open(WX).then(async c=>{await c.put(e.request,cl);const k=await c.keys();if(k.length>80)for(const q of k.slice(0,k.length-80))await c.delete(q)})}return r}).catch(()=>caches.open(WX).then(c=>c.match(e.request)).then(r=>r||new Response('{"error":true,"reason":"нет ответа сервера"}',{status:503,headers:{'content-type':'application/json','x-kurs-sw':'1'}}))));return}
   if(u.origin===location.origin&&u.pathname.includes('/map/')){
     e.respondWith(caches.open(MAPC).then(async c=>{const hit=await c.match(e.request);if(hit)return hit;
       try{const r=await fetch(e.request);if(r.ok)c.put(e.request,r.clone());return r}catch(err){return new Response('',{status:504})}}));return}

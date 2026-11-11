@@ -1,6 +1,6 @@
 # Сборщик погоды для «Курса» (запускает GitHub Actions): ветер на российских станциях (SYNOP через Ogimet, раз в час)
-# и сетка прогноза на весь район (раз в 3 часа). Пишет в папку out/: obs.json, grid_<модель>.json
-import json, os, sys, time, urllib.request, datetime as dt
+# и сетки прогноза всех моделей на весь район (когда опубликованная старше 2,5 ч). Пишет в папку out/: obs.json, grid_<модель>.json
+import json, os, sys, time, urllib.request, urllib.error, datetime as dt
 UA = {'User-Agent': 'KursWeather/1.0 (+https://sandovich.github.io/kurs)'}
 def get(u, t=60):
     return urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=t).read().decode('utf-8', 'replace')
@@ -44,7 +44,7 @@ def grid(model):
     Ny = round((WXR['n'] - WXR['s']) / WXR['st']) + 1; Nx = round((WXR['e'] - WXR['w']) / WXR['st']) + 1; la, lo = [], []
     for i in range(Ny):
         for j in range(Nx): la.append('%.3f' % (WXR['s'] + (WXR['n'] - WXR['s']) * i / (Ny - 1))); lo.append('%.3f' % (WXR['w'] + (WXR['e'] - WXR['w']) * j / (Nx - 1)))
-    js = json.loads(get(f'https://api.open-meteo.com/v1/forecast?latitude={",".join(la)}&longitude={",".join(lo)}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models={model}', 120))
+    js = json.loads(get(f'https://api.open-meteo.com/v1/forecast?latitude={",".join(la)}&longitude={",".join(lo)}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models={model}', 60))
     if not isinstance(js, list): js = [js]
     return {'model': model, 's': WXR['s'], 'n': WXR['n'], 'w': WXR['w'], 'e': WXR['e'], 'N': Nx, 'Nx': Nx, 'Ny': Ny, 'reg': True, 'z': 8, 'fetched': int(time.time() * 1000), 'shared': True,
             'times': js[0]['hourly']['time'], 'spd': [x['hourly']['wind_speed_10m'] for x in js], 'dir': [x['hourly']['wind_direction_10m'] for x in js], 'gst': [x['hourly']['wind_gusts_10m'] for x in js]}
@@ -56,9 +56,12 @@ if __name__ == '__main__':
     RAW = 'https://raw.githubusercontent.com/' + os.environ.get('GITHUB_REPOSITORY', 'Sandovich/kurs') + '/data/'
     for m in ('ecmwf_ifs025', 'icon_seamless', 'gfs_seamless', 'metno_seamless', 'dmi_seamless', 'ecmwf_aifs025_single'):
         try:
-            old = json.loads(get(RAW + f'grid_{m}.json', 30)).get('fetched', 0)
+            old = json.loads(get(RAW + f'grid_{m}.json', 15)).get('fetched', 0)
         except Exception: old = 0
         if 'grid' not in sys.argv and time.time() * 1000 - old < 2.5 * 3600e3: print('сетка свежая', m); continue
         try: json.dump(grid(m), open(f'out/grid_{m}.json', 'w'), separators=(',', ':')); print('сетка', m)
+        except urllib.error.HTTPError as e:
+            print('grid', m, e)
+            if e.code == 429: print('лимит Open-Meteo — остальные модели в следующий раз'); break
         except Exception as e: print('grid', m, e)
         time.sleep(3)
