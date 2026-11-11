@@ -51,7 +51,14 @@ def grid(model):
 if __name__ == '__main__':
     os.makedirs('out', exist_ok=True)
     json.dump(obs(), open('out/obs.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-    if 'grid' in sys.argv:
-        for m in ('ecmwf_ifs025', 'icon_seamless'):
-            try: json.dump(grid(m), open(f'out/grid_{m}.json', 'w'), separators=(',', ':')); print('сетка', m)
-            except Exception as e: print('grid', m, e)
+    # сетки прогноза для всех моделей «Курса»: при каждом запуске, но не чаще раза в 2,5 ч на модель
+    # (таймер GitHub срабатывает неравномерно; так общий файл всегда свежий, а лимит Open-Meteo не тратится зря)
+    RAW = 'https://raw.githubusercontent.com/' + os.environ.get('GITHUB_REPOSITORY', 'Sandovich/kurs') + '/data/'
+    for m in ('ecmwf_ifs025', 'icon_seamless', 'gfs_seamless', 'metno_seamless', 'dmi_seamless', 'ecmwf_aifs025_single'):
+        try:
+            old = json.loads(get(RAW + f'grid_{m}.json', 30)).get('fetched', 0)
+        except Exception: old = 0
+        if 'grid' not in sys.argv and time.time() * 1000 - old < 2.5 * 3600e3: print('сетка свежая', m); continue
+        try: json.dump(grid(m), open(f'out/grid_{m}.json', 'w'), separators=(',', ':')); print('сетка', m)
+        except Exception as e: print('grid', m, e)
+        time.sleep(3)

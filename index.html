@@ -370,7 +370,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.19';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.20';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -398,7 +398,21 @@ const STOPS=[[0,[80,100,190]],[4,[55,140,200]],[8,[50,170,150]],[12,[90,180,70]]
 function rgb(v){if(!(v>=0))v=0;for(let i=1;i<STOPS.length;i++){if(v<=STOPS[i][0]){const[a,ca]=STOPS[i-1],[b,cb]=STOPS[i],t=(v-a)/(b-a);return ca.map((c,k)=>Math.round(c+(cb[k]-c)*t))}}return STOPS[STOPS.length-1][1]}
 const css=v=>`rgb(${rgb(v).join(',')})`;
 $('#legend').style.background=`linear-gradient(90deg,${STOPS.map(s=>`rgb(${s[1].join(',')}) ${s[0]/40*100}%`).join(',')})`;
-async function getJSON(u,ms=20000){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),ms);let r;try{r=await fetch(u,{signal:ac.signal})}catch(e){throw new Error(e.name==='AbortError'?'сервер не ответил за '+ms/1000+' с (блокировка у оператора или плохая связь)':'нет связи с сервером')}finally{clearTimeout(tm)}if(!r.ok){let t='';try{t=(await r.json()).reason||''}catch(e){}throw new Error(`сервер ответил ${r.status} ${t}`)}return r.json()}
+async function getJSON0(u,ms=20000){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),ms);let r;try{r=await fetch(u,{signal:ac.signal})}catch(e){throw new Error(e.name==='AbortError'?'сервер не ответил за '+ms/1000+' с (блокировка у оператора или плохая связь)':'нет связи с сервером')}finally{clearTimeout(tm)}
+  if(!r.ok){let t='';try{t=(await r.json()).reason||''}catch(e){}const er=new Error(r.status===429?'лимит запросов Open-Meteo исчерпан':`сервер ответил ${r.status} ${t}`);er.status=r.status;er.reason=t;throw er}return r.json()}
+/* Open-Meteo: бесплатный доступ ограничен (600/мин, 5 000/ч, 10 000/сутки на адрес). Одинаковые запросы за 20 минут берём из памяти,
+   после ответа 429 к этому серверу не ходим (до конца суток UTC при дневном лимите, иначе 10 минут) — сразу запасные источники, без ошибок на экране */
+const OM={c:new Map(),fly:new Map()};
+function omBlock(h){const b=store.get('om429',{});return b[h]&&b[h]>Date.now()?b[h]:0}
+async function getJSON(u,ms=20000){let h='';try{h=new URL(u).host}catch(e){}
+  if(!/open-meteo\.com$/.test(h))return getJSON0(u,ms);
+  if(omBlock(h)){const e=new Error('лимит запросов Open-Meteo исчерпан, беру запасной источник');e.status=429;throw e}
+  const c=OM.c.get(u);if(c&&Date.now()-c.t<20*6e4)return c.v;
+  if(OM.fly.has(u))return OM.fly.get(u);
+  const pr=getJSON0(u,ms).then(v=>{OM.c.set(u,{t:Date.now(),v});if(OM.c.size>40)OM.c.delete(OM.c.keys().next().value);return v}).catch(e=>{
+    if(e.status===429){const b=store.get('om429',{}),d=new Date();b[h]=/daily/i.test(e.reason||'')?Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1):Date.now()+10*6e4;store.set('om429',b);logE('open-meteo 429 '+h+' пауза до '+new Date(b[h]).toISOString())}
+    throw e}).finally(()=>OM.fly.delete(u));
+  OM.fly.set(u,pr);return pr}
 const MODEL_NAME={fmi_harmonie:'HARMONIE (FMI)',ecmwf_ifs025:'ECMWF',icon_seamless:'ICON',gfs_seamless:'GFS',metno_seamless:'MET Nordic',dmi_seamless:'HARMONIE',ecmwf_aifs025_single:'AIFS'};
 const MODEL_COLOR={fmi_harmonie:'#7fd3c3',ecmwf_ifs025:'#3fb6ff',icon_seamless:'#4cc38a',gfs_seamless:'#ffb020',metno_seamless:'#c78bff',dmi_seamless:'#ff7a9a',ecmwf_aifs025_single:'#e6eef5'};
 const CMP=['ecmwf_ifs025','icon_seamless','gfs_seamless'];
@@ -488,11 +502,13 @@ async function loadGrid(force,retry=0){
   try{
     let js,used=model;
     // общий файл прогноза: собирается на GitHub раз в 3 часа для всех — телефон не тратит запросы и грузит мгновенно
-    if(inReg&&(model==='ecmwf_ifs025'||model==='icon_seamless')){try{const r=await fetch(WXRAW+'grid_'+model+'.json');if(r.ok){const sg=await r.json();
-      if(sg&&sg.times&&Date.now()-sg.fetched<4*3600e3&&sg.spd.length===sg.Nx*sg.Ny){W.g=buildGrid(sg);try{store.set('grid',sg)}catch(_){}setupTime();drawField();freshChip();netChip();return}}}catch(e){logE('shared grid '+e.message)}}
+    let sgOld=null;
+    if(inReg&&model!=='fmi_harmonie'){try{const r=await fetch(WXRAW+'grid_'+model+'.json');if(r.ok){const sg=await r.json();if(sg&&sg.times&&sg.spd.length===sg.Nx*sg.Ny&&Date.now()-sg.fetched<24*3600e3)sgOld=sg;
+      if(sg&&sg.times&&Date.now()-sg.fetched<7*3600e3&&sg.spd.length===sg.Nx*sg.Ny){W.g=buildGrid(sg);try{store.set('grid',sg)}catch(_){}setupTime();drawField();freshChip();netChip();return}}}catch(e){logE('shared grid '+e.message)}}
     if(model==='fmi_harmonie')js=await fmiGrid(la,lo);
     else try{js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${model}`,45000)}
-      catch(e1){logE('open-meteo '+e1.message+' → FMI');js=await fmiGrid(la,lo);used='fmi_harmonie';toast('Основной прогноз не ответил — показываю финский HARMONIE')}
+      catch(e1){logE('open-meteo '+e1.message+' → запасной');try{js=await fmiGrid(la,lo);used='fmi_harmonie';if(e1.status!==429)toast('Основной прогноз не ответил — показываю финский HARMONIE')}
+        catch(e2){if(sgOld){W.g=buildGrid(sgOld);setupTime();drawField();freshChip();netChip();return}throw e2}}
     if(!Array.isArray(js))js=[js];
     const raw={model:used,want:model,s,n,w,e,N:Nx,Nx,Ny,z,reg:inReg,fetched:Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)};
     W.g=buildGrid(raw);try{store.set('grid',raw)}catch(_){}setupTime();drawField();freshChip();netChip();
@@ -571,19 +587,21 @@ let ptMarker=null;
 async function showPoint(ll){
   if(ptMarker)map.removeLayer(ptMarker);ptMarker=L.circleMarker(ll,{radius:7,color:'#fff',weight:2,fillColor:'#3fb6ff',fillOpacity:1}).addTo(map);
   openPanel('point');$('#pointTitle').textContent=`${fmtC(ll.lat,1)} ${fmtC(ll.lng,0)}`;const body=$('#pointBody');PT.last=[ll.lat,ll.lng];
-  const models=uniq([...CMP,S.model]);body.innerHTML=`<p class="muted">Сравниваю ${models.map(m=>MODEL_NAME[m]).join(', ')}…</p>`;
+  let models=uniq([...CMP,S.model]);body.innerHTML=`<p class="muted">Сравниваю ${models.map(m=>MODEL_NAME[m]).join(', ')}…</p>`;
   const la=ll.lat.toFixed(3),lo=ll.lng.toFixed(3);
-  const [a,m]=await Promise.allSettled([
+  let [a,m]=await Promise.allSettled([
     getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${models}`),
     getJSON(`https://marine-api.open-meteo.com/v1/marine?latitude=${la}&longitude=${lo}&hourly=wave_height,wave_direction,wave_period&forecast_days=5&timeformat=unixtime`)]);
+  let fb=false;if(a.status!=='fulfilled'){logE('point open-meteo '+a.reason.message+' → FMI');try{const F=(await fmiGrid([la],[lo]))[0].hourly;
+    a={status:'fulfilled',value:{hourly:{time:F.time,wind_speed_10m_fmi_harmonie:F.wind_speed_10m,wind_gusts_10m_fmi_harmonie:F.wind_gusts_10m,wind_direction_10m_fmi_harmonie:F.wind_direction_10m}}};models=['fmi_harmonie'];fb=true}catch(e){}}
   if(a.status!=='fulfilled'){body.innerHTML=`<p class="badbox">Прогноз не загрузился (${a.reason.message}). ${navigator.onLine?'':'Нет сети: прогноз в точке доступен только по сохранённому маршруту и на карте.'}</p>`;return}
   const h=a.value.hourly,t=h.time,now=Date.now()/1000;let i0=t.findIndex(x=>x>=now-1800);if(i0<0)i0=0;
   const sp=k=>h['wind_speed_10m_'+k]||[],gu=k=>h['wind_gusts_10m_'+k]||[],dr=k=>h['wind_direction_10m_'+k]||[];
   const mh=m.status==='fulfilled'&&m.value.hourly&&m.value.hourly.wave_height&&m.value.hourly.wave_height.some(v=>v!=null)?m.value.hourly:null;
-  const main=S.model;
+  const main=fb?'fmi_harmonie':S.model;
   let spread=0,spAt=null;for(let i=i0;i<Math.min(t.length,i0+72);i++){const vs=models.map(k=>sp(k)[i]).filter(v=>v!=null);if(vs.length>1){const d=Math.max(...vs)-Math.min(...vs);if(d>spread){spread=d;spAt=t[i]}}}
-  let html='';
-  html+=spread>=8?`<div class="badbox">⚠ Модели сильно спорят: до <b>${f0(spread)} уз</b> разницы (${fmtT(spAt)}). Прогнозу верить нельзя, закладывайте худший вариант.</div>`
+  let html=fb?'<div class="warnbox small">Основной прогноз сейчас недоступен — показываю финскую модель HARMONIE 2,5 км (FMI).</div>':'';
+  html+=fb?'':spread>=8?`<div class="badbox">⚠ Модели сильно спорят: до <b>${f0(spread)} уз</b> разницы (${fmtT(spAt)}). Прогнозу верить нельзя, закладывайте худший вариант.</div>`
        :spread>=5?`<div class="warnbox">Модели расходятся до ${f0(spread)} уз (${fmtT(spAt)}). Уверенность средняя.</div>`
        :`<div class="okbox small">Модели согласны (разброс до ${f0(spread)} уз за 72 ч). Уверенность высокая.</div>`;
   html+=chart(t,i0,Math.min(t.length,i0+120),[...models.map(k=>({v:sp(k),c:MODEL_COLOR[k]})),{v:gu(main),c:MODEL_COLOR[main],dash:1}],dr(main));
@@ -704,8 +722,9 @@ function gridSample(g,lat,lon,t){const Nx=g.Nx||g.N,Ny=g.Ny||g.N,fx=(lon-g.w)/(g
   const u=bl(g.U[t]),v=bl(g.V[t]);if(isNaN(u)||isNaN(v))return null;return{spd:Math.hypot(u,v),dir:(deg(Math.atan2(-u,-v))+360)%360,gust:bl(g.G[t])}}
 async function routeGrid(a,b){const pad=.35,s=Math.min(a[0],b[0])-pad,n=Math.max(a[0],b[0])+pad,w=Math.min(a[1],b[1])-pad*2,e=Math.max(a[1],b[1])+pad*2,N=9,la=[],lo=[];
   for(let i=0;i<N;i++)for(let j=0;j<N;j++){la.push((s+(n-s)*i/(N-1)).toFixed(3));lo.push((w+(e-w)*j/(N-1)).toFixed(3))}
-  let js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${S.model}`,40000);
-  if(!Array.isArray(js))js=[js];return buildGrid({model:S.model,s,n,w,e,N,z:0,fetched:Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)})}
+  let js,md=S.model;try{js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${S.model}`,40000)}
+  catch(er){logE('isoroute open-meteo '+er.message+' → запасной');const g0=W.g;if(g0&&g0.reg&&Date.now()-g0.fetched<24*3600e3&&s>=g0.s&&n<=g0.n&&w>=g0.w&&e<=g0.e)return g0;js=await fmiGrid(la,lo);md='fmi_harmonie'}
+  if(!Array.isArray(js))js=[js];return buildGrid({model:md,s,n,w,e,N,z:0,fetched:Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)})}
 function moveP(p,h,nm){const k=Math.cos(rad(p[0]));return[p[0]+Math.cos(rad(h))*nm/60,p[1]+Math.sin(rad(h))*nm/60/k]}
 function seaOk(p){const w=isWater(p[0],p[1]);if(w===undefined||w===null)return true;if(!w)return false;           // вне карты воды — считаем морем
   for(const h of[0,90,180,270]){const q=moveP(p,h,.16);if(isWater(q[0],q[1])===false)return false}return true}      // держимся ≥300 м от берега
