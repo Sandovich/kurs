@@ -315,11 +315,23 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
     <button id="mNight"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg><span>Ночной режим</span></button>
     <button data-go="help"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 014.8 1c0 1.7-2.4 2-2.4 3.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg><span>Как пользоваться</span></button>
     <button id="mWatch" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.8l2.5 1.6M9.5 3h5"/></svg><span>Вахтенный таймер: выкл</span></button>
+    <button data-go="spb" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16c3-5 6-7 9-7s6 2 9 7"/><path d="M3 16h18M7 16v3M17 16v3M12 9V5M10 6l2-2 2 2"/></svg><span>Проход через Петербург: разводка мостов</span></button>
     <button data-go="lotsia" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2 2 0 016 4h5v15H6a2 2 0 00-2 1.5z"/><path d="M20 5.5A2 2 0 0018 4h-5v15h5a2 2 0 012 1.5z"/></svg><span>Лоция и штурман</span></button>
     <button data-go="diag" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a7 7 0 0114 0M8 12a4 4 0 018 0"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><path d="M12 13v7"/></svg><span>Проверка связи</span></button>
   </div>
 </section>
 
+<section class="panel" id="p-spb" hidden>
+  <button class="close">✕</button>
+  <h2>Проход через Петербург</h2>
+  <p class="muted small">Когда подойти к мостам, чтобы пройти Неву в одно окно разводки. Ход — из настроек лодки, течение Невы ≈1,8 уз. Время — московское.</p>
+  <div class="row" style="flex-wrap:wrap;gap:8px">
+    <label class="small">Куда <select id="spDir"><option value="up">из залива в Ладогу</option><option value="down">из Ладоги в залив</option></select></label>
+    <label class="small">Ночь с <input type="date" id="spDate"></label>
+    <button id="spGo">Рассчитать</button><button id="spMap">Мосты на карте</button>
+  </div>
+  <div id="spOut"></div>
+</section>
 <section class="panel" id="p-lotsia" hidden>
   <button class="close">✕</button>
   <h2>Лоция и штурман</h2>
@@ -370,7 +382,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.21';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.22';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -575,7 +587,7 @@ new MutationObserver(layoutTop).observe(document.body,{subtree:true,attributes:t
 /* ===== панели ===== */
 $$('.panel').forEach(p=>{const c=p.querySelector(':scope > .close'),h=p.querySelector('h2');if(c&&h)h.appendChild(c)});
 let openName=null;
-function openPanel(n){$$('.panel').forEach(p=>p.hidden=p.id!=='p-'+n);openName=n;$$('#top [data-panel]').forEach(b=>b.classList.toggle('on',b.dataset.panel===n));if(n==='ais')aisList()}
+function openPanel(n){if(n==='spb')setTimeout(spbUI,0);$$('.panel').forEach(p=>p.hidden=p.id!=='p-'+n);openName=n;$$('#top [data-panel]').forEach(b=>b.classList.toggle('on',b.dataset.panel===n));if(n==='ais')aisList()}
 function closePanel(){$$('.panel').forEach(p=>p.hidden=true);openName=null;$$('#top [data-panel]').forEach(b=>b.classList.remove('on'));if(ptMarker){map.removeLayer(ptMarker);ptMarker=null}anchorBtn()}
 $$('#top [data-panel]').forEach(b=>b.onclick=()=>openName===b.dataset.panel?closePanel():openPanel(b.dataset.panel));
 $$('.panel .close').forEach(b=>b.onclick=closePanel);
@@ -1368,6 +1380,57 @@ function obsInit(){$('#chkObs').checked=S.obs;if(S.obs){OB.layer.addTo(map);obsL
   clearInterval(OB.t);OB.t=setInterval(()=>{if(!document.hidden)obsLoad()},10*6e4);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-OB.at>5*6e4)obsLoad()})}
 
+/* ===== проход через Петербург: окна разводки мостов ===== */
+const SPB={d:null,lay:null};
+const mskT=ms=>new Date(ms).toLocaleTimeString('ru-RU',{timeZone:'Europe/Moscow',hour:'2-digit',minute:'2-digit'});
+const mskD=ms=>new Date(ms).toLocaleDateString('ru-RU',{timeZone:'Europe/Moscow',day:'numeric',month:'long'});
+async function spbData(){if(SPB.d)return SPB.d;const r=await fetch('data/bridges.json');if(!r.ok)throw new Error('нет данных о мостах');return SPB.d=await r.json()}
+function spbUI(){const d=$('#spDate');if(!d.value){const t=new Date(Date.now()+3*36e5);d.value=t.toISOString().slice(0,10)}$('#spDir').value=store.get('spDir','up')}
+// одна ночь: пробуем стартовать в каждое окно первого моста и берём вариант с наименьшим ожиданием
+function spbPlan(D,dir,date){
+  const at=(hm,day)=>Date.parse(`${date}T${hm}:00+03:00`)+day*864e5;
+  const night=D.b.filter(b=>b.kind==='night'),ch=dir==='up'?[...night].reverse():night; // по ходу судна
+  const kn=Math.max(1,S.boat.speed),cur=D.current_kn,v=Math.min(D.speed_kmh_max,(dir==='up'?kn-cur:kn+cur)*1.852); // км/ч относительно берега
+  if(v<=1)return{err:`Против течения ${f1(cur)} уз при ходе ${f1(kn)} уз лодка почти стоит — проход вверх невозможен`};
+  const win=b=>b.w.map(([a,c])=>{const A=at(a,1),C=at(c,1)+(c<a?864e5:0);return[A,C]});  // разводка — ночью после даты
+  let best=null;
+  for(const [A0] of win(ch[0])){let t=A0,wait=0,rows=[],ok=true;
+    for(let i=0;i<ch.length;i++){const b=ch[i];if(i){t+=Math.abs(b.km-ch[i-1].km)/v*36e5}
+      const W=win(b),w=W.find(([a,c])=>t<=c-5*6e4);if(!w){ok=false;rows.push({b,t,miss:1});break}
+      const wt=Math.max(0,w[0]-t);wait+=wt;t=Math.max(t,w[0]);rows.push({b,t,wt,w})}
+    if(ok&&(!best||best.miss||wait<best.wait))best={rows,wait,v,end:t}
+    if(!ok&&!best)best={rows,miss:1,v}}
+  return best}
+function spbNightOk(D,date){const md=date.slice(5),[a,b]=D.season.neva;if(md<a||md>b)return 'вне навигации на Неве ('+a.split('-').reverse().join('.')+'–'+b.split('-').reverse().join('.')+')';
+  if(D.noOpen.some(([x])=>x===md))return 'в эту ночь мосты не разводят (праздник)';return ''}
+async function spbGo(){const out=$('#spOut');let D;try{D=await spbData()}catch(e){out.innerHTML=`<p class="badbox">${e.message}</p>`;return}
+  const dir=$('#spDir').value,date=$('#spDate').value;store.set('spDir',dir);if(!date)return toast('Выберите дату');
+  const mast=S.boat.mast||0,bad=spbNightOk(D,date);let h='';
+  if(bad)h+=`<div class="badbox">Ночь с ${mskD(Date.parse(date+'T12:00:00+03:00'))}: ${bad}. Выберите другую ночь.</div>`;
+  const P=bad?null:spbPlan(D,dir,date);
+  if(P&&P.err)h+=`<div class="badbox">${P.err}</div>`;
+  else if(P){const R=P.rows,f=R[0],l=R[R.length-1];
+    if(P.miss)h+=`<div class="badbox">При ходе ${f1(S.boat.speed)} уз не успеваете к окну <b>${lzE(l.b.n)}</b> в ту же ночь — придётся ждать следующей ночи выше/ниже него. Добавьте ход мотором (настройки лодки).</div>`;
+    else h+=`<div class="okbox">Первый мост — <b>${lzE(f.b.n)}</b>: подойти к <b>${mskT(f.t-20*6e4)}</b> (за 20 мин до разводки) и выйти на связь с диспетчером. Последний — ${lzE(l.b.n)}, пройдёте ≈ <b>${mskT(P.end)}</b>. Ждать у мостов всего: ${Math.round(P.wait/6e4)} мин. Ход относительно берега ≈ ${f1(P.v/1.852)} уз.</div>`;
+    h+='<div class="scroll"><table><tr><th>Мост</th><th>Разводка</th><th>Подход</th><th>Ждать</th></tr>'+R.map(r=>`<tr><td>${lzE(r.b.n)}<span class="muted small"> · км ${f1(r.b.km)}</span></td><td>${r.b.w.map(x=>x.join('–')).join(', ')}</td><td>${r.miss?'<b style="color:var(--danger)">не успеть</b>':mskT(r.t)}</td><td>${r.miss?'—':r.wt>60e3?Math.round(r.wt/6e4)+' мин':'—'}</td></tr>`).join('')+'</table></div>';
+    // ветер на середине прохода, если прогноз есть
+    if(W.g&&!P.miss){const mid=R[Math.floor(R.length/2)],ti=W.g.times.findIndex(x=>x*1000>=mid.t-1800e3);const sm=ti>=0?gridSample(W.g,mid.b.ll[0],mid.b.ll[1],ti):null;
+      if(sm)h+=`<p class="small">Ветер на середине прохода (${lzE(mid.b.n)}, ${mskT(mid.t)}): <b>${f0(sm.spd)} уз</b>, порывы ${f0(sm.gust)} уз, ${rumb(sm.dir)} — ${MODEL_NAME[W.g.model]||''}.</p>`}}
+  const other=D.b.filter(b=>b.kind!=='night');
+  h+=`<h3>Ещё на пути ${dir==='up'?'в Ладогу':'из Ладоги'}</h3><ul class="d small">`+other.map(b=>`<li><b>${lzE(b.n)}</b> (км ${f1(b.km)}): ${lzE(b.note)}${b.clear&&mast?` — мачта ${f1(mast)} м ${mast+0.5<=b.clear?'проходит':'<b style="color:var(--danger)">не проходит</b>'} под наведённым (габарит ≈${f1(b.clear)} м, уточните)`:''}</li>`).join('')+'</ul>';
+  h+=`<h3>Правила (приказ Минтранса № 394)</h3><ul class="d small">
+    <li>С 23:00 до 05:00 маломерным судам нельзя идти по Неве от Благовещенского до Литейного моста (и по рукавам от Биржевого и Сампсониевского) — <b>кроме прохода в разводку в составе каравана</b>.</li>
+    <li>Караван формирует диспетчер Волго-Балта: связь на УКВ — канал <b>4</b> ниже Большеохтинского моста, канал <b>2</b> выше; держите канал 5. Дистанция в караване 200 м вверх, 500 м вниз.</li>
+    <li>Маломерные и парусные ждут прохода каравана у правого берега выше или ниже Троицкого моста (км 1381–1382,5), без якоря.</li>
+    <li>Скорость по Неве — не более 12–15 км/ч, у причалов — 5 км/ч.</li>
+    <li>Время разводки и ночи без разводки сверяйте с диспетчером и сайтом Мостотреста: график меняется.</li></ul>
+    <p class="muted small">${lzE(D.src)}</p>`;
+  out.innerHTML=h;setTimeout(()=>{const pn=$('#p-spb');pn.scrollTop=out.offsetTop-60},50)}
+async function spbMap(){let D;try{D=await spbData()}catch(e){return toast(e.message)}
+  if(SPB.lay)map.removeLayer(SPB.lay);SPB.lay=L.layerGroup(D.b.map(b=>L.circleMarker(b.ll,{radius:6,color:'#fff',weight:2,fillColor:b.kind==='night'?'#ff8a3d':b.kind==='fixed'?'#8aa1b5':'#ffd84d',fillOpacity:1})
+    .bindTooltip(`${b.n}: ${b.w.length?b.w.map(x=>x.join('–')).join(', '):b.note}`,{direction:'top'}))).addTo(map);
+  map.fitBounds(L.latLngBounds(D.b.map(b=>b.ll)).pad(.15));closePanel()}
+$('#spGo').onclick=spbGo;$('#spMap').onclick=spbMap;
 /* ===== старт ===== */
 LOG.push(...store.get('log',[]).slice(-100));
 document.body.classList.toggle('night',S.night);fillBoat();
