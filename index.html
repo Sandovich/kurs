@@ -469,7 +469,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.26';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.27';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -498,7 +498,7 @@ function rgb(v){if(!(v>=0))v=0;for(let i=1;i<STOPS.length;i++){if(v<=STOPS[i][0]
 const css=v=>`rgb(${rgb(v).join(',')})`;
 $('#legend').style.background=`linear-gradient(90deg,${STOPS.map(s=>`rgb(${s[1].join(',')}) ${s[0]/40*100}%`).join(',')})`;
 async function getJSON0(u,ms=20000){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),ms);let r;try{r=await fetch(u,{signal:ac.signal})}catch(e){throw Object.assign(new Error(e.name==='AbortError'?'сервер не ответил за '+ms/1000+' с (блокировка у оператора или плохая связь)':'нет связи с сервером'),{net:1})}finally{clearTimeout(tm)}
-  if(!r.ok){let t='';try{t=(await r.json()).reason||''}catch(e){}const er=new Error(r.status===429?'исчерпан бесплатный лимит запросов Open-Meteo':r.headers.get('x-kurs-sw')?'нет связи с сервером':`сервер ответил ${r.status} ${t}`);er.status=r.status;er.reason=t;if(r.headers.get('x-kurs-sw'))er.net=1;throw er}return r.json()}
+  if(!r.ok){let t='';try{t=(await r.json()).reason||''}catch(e){}const er=new Error(r.status===429?'исчерпан бесплатный лимит запросов Open-Meteo':r.headers.get('x-kurs-sw')?'нет связи с сервером':`сервер ответил ${r.status} ${t}`);er.status=r.status;er.reason=t;if(r.headers.get('x-kurs-sw'))er.net=1;throw er}const j=await r.json(),at=+r.headers.get('x-kurs-at');if(at&&j&&typeof j==='object')Object.defineProperty(j,'_at',{value:at});return j}
 /* Open-Meteo: бесплатный доступ ограничен (600/мин, 5 000/ч, 10 000/сутки на адрес). Одинаковые запросы за 20 минут берём из памяти,
    после ответа 429 к этому серверу не ходим (до конца суток UTC при дневном лимите, иначе 10 минут) — сразу запасные источники, без ошибок на экране */
 const OM={c:new Map(),fly:new Map()};
@@ -610,9 +610,10 @@ async function loadGrid(force,retry=0){
     else try{js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${model}`,45000)}
       catch(e1){logE('open-meteo '+e1.message+' → запасной');try{js=await fmiGrid(la,lo);used='fmi_harmonie';if(e1.status!==429)toast('Основной прогноз не ответил — показываю финский HARMONIE')}
         catch(e2){if(sgOld){W.g=buildGrid(sgOld);W.g.loadedAt=Date.now();setupTime();drawField();freshChip();netChip();return}throw e2}}
-    if(!Array.isArray(js))js=[js];
-    const raw={model:used,want:model,s,n,w,e,N:Nx,Nx,Ny,z,reg:inReg,fetched:Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)};
-    W.g=buildGrid(raw);W.g.loadedAt=Date.now();try{store.set('grid',raw)}catch(_){}setupTime();drawField();freshChip();netChip();
+    const at=js&&js._at;if(!Array.isArray(js))js=[js];
+    const raw={model:used,want:model,s,n,w,e,N:Nx,Nx,Ny,z,reg:inReg,fetched:at||Date.now(),times:js[0].hourly.time,spd:js.map(x=>x.hourly.wind_speed_10m),dir:js.map(x=>x.hourly.wind_direction_10m),gst:js.map(x=>x.hourly.wind_gusts_10m)};
+    W.g=buildGrid(raw);W.g.loadedAt=at?0:Date.now();try{store.set('grid',raw)}catch(_){}setupTime();drawField();freshChip();netChip();
+    if(at)chip('net','Нет связи с сервером прогноза: показываю сохранённый, '+ago(at),'warn');
   }catch(err){
     logE('grid '+err.message);
     const cg=store.get('grid',null);
@@ -703,7 +704,7 @@ async function showPoint(ll){const my=PT.seq=(PT.seq||0)+1;
   const mh=m.status==='fulfilled'&&m.value.hourly&&m.value.hourly.wave_height&&m.value.hourly.wave_height.some(v=>v!=null)?m.value.hourly:null;
   const main=fb||wantF?(models.includes('fmi_harmonie')?'fmi_harmonie':models[0]):S.model;
   let spread=0,spAt=null;for(let i=i0;i<Math.min(t.length,i0+72);i++){const vs=models.map(k=>sp(k)[i]).filter(v=>v!=null);if(vs.length>1){const d=Math.max(...vs)-Math.min(...vs);if(d>spread){spread=d;spAt=t[i]}}}
-  let html=fb?'<div class="warnbox small">Основной прогноз сейчас недоступен — показываю финскую модель HARMONIE 2,5 км (FMI).</div>':'';
+  let html=a.value._at?`<div class="warnbox small">Нет связи: это сохранённый прогноз, получен ${ago(a.value._at)}.</div>`:'';html+=fb?'<div class="warnbox small">Основной прогноз сейчас недоступен — показываю финскую модель HARMONIE 2,5 км (FMI).</div>':'';
   html+=fb?'':spread>=8?`<div class="badbox">⚠ Модели сильно спорят: до <b>${f0(spread)} уз</b> разницы (${fmtT(spAt)}). Прогнозу верить нельзя, закладывайте худший вариант.</div>`
        :spread>=5?`<div class="warnbox">Модели расходятся до ${f0(spread)} уз (${fmtT(spAt)}). Уверенность средняя.</div>`
        :`<div class="okbox small">Модели согласны (разброс до ${f0(spread)} уз за 72 ч). Уверенность высокая.</div>`;
@@ -741,7 +742,7 @@ function confirmTwice(id){const b=$('#'+id);if(b.dataset.sure){delete b.dataset.
 $('#rDep').onchange=()=>{renderRoute();renderEns()};
 $('#rWx').onclick=()=>routeWx();
 $('#rGpx').onclick=()=>{if(RT.pts.length<2)return toast('Нужно минимум две точки');
-  const x=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Kurs" xmlns="http://www.topografix.com/GPX/1/1"><rte><name>${S.boat.name||'Переход'} ${new Date().toLocaleDateString('ru-RU')}</name>${RT.pts.map((p,i)=>`<rtept lat="${p[0].toFixed(6)}" lon="${p[1].toFixed(6)}"><name>WP${i+1}</name></rtept>`).join('')}</rte></gpx>`;
+  const x=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Kurs" xmlns="http://www.topografix.com/GPX/1/1"><rte><name>${lzE(S.boat.name||'Переход')} ${new Date().toLocaleDateString('ru-RU')}</name>${RT.pts.map((p,i)=>`<rtept lat="${p[0].toFixed(6)}" lon="${p[1].toFixed(6)}"><name>WP${i+1}</name></rtept>`).join('')}</rte></gpx>`;
   download('route.gpx',x,'application/gpx+xml')};
 $('#rImpBtn').onclick=()=>$('#rImp').click();
 $('#rImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;const x=new DOMParser().parseFromString(await f.text(),'application/xml');
@@ -758,8 +759,8 @@ function drawRoute(colors){RT.layer.clearLayers();
     m.on('dragend',e=>{const l=e.target.getLatLng();RT.pts[i]=[l.lat,l.lng];routeChanged()})})}
 async function routeWx(){if(RT.pts.length<2)return toast('Поставьте минимум две точки');
   $('#rSum').innerHTML='<p class="muted">Считаю погоду вдоль маршрута по нескольким моделям…</p>';
-  const smp=[];for(const [li,l] of legs().entries()){const n=Math.max(1,Math.ceil(l.d/NM/4));for(let k=0;k<n;k++){smp.push({li,p:lerpPt(l.a,l.b,(k+.5)/n),len:l.d/n})}}
-  if(smp.length>120){toast('Маршрут очень длинный: беру каждую вторую точку');for(let i=smp.length-1;i>0;i-=2){smp[i-1].len+=smp[i].len;smp.splice(i,1)}}
+  let smp=[],stepNm=4;const mk=()=>{smp=[];for(const [li,l] of legs().entries()){const n=Math.max(1,Math.ceil(l.d/NM/stepNm));for(let k=0;k<n;k++){smp.push({li,p:lerpPt(l.a,l.b,(k+.5)/n),len:l.d/n})}}};mk();
+  if(smp.length>120){while(smp.length>120&&stepNm<200){stepNm*=1.5;mk()}toast('Маршрут очень длинный: точки прогноза стоят реже, через '+f0(stepNm)+' миль')}
   const my=RT.wseq=(RT.wseq||0)+1;const models=uniq([S.model,...CMP]).filter(x=>x!=='fmi_harmonie');const la=smp.map(s=>s.p[0].toFixed(3)),lo=smp.map(s=>s.p[1].toFixed(3));
   try{const [a,m]=await Promise.allSettled([
       S.model==='fmi_harmonie'?Promise.reject(Object.assign(new Error('выбрана модель FMI'),{status:0,own:1})):getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${models}`),
@@ -769,7 +770,7 @@ async function routeWx(){if(RT.pts.length<2)return toast('Поставьте м�
     else{logE('route open-meteo '+a.reason.message+' → FMI');const F=await fmiGrid(la,lo);A=F.map(x=>{const h=x.hourly;return{hourly:{time:h.time,wind_speed_10m_fmi_harmonie:h.wind_speed_10m,wind_gusts_10m_fmi_harmonie:h.wind_gusts_10m,wind_direction_10m_fmi_harmonie:h.wind_direction_10m}}});mods=['fmi_harmonie'];dm='fmi_harmonie';if(my!==RT.wseq)return;if(!a.reason.own&&a.reason.status!==429)toast('Основной прогноз не ответил — маршрут посчитан по финскому HARMONIE')}
     let M=m.status==='fulfilled'?m.value:null;if(M&&!Array.isArray(M))M=[M];
     const r1=v=>v==null?null:Math.round(v*10)/10;
-    const fc={pts:RT.pts,fetched:Date.now(),model:dm,models:mods,times:A[0].hourly.time,smp:smp.map((s,i)=>{const h=A[i].hourly,o={li:s.li,len:s.len,p:s.p};
+    const fc={pts:RT.pts,fetched:(a.status==='fulfilled'&&a.value._at)||Date.now(),model:dm,models:mods,times:A[0].hourly.time,smp:smp.map((s,i)=>{const h=A[i].hourly,o={li:s.li,len:s.len,p:s.p};
       for(const k of mods){o['s_'+k]=h['wind_speed_10m_'+k].map(r1);o['g_'+k]=h['wind_gusts_10m_'+k].map(r1)}
       o.d=h['wind_direction_10m_'+dm];o.w=M&&M[i]&&M[i].hourly?M[i].hourly.wave_height:null;return o})};
     RT.fc=fc;if(!store.set('routefc',fc))toast('Прогноз маршрута большой, не поместился в память');renderRoute();bestWindows();
@@ -903,7 +904,7 @@ async function ensWx(){if(RT.pts.length<2)return toast('Поставьте ми�
       return{s:h[k].map(v=>v==null?null:Math.round(v)),g:h['wind_gusts_10m'+sfx].map(v=>v==null?null:Math.round(v)),d:h['wind_direction_10m'+sfx].map(v=>v==null?null:Math.round(v/5)*5)}})}))};
     RT.ens=ens;if(!store.set('routeens',ens))toast('Календарь не поместился в память: без сети не сохранится');renderEns();ensScroll()}
   catch(err){logE('ens '+err.message);const lim=err.status===429;
-    if(RT.ens&&RT.ens.pts===RT.pts){renderEns();out.insertAdjacentHTML('afterbegin',`<p class="warnbox small">${lim?'Новый календарь сейчас недоступен: исчерпан бесплатный лимит прогнозов. Показываю прежний':'Новый календарь не загрузился. Показываю прежний'} от ${fmtHM(Date.now()-RT.ens.fetched)} назад.</p>`)}
+    if(RT.ens&&JSON.stringify(RT.ens.pts)===JSON.stringify(RT.pts)){renderEns();out.insertAdjacentHTML('afterbegin',`<p class="warnbox small">${lim?'Новый календарь сейчас недоступен: исчерпан бесплатный лимит прогнозов. Показываю прежний':'Новый календарь не загрузился. Показываю прежний'} от ${fmtHM(Date.now()-RT.ens.fetched)} назад.</p>`)}
     else out.innerHTML=`<p class="badbox">${lim?'Календарь сейчас недоступен: исчерпан бесплатный лимит прогнозов Open-Meteo на сегодня. Попробуйте после 03:00 по Москве — погода по маршруту при этом работает.':'Не загрузилось: '+err.message}</p>`}}
 function etaAt(dep,cum,li,rows){if(rows&&rows[li]&&rows[li].eta){const r=rows[li];return r.eta+(cum-r.cum)/r.d*r.time}return dep+cum/(S.boat.speed*NM/3600000)}
 function ensEval(dep){const E=RT.ens,M=E.P[0].m.length;let bad=0;const mg=[];
@@ -938,6 +939,7 @@ $('#btnGps').onclick=()=>{
 $('#btnFollow').onclick=()=>{G.follow=true;if(G.pos)map.panTo(G.pos)};
 map.on('dragstart',()=>{G.follow=false});
 function onPos(p){if(!p._sk&&SK.posT&&Date.now()-SK.posT<10e3)return;const c=p.coords,ll=[c.latitude,c.longitude],now=Date.now();let sog=c.speed!=null?c.speed*3600/NM:null,cog=c.heading!=null&&!isNaN(c.heading)?c.heading:null;
+  if(G.pos&&G.last){const dtj=(now-G.last)/1000,dj=dist(G.pos,ll);if(dtj>0&&dtj<120&&dj>Math.max(200,(c.accuracy||10)*3)&&dj/dtj*3600/NM>45&&(G.jump=(G.jump||0)+1)<3){logE('gps скачок на '+f0(dj)+' м за '+f0(dtj)+' с — отметка отброшена');return}}G.jump=0;
   G.hist=(G.hist||[]).filter(h=>now-h.t<=20000);G.hist.push({ll,t:now});
   if(sog==null||cog==null){let old=null;for(let i=G.hist.length-1;i>=0;i--)if(now-G.hist[i].t>=3000){old=G.hist[i];break}if(old){const dt=(now-old.t)/1000,d=dist(old.ll,ll),noise=Math.max(8,(c.accuracy||10)*.8);
     if(sog==null)sog=d>noise?d/dt*3600/NM:0;if(cog==null&&d>noise)cog=brg(old.ll,ll)}}
@@ -954,13 +956,13 @@ function onPos(p){if(!p._sk&&SK.posT&&Date.now()-SK.posT<10e3)return;const c=p.c
   const acc=c.accuracy;$('#hAcc').innerHTML=`<span style="color:${acc<15?'var(--ok)':acc<50?'var(--warn)':'var(--danger)'}">точность ±${f0(acc)} м</span>`;
   $('#hud').classList.remove('stale');chip('gps',acc>50?`GPS неточный: ±${f0(acc)} м`:null,'warn');
   anchorCheck();aisCpaCheck();navUpdate();shoreCheck();borderCheck();shoalCheck()}
-setInterval(()=>{if(G.watch==null)return;const s=(Date.now()-G.last)/1000;
+setInterval(()=>{const skFed=G.watch==null&&!!S.sk&&!!SK.posT&&!!G.pos;if(G.watch==null&&!skFed)return;const s=(Date.now()-G.last)/1000;
   if(!G.pos){const w=Math.round((Date.now()-G.start)/1000);chip('gps',w<45?`Жду первую позицию GPS… ${w} с`:'Нет позиции. Проверьте: Настройки → Конфиденциальность → Службы геолокации → Safari: «При использовании» и «Точная геопозиция»',w<45?'warn':'bad');return}
   if(s>30)G.marker?.getElement()?.classList.add('stale');
-  if(s>20){$('#hud').classList.add('stale');chip('gps',`GPS молчит ${Math.round(s)} с`,'bad')}
-  if(s>60&&!G.warned){G.warned=true;navigator.vibrate?.([300,200,300]);beep();toast('GPS не обновлялся больше минуты. Позиция на экране устарела!',8000);
+  if(s>20){$('#hud').classList.add('stale');chip('gps',skFed?`Приборы лодки молчат ${Math.round(s)} с — позиция устарела`:`GPS молчит ${Math.round(s)} с`,'bad')}
+  if(s>60&&!G.warned){G.warned=true;navigator.vibrate?.([300,200,300]);beep();toast(skFed?'Приборы лодки молчат больше минуты. Позиция на экране устарела! Включите GPS телефона.':'GPS не обновлялся больше минуты. Позиция на экране устарела!',8000);
     if(A.pos)alarmOn(null,'⚠ GPS ПОТЕРЯН — ЯКОРНАЯ ВАХТА НЕ РАБОТАЕТ');
-    navigator.geolocation.clearWatch(G.watch);gpsStart()}},5000);
+    if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);gpsStart()}}},5000);
 
 /* ===== ведение: MOB, точка, маршрут; панель приборов; тревоги ===== */
 const PT={last:null};
@@ -976,7 +978,9 @@ $('#rGo').onclick=()=>{if(RT.pts.length<2)return toast('Сначала пост�
   navStart('route',RT.pts.map(p=>p.slice()),i,'Маршрут');closePanel()};
 $('#mob').onclick=()=>{if(!G.pos){beep();toast('Нет позиции GPS! Бросьте круг, назначьте наблюдателя, запомните ориентиры.',9000);return}
   NAV.mobT=Date.now();const log=store.get('mobLog',[]);log.push({t:NAV.mobT,p:G.pos});store.set('mobLog',log);logE('MOB '+G.pos.map(v=>v.toFixed(5)).join(','));
-  beep();navigator.vibrate?.([600,200,600]);navStart('mob',[G.pos.slice()],0,'ЧЕЛОВЕК ЗА БОРТОМ')};
+  const old=Math.round((Date.now()-G.last)/1000); // возраст позиции — до включения GPS, оно обнуляет счётчик
+  beep();navigator.vibrate?.([600,200,600]);navStart('mob',[G.pos.slice()],0,'ЧЕЛОВЕК ЗА БОРТОМ');
+  if(old>20)toast(`MOB! Позиция GPS устарела на ${old} с — точка падения примерная. Не теряйте человека из виду, запомните ориентиры.`,12000)};
 /* смещение от линии a→b (метры; >0 — лодка правее линии) и доля пройденного */
 function xtk(a,b,p){const k=Math.cos(rad(a[0])),m=111320,bx=(b[1]-a[1])*k*m,by=(b[0]-a[0])*m,px=(p[1]-a[1])*k*m,py=(p[0]-a[0])*m;
   const L2=bx*bx+by*by||1;return{t:(px*bx+py*by)/L2,xte:(px*by-py*bx)/Math.sqrt(L2)}}
@@ -1040,11 +1044,11 @@ function anchorDraw(){if(A.circle){map.removeLayer(A.circle);A.circle=null}if(A.
 function anchorCheck(){if(!A.pos||!G.pos)return;const d=dist(A.pos,G.pos);
   if(A.line)A.line.setLatLngs([A.pos,G.pos]);else A.line=L.polyline([A.pos,G.pos],{color:'#ffb020',dashArray:'4 4',weight:2}).addTo(map);
   $('#aState').textContent=`До якоря ${f0(d)} м из ${A.r} м (точность GPS ±${f0(G.acc)} м).`;
-  if(d>A.r){if(++A.out>=2)alarmOn(d)}else A.out=Math.min(A.out,0)}
-function alarmOn(d,title){$('#alarmTitle').textContent=title||'⚓ ЯКОРЬ ПОЛЗЁТ';$('#alarmDist').textContent=d!=null?`${f0(d)} м от якоря (радиус ${A.r} м)`:'';if(A.alarm)return;A.alarm=true;$('#alarm').hidden=false;
+  if(d>A.r){if(Date.now()>=(A.snz||0)&&++A.out>=2)alarmOn(d)}else{A.out=0;A.snz=0}}
+function alarmOn(d,title){A.kind=title?'other':'anchor';$('#alarmTitle').textContent=title||'⚓ ЯКОРЬ ПОЛЗЁТ';$('#alarmDist').textContent=d!=null?`${f0(d)} м от якоря (радиус ${A.r} м)`:'';if(A.alarm)return;A.alarm=true;$('#alarm').hidden=false;
   const go=()=>{beep();navigator.vibrate?.([400,200,400])};go();A.beepT=setInterval(go,1000)}
 function alarmOff(){A.alarm=false;clearInterval(A.beepT);$('#alarm').hidden=true}
-$('#alarmStop').onclick=()=>{alarmOff();A.out=-15;$('#alarm').style.animation='';if(typeof WT!=='undefined'){clearTimeout(WT.esc);wtArm()}};
+$('#alarmStop').onclick=()=>{alarmOff();if(A.kind==='anchor')A.snz=Date.now()+60e3;A.out=0;A.kind=null;$('#alarm').style.animation='';if(typeof WT!=='undefined'){clearTimeout(WT.esc);wtArm()}};
 
 /* ===== AIS с возрастом данных ===== */
 const AIS={on:false,ws:null,ships:new Map(),layer:L.layerGroup().addTo(map),subT:null,warned:new Set(),retry:0};
@@ -1083,7 +1087,7 @@ function aisSub(){if(!AIS.ws||AIS.ws.readyState!==1)return;const b=map.getBounds
 map.on('moveend',()=>{clearTimeout(AIS.subT);AIS.subT=setTimeout(()=>{aisSub();if(AIS.on&&Date.now()-(DT.last||0)>45000)dtPoll()},1500)});
 function aisMsg(m){const md=m.MetaData||{},id=md.MMSI;if(!id)return;let s=AIS.ships.get(id);if(!s){s={id};AIS.ships.set(id,s)}
   if(md.ShipName&&md.ShipName.trim())s.name=md.ShipName.trim();const msg=m.Message||{},pr=msg.PositionReport||msg.StandardClassBPositionReport;
-  if(pr){s.lat=pr.Latitude;s.lon=pr.Longitude;s.sog=pr.Sog;s.cog=pr.Cog;s.hdg=pr.TrueHeading!=null&&pr.TrueHeading<360?pr.TrueHeading:null;s.t=Date.now();s.src='aisstream'}
+  if(pr){s.lat=pr.Latitude;s.lon=pr.Longitude;s.sog=pr.Sog>=102.2?null:pr.Sog;s.cog=pr.Cog>=360?null:pr.Cog;s.hdg=pr.TrueHeading!=null&&pr.TrueHeading<360?pr.TrueHeading:null;s.t=Date.now();s.src='aisstream'}
   if(msg.StandardClassBPositionReport)s.cls='B';const sd=msg.ShipStaticData;if(sd){if(sd.Name&&sd.Name.trim())s.name=sd.Name.trim();s.type=sd.Type;s.dest=(sd.Destination||'').trim();const D=sd.Dimension||{};s.len=(D.A||0)+(D.B||0)||null}
   if(s.lat!=null&&Math.abs(s.lat)<=90)aisDraw(s)}
 const SHIPT=t=>t==null?['судно','#8aa1b5']:t===30?['рыболов','#ffb020']:t===36||t===37?['парус / прогулочное','#c78bff']:t>=50&&t<=59?['служебное (буксир, лоцман, спасатели)','#ffd84d']:t>=60&&t<=69?['пассажирское','#3fb6ff']:t>=70&&t<=79?['грузовое','#4cc38a']:t>=80&&t<=89?['танкер','#ff4d4f']:['судно','#8aa1b5'];
@@ -1100,15 +1104,18 @@ function aisDraw(s){if(!s.mk){s.mk=L.marker([s.lat,s.lon],{icon:shipIcon(s)}).ad
     alarmOn(null,'🆘 AIS-МАЯК БЕДСТВИЯ РЯДОМ');$('#alarmDist').textContent=`MMSI ${s.id}${d!=null?` · ${f1(d)} мили, пеленг ${f0(brg(G.pos,[s.lat,s.lon]))}°`:''}`;logE('SART '+s.id)}
   $('#aisCount').textContent=AIS.ships.size}
 function cpa(s){if(!G.pos||G.sog==null||(G.sog>.5&&G.cog==null)||s.sog==null||s.cog==null||s.lat==null)return null;const k=Math.cos(rad(G.pos[0]));
-  const px=(s.lon-G.pos[1])*60*k,py=(s.lat-G.pos[0])*60;const vo=[G.sog*Math.sin(rad(G.cog||0)),G.sog*Math.cos(rad(G.cog||0))],vt=[s.sog*Math.sin(rad(s.cog)),s.sog*Math.cos(rad(s.cog))];
+  const age=s.t?Math.max(0,(Date.now()-s.t)/36e5):0;if(age>10/60)return null; // отметке больше 10 минут — не гадаем
+  let px=(s.lon-G.pos[1])*60*k,py=(s.lat-G.pos[0])*60;px+=s.sog*Math.sin(rad(s.cog))*age;py+=s.sog*Math.cos(rad(s.cog))*age; // где судно сейчас, если шло тем же курсом
+  const vo=[G.sog*Math.sin(rad(G.cog||0)),G.sog*Math.cos(rad(G.cog||0))],vt=[s.sog*Math.sin(rad(s.cog)),s.sog*Math.cos(rad(s.cog))];
   const vx=vt[0]-vo[0],vy=vt[1]-vo[1],v2=vx*vx+vy*vy;if(v2<1e-6)return{cpa:Math.hypot(px,py),t:Infinity};const t=-(px*vx+py*vy)/v2;return{cpa:Math.hypot(px+vx*t,py+vy*t),t:t*60}}
 function aisPopup(s){const c=cpa(s),d=G.pos?dist(G.pos,[s.lat,s.lon])/NM:null;
   return `<b>${s.name||'MMSI '+s.id}</b><br>${f1(s.sog)} уз · ${f0(s.cog)}°${s.len?` · ${s.len} м`:''}${s.dest?`<br>→ ${s.dest}`:''}${d!=null?`<br>до него ${f1(d)} мили`:''}${c&&c.t>0&&c.t<120?`<br>сближение до ${f1(c.cpa)} мили через ${f0(c.t)} мин`:''}<br><span style="color:#888">данные ${ago(s.t)} · ${s.src||'интернет-AIS'}</span>`}
 function aisList(){const arr=[...AIS.ships.values()].filter(s=>s.lat!=null).map(s=>({s,d:G.pos?dist(G.pos,[s.lat,s.lon])/NM:null,c:cpa(s)})).sort((a,b)=>(a.d??1e9)-(b.d??1e9)).slice(0,30);
   $('#aisList').innerHTML=arr.length?'<table><tr><th>Судно</th><th>Уз</th><th>Миль</th><th>Сближение</th><th>Данные</th></tr>'+arr.map(({s,d,c})=>`<tr><td>${s.name||s.id}</td><td>${f1(s.sog)}</td><td>${f1(d)}</td><td>${c&&c.t>0&&c.t<120?`${f1(c.cpa)} м. через ${f0(c.t)} мин`:'—'}</td><td>${ago(s.t)}</td></tr>`).join('')+'</table>':''}
 function aisCpaCheck(){ // интернет-AIS + свой приёмник через Signal K (одно судно — один номер MMSI)
-  const sk=typeof SK!=='undefined'?[...SK.ais].map(([k,a])=>{const mm=(k.match(/mmsi:(\d+)/)||[])[1];return a.ll&&{id:mm?+mm:k,name:a.name,lat:a.ll[0],lon:a.ll[1],sog:a.sog,cog:a.cog}}).filter(x=>x&&!AIS.ships.has(x.id)):[];
-  for(const s of [...AIS.ships.values(),...sk]){if(s.lat==null||skEcho(s.lat,s.lon,s.sog))continue;const c=cpa(s);if(c&&c.t>0&&c.t<15&&c.cpa<0.3&&!AIS.warned.has(s.id)){AIS.warned.add(s.id);toast(`⚠ Сближение: ${s.name||s.id} — ${f1(c.cpa)} мили через ${f0(c.t)} мин`,8000);beep();navigator.vibrate?.([300,150,300])}}}
+  const sk=typeof SK!=='undefined'?[...SK.ais].map(([k,a])=>{const mm=(k.match(/mmsi:(\d+)/)||[])[1];return a.ll&&{id:mm?+mm:k,name:a.name,lat:a.ll[0],lon:a.ll[1],sog:a.sog,cog:a.cog,t:a.t}}).filter(x=>x&&!AIS.ships.has(x.id)):[];
+  for(const s of [...AIS.ships.values(),...sk]){if(s.lat==null||skEcho(s.lat,s.lon,s.sog))continue;const c=cpa(s);if(AIS.warned.has(s.id)&&!(c&&c.t>0&&c.t<30&&c.cpa<0.6))AIS.warned.delete(s.id); // разошлись — при новом сближении предупредим снова
+    if(c&&c.t>0&&c.t<15&&c.cpa<0.3&&!AIS.warned.has(s.id)){AIS.warned.add(s.id);toast(`⚠ Сближение: ${s.name||s.id} — ${f1(c.cpa)} мили через ${f0(c.t)} мин`,8000);beep();navigator.vibrate?.([300,150,300])}}}
 setInterval(()=>{const lim=Date.now()-20*60000;for(const[id,s]of AIS.ships){if(s.t&&s.t<lim){if(s.mk)AIS.layer.removeLayer(s.mk);if(s.vec)AIS.layer.removeLayer(s.vec);AIS.ships.delete(id)}else if(s.mk)s.mk.setIcon(shipIcon(s))}$('#aisCount').textContent=AIS.ships.size;if(openName==='ais')aisList()},30000);
 
 /* ===== лодка и настройки ===== */
@@ -1334,7 +1341,7 @@ $('#dRun').onclick=async()=>{const T=[
 /* ===== трек в GPX со временем ===== */
 $('#sTrkGpx').onclick=()=>{if(G.track.length<2)return toast('Трек пока пустой');
   const pts=G.track.map(q=>`<trkpt lat="${q[0].toFixed(6)}" lon="${q[1].toFixed(6)}">${q[2]?`<time>${new Date(q[2]*1000).toISOString()}</time>`:''}</trkpt>`).join('');
-  download(`track-${new Date().toISOString().slice(0,10)}.gpx`,`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Kurs" xmlns="http://www.topografix.com/GPX/1/1"><trk><name>${S.boat.name||'Трек'} ${new Date().toLocaleDateString('ru-RU')}</name><trkseg>${pts}</trkseg></trk></gpx>`,'application/gpx+xml')};
+  download(`track-${new Date().toISOString().slice(0,10)}.gpx`,`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Kurs" xmlns="http://www.topografix.com/GPX/1/1"><trk><name>${lzE(S.boat.name||'Трек')} ${new Date().toLocaleDateString('ru-RU')}</name><trkseg>${pts}</trkseg></trk></gpx>`,'application/gpx+xml')};
 
 /* ===== MAYDAY: готовый текст для рации ===== */
 $('#nMay').onclick=()=>{const p=NAV.pts[0]||G.pos;if(!p)return;const nm=S.boat.name||'(название яхты)',t=new Date(NAV.mobT||Date.now()),utc=t.toISOString().slice(11,16);
@@ -1421,6 +1428,7 @@ function borderCheck(){if(!G.pos||!BD.lines)return;const d=borderDist(G.pos);if(
 const PR={t:0};
 async function presCheck(){const c=G.pos||[map.getCenter().lat,map.getCenter().lng];try{
   const j=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${c[0].toFixed(2)}&longitude=${c[1].toFixed(2)}&hourly=pressure_msl&forecast_days=2&past_hours=3&timeformat=unixtime&models=${S.model==='fmi_harmonie'?'ecmwf_ifs025':S.model}`);
+  if(j._at&&Date.now()-j._at>3*36e5){chip('pres',null);return} // сохранённый ответ старше 3 ч — по нему тревогу не поднимаем
   const t=j.hourly.time,p=j.hourly.pressure_msl,now=Date.now()/1000;let i=t.findIndex(x=>x>=now-1800);if(i<0)return;
   const d3=p[i+3]-p[i],d6=p[i+6]-p[i],drop=Math.min(d3,d6/1.6);PR.p=p[i];PR.d3=d3;PR.at=Date.now();
   if(drop<=-3){const bad=drop<=-6;chip('pres',`Давление падает: ${f1(d3)} гПа за 3 ч${bad?' — штормовой признак':''}`,bad?'bad':'warn');if(bad&&Date.now()-PR.t>3*36e5){PR.t=Date.now();beep();toast('⚠ Давление быстро падает по прогнозу: жди усиления ветра. Проверьте рифы и укрытие.',9000)}}
@@ -1430,7 +1438,8 @@ setInterval(presCheck,30*60000);setTimeout(presCheck,5000);
 /* ===== вахтенный таймер «осмотрись» ===== */
 const WT={min:store.get('watchMin',0),t:null,esc:null};
 function wtLabel(){$('#mWatch span').textContent=WT.min?`Вахта: каждые ${WT.min} мин`:'Вахтенный таймер: выкл';$('#mWatch').classList.toggle('on',!!WT.min);chip('watch',WT.min?`⏱ вахта ${WT.min} мин`:null)}
-function wtArm(){clearTimeout(WT.t);clearTimeout(WT.esc);if(!WT.min)return;WT.t=setTimeout(()=>{beep();navigator.vibrate?.([300,150,300]);
+function wtArm(){clearTimeout(WT.t);clearTimeout(WT.esc);if(!WT.min)return;WT.t=setTimeout(()=>{if(A.alarm){wtArm();return} // идёт настоящая тревога — её не затираем
+  A.kind='watch';beep();navigator.vibrate?.([300,150,300]);
   $('#alarmTitle').textContent='⏱ ОСМОТРИСЬ';$('#alarmDist').textContent='Горизонт, паруса, курс, AIS, экипаж. Нажмите кнопку — таймер пойдёт заново.';$('#alarm').hidden=false;$('#alarm').style.animation='none';
   WT.esc=setTimeout(()=>{$('#alarm').style.animation='';alarmOn(null,'⏱ ВАХТА НЕ ОТВЕТИЛА')},60000)},WT.min*60000)}
 $('#mWatch').onclick=()=>{audio();const o=[0,10,15,20,30];WT.min=o[(o.indexOf(WT.min)+1)%o.length];store.set('watchMin',WT.min);wtLabel();wtArm();if(WT.min)wake(true)};
@@ -1475,12 +1484,14 @@ const SPB={d:null,lay:null};
 const mskT=ms=>new Date(ms).toLocaleTimeString('ru-RU',{timeZone:'Europe/Moscow',hour:'2-digit',minute:'2-digit'});
 const mskD=ms=>new Date(ms).toLocaleDateString('ru-RU',{timeZone:'Europe/Moscow',day:'numeric',month:'long'});
 async function spbData(){if(SPB.d)return SPB.d;const r=await fetch('data/bridges.json');if(!r.ok)throw new Error('нет данных о мостах');return SPB.d=await r.json()}
-function spbUI(){const d=$('#spDate');if(!d.value){const t=new Date(Date.now()+3*36e5);d.value=t.toISOString().slice(0,10)}$('#spDir').value=store.get('spDir','up')}
+function spbUI(){const d=$('#spDate');if(!d.value){const t=new Date(Date.now()+3*36e5);if(t.getUTCHours()<6)t.setUTCDate(t.getUTCDate()-1);d.value=t.toISOString().slice(0,10)} // до 6 утра по Москве — это ещё ночь, начавшаяся вчера
+ $('#spDir').value=store.get('spDir','up')}
 // одна ночь: пробуем стартовать в каждое окно первого моста и берём вариант с наименьшим ожиданием
 function spbPlan(D,dir,date){
   const at=(hm,day)=>Date.parse(`${date}T${hm}:00+03:00`)+day*864e5;
   const night=D.b.filter(b=>b.kind==='night'),ch=dir==='up'?[...night].reverse():night; // по ходу судна
-  const kn=Math.max(1,S.boat.speed),cur=D.current_kn,v=Math.min(D.speed_kmh_max,(dir==='up'?kn-cur:kn+cur)*1.852); // км/ч относительно берега
+  const kn=Math.max(1,S.boat.motor>0?S.boat.motor:S.boat.speed),cur=D.current_kn, // под мостами идут под мотором
+    v=Math.min(D.speed_kmh_max,(dir==='up'?kn-cur:kn+cur)*1.852); // км/ч относительно берега
   if(v<=1)return{err:`Против течения ${f1(cur)} уз при ходе ${f1(kn)} уз лодка почти стоит — проход вверх невозможен`};
   const win=b=>b.w.map(([a,c])=>{const A=at(a,1),C=at(c,1)+(c<a?864e5:0);return[A,C]});  // разводка — ночью после даты
   let best=null;
@@ -1500,7 +1511,7 @@ async function spbGo(){const out=$('#spOut');let D;try{D=await spbData()}catch(e
   const P=bad?null:spbPlan(D,dir,date);
   if(P&&P.err)h+=`<div class="badbox">${P.err}</div>`;
   else if(P){const R=P.rows,f=R[0],l=R[R.length-1];
-    if(P.miss)h+=`<div class="badbox">При ходе ${f1(S.boat.speed)} уз не успеваете к окну <b>${lzE(l.b.n)}</b> в ту же ночь — придётся ждать следующей ночи выше/ниже него. Добавьте ход мотором (настройки лодки).</div>`;
+    if(P.miss)h+=`<div class="badbox">При ходе ${f1(S.boat.motor>0?S.boat.motor:S.boat.speed)} уз не успеваете к окну <b>${lzE(l.b.n)}</b> в ту же ночь — придётся ждать следующей ночи выше/ниже него. Добавьте ход мотором (настройки лодки).</div>`;
     else h+=`<div class="okbox">Первый мост — <b>${lzE(f.b.n)}</b>: подойти к <b>${mskT(f.t-20*6e4)}</b> (за 20 мин до разводки) и выйти на связь с диспетчером. Последний — ${lzE(l.b.n)}, пройдёте ≈ <b>${mskT(P.end)}</b>. Ждать у мостов всего: ${Math.round(P.wait/6e4)} мин. Ход относительно берега ≈ ${f1(P.v/1.852)} уз.</div>`;
     h+='<div class="scroll"><table><tr><th>Мост</th><th>Разводка</th><th>Подход</th><th>Ждать</th></tr>'+R.map(r=>`<tr><td>${lzE(r.b.n)}<span class="muted small"> · км ${f1(r.b.km)}</span></td><td>${r.b.w.map(x=>x.join('–')).join(', ')}</td><td>${r.miss?'<b style="color:var(--danger)">не успеть</b>':mskT(r.t)}</td><td>${r.miss?'—':r.wt>60e3?Math.round(r.wt/6e4)+' мин':'—'}</td></tr>`).join('')+'</table></div>';
     // ветер на середине прохода, если прогноз есть
@@ -1562,7 +1573,7 @@ function skAis(ctx,path,val){if(!/^vessels\./.test(ctx))return;let a=SK.ais.get(
   const ic=L.divIcon({className:'',iconSize:[18,18],html:`<svg width="18" height="18" viewBox="-9 -9 18 18" style="transform:rotate(${a.cog||0}deg)"><path d="M0,-8 L5,7 L0,4 L-5,7Z" fill="#c78bff" stroke="#fff" stroke-width="1.5"/></svg>`});
   if(!a.m){a.m=L.marker(a.ll,{icon:ic,zIndexOffset:400}).bindTooltip(tip).addTo(SK.lay)}else{a.m.setLatLng(a.ll).setIcon(ic).setTooltipContent(tip)}}
 setInterval(()=>{if(!S.sk)return;const now=Date.now();for(const[k,a]of SK.ais)if(now-a.t>10*6e4){if(a.m)SK.lay.removeLayer(a.m);SK.ais.delete(k)}
-  if(SK.ws&&SK.t&&now-SK.t>30e3)chip('sk','Приборы лодки молчат '+Math.round((now-SK.t)/1000)+' с','warn')},5000);
+  if(SK.t&&now-SK.t>30e3)chip('sk','Приборы лодки молчат '+Math.round((now-SK.t)/1000)+' с','warn')},5000);
 function skInit(){if(S.sk===undefined&&location.port==='3000')S.sk=true; // открыт с самого сервера Signal K на лодке — приборы сразу
   $('#chkSk').checked=!!S.sk;$('#skUrl').value=S.skUrl||'';if(S.sk)skStart();
   $('#chkSk').onchange=e=>{S.sk=e.target.checked;saveS();S.sk?skStart():(skStop(),skSt('Выключено.'))};
