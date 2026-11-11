@@ -50,10 +50,16 @@ def grid(model):
             'times': js[0]['hourly']['time'], 'spd': [x['hourly']['wind_speed_10m'] for x in js], 'dir': [x['hourly']['wind_direction_10m'] for x in js], 'gst': [x['hourly']['wind_gusts_10m'] for x in js]}
 if __name__ == '__main__':
     os.makedirs('out', exist_ok=True)
-    json.dump(obs(), open('out/obs.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+    RAW = 'https://raw.githubusercontent.com/' + os.environ.get('GITHUB_REPOSITORY', 'Sandovich/kurs') + '/data/'
+    o = obs()
+    try:  # станции, которые в этот раз не пришли (источник молчит), берём из прошлого файла, пока им меньше 6 часов
+        have = {s['name'] for s in o['st']}
+        for s in json.loads(get(RAW + 'obs.json', 15)).get('st', []):
+            if s.get('name') not in have and time.time() - s.get('t', 0) < 6 * 3600: o['st'].append(s)
+    except Exception as e: print('прошлый obs.json', e)
+    json.dump(o, open('out/obs.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     # сетки прогноза для всех моделей «Курса»: при каждом запуске, но не чаще раза в 2,5 ч на модель
     # (таймер GitHub срабатывает неравномерно; так общий файл всегда свежий, а лимит Open-Meteo не тратится зря)
-    RAW = 'https://raw.githubusercontent.com/' + os.environ.get('GITHUB_REPOSITORY', 'Sandovich/kurs') + '/data/'
     for m in ('ecmwf_ifs025', 'icon_seamless', 'gfs_seamless', 'metno_seamless', 'dmi_seamless', 'ecmwf_aifs025_single'):
         try:
             old = json.loads(get(RAW + f'grid_{m}.json', 15)).get('fetched', 0)
