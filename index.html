@@ -92,6 +92,7 @@ body:has(#mob:not([hidden])) .leaflet-bottom.leaflet-left{left:80px}
 #hud span{color:var(--muted);font-size:11px}
 #dash{--dlab:#9fb3c6;--dsub:#b9c8d6;--dseg:rgba(255,255,255,.075);--dring:rgba(255,255,255,.07);--dring2:rgba(140,190,235,.22);--hub:#0a1622;--needle:#ff7a3a;--port:#ff4d5e;--btw:#c77dff;--spf:rgba(63,182,255,.13);--gc1:#15304a;--gc2:#0a1623;--b1:#8db4da;--b2:#132a40;--arc2:#8ae6ff;position:fixed;inset:0;z-index:1600;background:radial-gradient(130% 70% at 50% -10%,#123049 0%,#08121c 55%,#060d15 100%);color:var(--text);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top) + 10px) 12px calc(env(safe-area-inset-bottom) + 16px);font-variant-numeric:tabular-nums}
 body.night #dash{--dlab:#a8332b;--dsub:#c4392d;--dseg:rgba(255,60,40,.1);--dring:rgba(255,60,40,.09);--dring2:rgba(255,60,40,.3);--hub:#0a0000;--needle:#ff3b30;--port:#ff3b30;--btw:#ff6a5a;--spf:rgba(255,59,48,.13);--gc1:#1a0202;--gc2:#060000;--b1:#80201a;--b2:#200000;--arc2:#ff7a6a;background:#000}
+body.dashOn #map,body.dashOn #top,body.dashOn #timebar,body.dashOn #hud{visibility:hidden}
 #dash .dh{display:flex;align-items:center;gap:10px;margin:0 2px 10px}
 #dash .dl{display:flex;align-items:center;gap:9px;flex:1;min-width:0;color:var(--text)}#dash .dl .bm{width:30px;height:30px;flex:none}
 #dash .dl b{display:block;font-size:15px;font-weight:800;letter-spacing:.22em;line-height:1}#dash .dl span{display:block;font-size:9.5px;font-weight:700;letter-spacing:.2em;color:var(--dlab);margin-top:4px;line-height:1}
@@ -643,7 +644,7 @@ function drawArrows(c){c.fillStyle=document.body.classList.contains('night')?'#f
 let parts=[],paused=false;
 const newP=()=>({x:Math.random()*cw,y:Math.random()*ch,age:Math.random()*90|0});
 function resetParts(){parts=S.saver?[]:Array.from({length:Math.min(2200,Math.round(cw*ch/800))},newP)}
-(function frame(){requestAnimationFrame(frame);if(paused||S.saver||!S.wind||!W.g||!parts.length)return;
+(function frame(){requestAnimationFrame(frame);if(paused||document.body.classList.contains('dashOn')||S.saver||!S.wind||!W.g||!parts.length)return;
   const c=cvP.getContext('2d');c.save();c.setTransform(1,0,0,1,0,0);c.globalCompositeOperation='destination-in';c.fillStyle='rgba(0,0,0,.9)';c.fillRect(0,0,cvP.width,cvP.height);c.restore();
   c.globalCompositeOperation='source-over';c.strokeStyle=document.body.classList.contains('night')?'rgba(255,80,60,.8)':'rgba(255,255,255,.85)';c.lineWidth=1.1;c.beginPath();
   for(const p of parts){if(p.age++>90){Object.assign(p,newP(),{age:0});continue}
@@ -1585,10 +1586,10 @@ function gDial(v,mn,mx,o){const A=-135,B=135,k=x=>A+(Math.max(mn,Math.min(mx,x))
   for(let i=0;i<N;i++){const x0=mn+(i+.5)/N*(mx-mn),a=A+(i+.5)/N*(B-A),[x1,y1]=pol(81,a),[x2,y2]=pol(90,a),z=zc(x0),on=ok&&x0<=v;
     t+=`<line class="sg" x1="${F1(x1)}" y1="${F1(y1)}" x2="${F1(x2)}" y2="${F1(y2)}" stroke-width="3.6" stroke-linecap="round" style="stroke:${on?z||'var(--accent)':z||'var(--dseg)'};opacity:${on?1:z?.3:1}"/>`}
   const p=ok?(k(v)-A)/(B-A)*100:0;
-  t+=`<path d="${arcP(71,A,B)}" fill="none" stroke="var(--dring)" stroke-width="2.4"/><path class="va" d="${arcP(71,A,B)}" pathLength="100" fill="none" stroke="url(#gArc)" stroke-width="2.6" stroke-linecap="round" filter="url(#gGlow)" style="stroke-dasharray:${p.toFixed(2)} 100;opacity:${ok?1:0}"/>`;
+  t+=`<path d="${arcP(71,A,B)}" fill="none" stroke="var(--dring)" stroke-width="2.4"/><path class="va" d="${arcP(71,A,B)}" pathLength="100" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" style="stroke-dasharray:${p.toFixed(2)} 100;opacity:${ok?.18:0}"/><path class="va" d="${arcP(71,A,B)}" pathLength="100" fill="none" stroke="url(#gArc)" stroke-width="2.6" stroke-linecap="round" style="stroke-dasharray:${p.toFixed(2)} 100;opacity:${ok?1:0}"/>`;
   for(let x=mn;x<=mx+1e-9;x+=st){const a=k(x),end=Math.abs(a)>129;let[lx,ly]=pol(end?84:58,a);if(end)ly+=12;t+=`<text x="${F1(lx)}" y="${F1(ly+4)}" font-size="11.5" font-weight="650" text-anchor="middle" fill="var(--dlab)">${o.fmt?o.fmt(x):Math.round(x)}</text>`}
   for(const m of o.marks||[])if(m.v!=null&&isFinite(m.v))t+=tri(77,99,k(m.v),2.6,m.c,m.t);
-  t+=nd(ok?k(v):A,'',`<path d="M-3.2,0 L-.9,-72 L.9,-72 L3.2,0 L1.9,15 L-1.9,15Z" fill="var(--needle)" filter="url(#gGlow)"/>`)+`<circle r="9.5" fill="var(--hub)" stroke="var(--needle)" stroke-width="2"/><circle r="3" fill="var(--needle)"/>`;
+  t+=nd(ok?k(v):A,'',`<path d="M-3.2,0 L-.9,-72 L.9,-72 L3.2,0 L1.9,15 L-1.9,15Z" fill="var(--needle)"/>`)+`<circle r="9.5" fill="var(--hub)" stroke="var(--needle)" stroke-width="2"/><circle r="3" fill="var(--needle)"/>`;
   t+=`<text y="50" font-size="38" font-weight="700" letter-spacing="-1" text-anchor="middle" fill="${o.vc||'var(--text)'}">${ok?o.vf?o.vf(v):f1(v):'—'}</text>`+ttl(66,(o.unit||'').toUpperCase());
   if(o.sub)t+=`<text y="92" font-size="12" font-weight="600" text-anchor="middle" fill="${o.subc||'var(--dsub)'}">${o.sub}</text>`;
   return`<svg viewBox="-100 -100 200 196">${t}</svg>`}
@@ -1596,10 +1597,10 @@ function gDial(v,mn,mx,o){const A=-135,B=135,k=x=>A+(Math.max(mn,Math.min(mx,x))
 function gWind(d){let t=bez(97);
   for(let a=0;a<360;a+=10){const maj=a%30===0,[x1,y1]=pol(90,a),[x2,y2]=pol(maj?80:85.5,a);t+=`<line x1="${F1(x1)}" y1="${F1(y1)}" x2="${F1(x2)}" y2="${F1(y2)}" stroke="var(--dlab)" stroke-width="${maj?2:1}" opacity="${maj?.95:.5}"/>`;
     if(maj&&a%180!==0){const[lx,ly]=pol(69,a);t+=`<text x="${F1(lx)}" y="${F1(ly+4)}" font-size="11" font-weight="650" text-anchor="middle" fill="var(--dlab)">${a>180?360-a:a}</text>`}}
-  t+=`<path d="${arcP(94.5,-60,-20)}" stroke="var(--port)" stroke-width="5" fill="none" stroke-linecap="round" filter="url(#gGlow)"/><path d="${arcP(94.5,20,60)}" stroke="var(--ok)" stroke-width="5" fill="none" stroke-linecap="round" filter="url(#gGlow)"/>`;
+  t+=`<path d="${arcP(94.5,-60,-20)}" stroke="var(--port)" stroke-width="11" fill="none" stroke-linecap="round" opacity=".16"/><path d="${arcP(94.5,20,60)}" stroke="var(--ok)" stroke-width="11" fill="none" stroke-linecap="round" opacity=".16"/><path d="${arcP(94.5,-60,-20)}" stroke="var(--port)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="${arcP(94.5,20,60)}" stroke="var(--ok)" stroke-width="5" fill="none" stroke-linecap="round"/>`;
   t+=`<path d="${arcP(94.5,-160,-120)}" stroke="var(--port)" stroke-width="3" fill="none" opacity=".45"/><path d="${arcP(94.5,120,160)}" stroke="var(--ok)" stroke-width="3" fill="none" opacity=".45"/>`;
   t+=`<path d="M0,-50 C15,-27 16,10 10,42 L-10,42 C-16,10 -15,-27 0,-50Z" fill="var(--dring)" stroke="var(--dlab)" stroke-width="1.3" opacity=".6"/>`;
-  const ptr=(a,c,fill,k)=>nd(a,k,`<path d="M0,-64 L-9,-97 L0,-89 L9,-97Z" fill="${fill?c:'none'}" stroke="${c}" stroke-width="2.2" stroke-linejoin="round"${fill?' filter="url(#gGlow)"':''}/>`);
+  const ptr=(a,c,fill,k)=>nd(a,k,`<path d="M0,-64 L-9,-97 L0,-89 L9,-97Z" fill="${fill?c:'none'}" stroke="${c}" stroke-width="2.2" stroke-linejoin="round"/>`);
   if(d.twa!=null)t+=ptr(d.twa,'var(--ok)',false,'twa');if(d.awa!=null)t+=ptr(d.awa,'var(--accent)',true,'awa');
   const main=d.awa!=null?d.aws:d.tws;
   t+=ttl(-14,d.awa!=null?'ВЫМПЕЛЬНЫЙ':'ИСТИННЫЙ')+`<text y="22" font-size="38" font-weight="700" letter-spacing="-1" text-anchor="middle" fill="var(--text)">${main==null?'—':f0(main)}</text>`+ttl(38,'УЗЛОВ');
@@ -1609,12 +1610,12 @@ function gComp(hdg,cog,btw){const has=hdg!=null||cog!=null,h=hdg??cog??0;let c='
   for(let a=0;a<360;a+=5){const maj=a%30===0,[x1,y1]=pol(90,a),[x2,y2]=pol(maj?79:a%10===0?84:87,a);c+=`<line x1="${F1(x1)}" y1="${F1(y1)}" x2="${F1(x2)}" y2="${F1(y2)}" stroke="${a===0?'var(--danger)':'var(--dlab)'}" stroke-width="${maj?2:1}" opacity="${maj?1:.55}"/>`;
     if(maj){const[lx,ly]=pol(67,a),L={0:'С',90:'В',180:'Ю',270:'З'}[a];c+=`<text x="${F1(lx)}" y="${F1(ly+5)}" font-size="${L?17:11}" font-weight="${L?800:650}" text-anchor="middle" fill="${a===0?'var(--danger)':L?'var(--text)':'var(--dlab)'}" transform="rotate(${a} ${F1(lx)} ${F1(ly)})">${L||a/10}</text>`}}
   if(btw!=null)c+=tri(77,94,btw,4,'var(--btw)','пеленг на точку');if(hdg!=null&&cog!=null)c+=tri(77,94,cog,4,'var(--needle)','курс по GPS');
-  let t=bez(97)+nd(-h,'cmp',c)+`<path d="M0,-80 L-7.5,-99 L7.5,-99Z" fill="var(--needle)" filter="url(#gGlow)"/>`;
+  let t=bez(97)+nd(-h,'cmp',c)+`<path d="M0,-79 L-8,-99 L8,-99Z" fill="var(--text)" stroke="var(--hub)" stroke-width="1.5"/>`;
   t+=`<rect x="-42" y="-23" width="84" height="44" rx="11" fill="var(--hub)" stroke="var(--dring2)"/><text y="11" font-size="31" font-weight="700" letter-spacing="-.5" text-anchor="middle" fill="var(--text)">${has?String((Math.round(h)%360+360)%360).padStart(3,'0')+'°':'—'}</text>`+ttl(37,hdg!=null?'ПО КОМПАСУ':'ПО GPS');
   return`<svg viewBox="-100 -100 200 200">${t}</svg>`}
 function gHeel(r){const a=Math.max(-45,Math.min(45,r||0)),bad=Math.abs(a)>=25;let t=`<g transform="translate(0,30)"><path d="${arcP(88,-62,62)}" stroke="url(#gBez)" stroke-width="1.6" fill="none"/>`;
   for(let x=-45;x<=45;x+=5){const[x1,y1]=pol(86,x*60/45),[x2,y2]=pol(x%15?80:72,x*60/45);t+=`<line x1="${F1(x1)}" y1="${F1(y1)}" x2="${F1(x2)}" y2="${F1(y2)}" stroke="${Math.abs(x)>=25?'var(--danger)':'var(--dlab)'}" stroke-width="${x%15?1.2:2.2}"/>`}
-  t+=nd(a*60/45,'',`<path d="M-3,0 L-.9,-80 L.9,-80 L3,0Z" fill="var(--needle)" filter="url(#gGlow)"/>`)+`<circle r="8" fill="var(--hub)" stroke="var(--needle)" stroke-width="2"/></g>`;
+  t+=nd(a*60/45,'',`<path d="M-3,0 L-.9,-80 L.9,-80 L3,0Z" fill="var(--needle)"/>`)+`<circle r="8" fill="var(--hub)" stroke="var(--needle)" stroke-width="2"/></g>`;
   t+=`<text y="72" font-size="34" font-weight="700" text-anchor="middle" fill="${bad?'var(--danger)':'var(--text)'}">${r==null?'—':f0(Math.abs(r))+'°'}</text>`+ttl(88,r==null?'':r<0?'НА ЛЕВЫЙ БОРТ':'НА ПРАВЫЙ БОРТ');
   return`<svg viewBox="-100 -70 200 166">${t}</svg>`}
 // история значений за 10 минут — для графиков под циферблатами
@@ -1736,8 +1737,8 @@ function dashRender(){if(!DSH.on)return;const d=dashData(),B=S.boat,now=Date.now
   if(d.src.wind==='прогноз')src.push(pl('am',`ветер — прогноз ${lzE(d.fmodel||'')}`));
   src.push(`<button class="pill" id="dDamp" title="Сглаживание стрелок на волне">${(DAMP[DSH.damp]||DAMP[1])[1]}</button>`);
   morph($('#dSrc'),src.join(''));$('#dGps').hidden=G.watch!=null||d.skOn}
-function dashOpen(){DSH.on=true;DSH.s={};$('#dash').hidden=false;closePanel();wake(true);dashRender();clearInterval(DSH.tm);DSH.tm=setInterval(dashRender,1000);history.pushState?.({dash:1},'')}
-function dashClose(){DSH.on=false;$('#dash').hidden=true;clearInterval(DSH.tm);if(G.watch==null)wake(false)}
+function dashOpen(){DSH.on=true;DSH.s={};document.body.classList.add('dashOn');$('#dash').hidden=false;closePanel();wake(true);dashRender();clearInterval(DSH.tm);DSH.tm=setInterval(dashRender,1000);history.pushState?.({dash:1},'')}
+function dashClose(){DSH.on=false;document.body.classList.remove('dashOn');$('#dash').hidden=true;clearInterval(DSH.tm);if(G.watch==null)wake(false)}
 $('#btnDash').onclick=dashOpen;$('#mDash').onclick=dashOpen;$('#dClose').onclick=()=>{if(history.state?.dash)history.back();else dashClose()};
 window.addEventListener('popstate',()=>{if(DSH.on)dashClose()});
 $('#dGps').onclick=()=>{if(G.watch==null)$('#btnGps').click()};
