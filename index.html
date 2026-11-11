@@ -1590,7 +1590,7 @@ function gDial(v,mn,mx,o){const A=-135,B=135,k=x=>A+(Math.max(mn,Math.min(mx,x))
   for(let x=mn;x<=mx+1e-9;x+=st){const a=k(x),end=Math.abs(a)>129;let[lx,ly]=pol(end?84:58,a);if(end)ly+=12;t+=`<text x="${F1(lx)}" y="${F1(ly+4)}" font-size="11.5" font-weight="650" text-anchor="middle" fill="var(--dlab)">${o.fmt?o.fmt(x):Math.round(x)}</text>`}
   for(const m of o.marks||[])if(m.v!=null&&isFinite(m.v))t+=tri(77,99,k(m.v),2.6,m.c,m.t);
   t+=nd(ok?k(v):A,'',`<path d="M-3.2,0 L-.9,-72 L.9,-72 L3.2,0 L1.9,15 L-1.9,15Z" fill="var(--needle)"/>`)+`<circle r="9.5" fill="var(--hub)" stroke="var(--needle)" stroke-width="2"/><circle r="3" fill="var(--needle)"/>`;
-  t+=`<text y="50" font-size="38" font-weight="700" letter-spacing="-1" text-anchor="middle" fill="${o.vc||'var(--text)'}">${ok?o.vf?o.vf(v):f1(v):'—'}</text>`+ttl(66,(o.unit||'').toUpperCase());
+  t+=`<text y="50" font-size="38" font-weight="700" letter-spacing="-1" text-anchor="middle" fill="${o.vc||'var(--text)'}">${ok?o.vf?o.vf(v):(v>=100?f0(v):v.toFixed(1).replace('.',',')):'—'}</text>`+ttl(66,(o.unit||'').toUpperCase());
   if(o.sub)t+=`<text y="92" font-size="12" font-weight="600" text-anchor="middle" fill="${o.subc||'var(--dsub)'}">${o.sub}</text>`;
   return`<svg viewBox="-100 -100 200 196">${t}</svg>`}
 // ветер относительно носа лодки: вымпельный (залитый указатель) и истинный (контур); красный сектор — левый галс, зелёный — правый
