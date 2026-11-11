@@ -471,7 +471,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.28';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.29';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
