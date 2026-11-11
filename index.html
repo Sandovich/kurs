@@ -210,6 +210,11 @@ details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}
   <label><input type="checkbox" id="chkWind"> Ветер на карте</label>
   <label><input type="checkbox" id="chkTrack"> Мой трек</label>
   <hr>
+  <h3 style="margin:6px 0">Приборы лодки (Signal K)</h3>
+  <label><input type="checkbox" id="chkSk"> Брать данные с приборов: GPS, эхолот, ветер, лаг, свой AIS</label>
+  <div class="row"><input id="skUrl" placeholder="адрес сервера на лодке, напр. 192.168.1.10:3000 (demo — проверка)" style="flex:1;min-width:0"></div>
+  <p class="small muted" id="skSt">Сервер Signal K стоит на бортовом компьютере (OpenPlotter, Raspberry Pi, Victron Cerbo). Телефон должен быть в Wi-Fi лодки.</p>
+  <hr>
   <h3 style="margin:6px 0">Мои карты (атлас и лоция экипажа)</h3>
   <p class="small muted" id="mcStat">Листы атласа, привязанные к карте: глубины, изобаты, буи и фарватеры поверх карты, без интернета. Файл хранится только на этом устройстве.</p>
   <div id="mcList"></div>
@@ -382,7 +387,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.22';document.getElementById('brandVer').textContent='v'+VER+' · тест';
+const VER='0.9.23';document.getElementById('brandVer').textContent='v'+VER+' · тест';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -850,7 +855,7 @@ $('#btnGps').onclick=()=>{
   audio();gpsStart();G.last=Date.now();G.first=null;G.start=Date.now();$('#btnGps').classList.add('on');$('#hud').hidden=false;$('#mob').hidden=false;G.follow=true;wake(true);toast('Ищу спутники…')};
 $('#btnFollow').onclick=()=>{G.follow=true;if(G.pos)map.panTo(G.pos)};
 map.on('dragstart',()=>{G.follow=false});
-function onPos(p){const c=p.coords,ll=[c.latitude,c.longitude],now=Date.now();let sog=c.speed!=null?c.speed*3600/NM:null,cog=c.heading!=null&&!isNaN(c.heading)?c.heading:null;
+function onPos(p){if(!p._sk&&SK.posT&&Date.now()-SK.posT<10e3)return;const c=p.coords,ll=[c.latitude,c.longitude],now=Date.now();let sog=c.speed!=null?c.speed*3600/NM:null,cog=c.heading!=null&&!isNaN(c.heading)?c.heading:null;
   G.hist=(G.hist||[]).filter(h=>now-h.t<=20000);G.hist.push({ll,t:now});
   if(sog==null||cog==null){let old=null;for(let i=G.hist.length-1;i>=0;i--)if(now-G.hist[i].t>=3000){old=G.hist[i];break}if(old){const dt=(now-old.t)/1000,d=dist(old.ll,ll),noise=Math.max(8,(c.accuracy||10)*.8);
     if(sog==null)sog=d>noise?d/dt*3600/NM:0;if(cog==null&&d>noise)cog=brg(old.ll,ll)}}
@@ -1431,10 +1436,55 @@ async function spbMap(){let D;try{D=await spbData()}catch(e){return toast(e.mess
     .bindTooltip(`${b.n}: ${b.w.length?b.w.map(x=>x.join('–')).join(', '):b.note}`,{direction:'top'}))).addTo(map);
   map.fitBounds(L.latLngBounds(D.b.map(b=>b.ll)).pad(.15));closePanel()}
 $('#spGo').onclick=spbGo;$('#spMap').onclick=spbMap;
+/* ===== приборы лодки по Signal K (открытый стандарт, Apache-2.0): GPS, эхолот, ветер, лаг, свой приёмник AIS ===== */
+const SK={ws:null,self:'',v:{},t:0,posT:0,ais:new Map(),lay:L.layerGroup(),retry:0,tm:null,beepT:0};
+const MS2KN=1.943844,R2D=180/Math.PI;
+function skURL(v){v=(v||'').trim();if(!v)return location.port==='3000'?(location.protocol==='https:'?'wss://':'ws://')+location.host+'/signalk/v1/stream?subscribe=none':'';
+  if(/^demo$/i.test(v))return 'wss://demo.signalk.org/signalk/v1/stream?subscribe=none';
+  if(!/^wss?:\/\//.test(v))v=(location.protocol==='https:'?'wss://':'ws://')+v;if(!/\/signalk\//.test(v))v=v.replace(/\/$/,'')+'/signalk/v1/stream';return v+(v.includes('?')?'':'?subscribe=none')}
+function skSt(t){$('#skSt').innerHTML=t}
+function skStop(){clearTimeout(SK.tm);if(SK.ws){SK.ws.onclose=null;try{SK.ws.close()}catch(e){}}SK.ws=null;SK.v={};SK.posT=0;chip('sk',null);map.removeLayer(SK.lay);SK.lay.clearLayers();SK.ais.clear()}
+function skStart(){skStop();const u=skURL(S.skUrl);if(!u){skSt('Впишите адрес сервера Signal K на лодке (или demo для проверки).');return}
+  if(location.protocol==='https:'&&u.startsWith('ws://')){skSt('<b style="color:var(--warn)">Браузер не даёт сайту по https подключиться к лодке без защиты.</b> Откройте «Курс» с самого сервера Signal K (как его приложение) или включите на сервере https.');return}
+  skSt('Подключаюсь…');let ws;try{ws=new WebSocket(u)}catch(e){skSt('Адрес не подходит: '+lzE(e.message));return}SK.ws=ws;SK.lay.addTo(map);
+  ws.onopen=()=>{SK.retry=0;ws.send(JSON.stringify({context:'vessels.self',subscribe:['navigation.position','navigation.courseOverGroundTrue','navigation.speedOverGround','navigation.headingTrue','navigation.speedThroughWater',
+      'environment.depth.belowKeel','environment.depth.belowSurface','environment.depth.belowTransducer','environment.wind.angleApparent','environment.wind.speedApparent','environment.wind.speedTrue','environment.wind.directionTrue'].map(path=>({path,period:1000}))}));
+    ws.send(JSON.stringify({context:'vessels.*',subscribe:[{path:'navigation.position',period:5000},{path:'navigation.courseOverGroundTrue',period:5000},{path:'navigation.speedOverGround',period:5000},{path:'name',period:30000}]}))};
+  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+    if(m.roles){SK.self=m.self||'';skSt(`Подключено: ${lzE(m.name||'Signal K')} ${lzE(m.version||'')}. Жду данные…`);return}
+    if(!m.updates)return;const own=!m.context||m.context==='vessels.self'||m.context===SK.self;
+    for(const u of m.updates)for(const x of (u.values||[])){if(own)SK.v[x.path]=x.value;else skAis(m.context,x.path,x.value)}
+    if(own){SK.t=Date.now();skOwn()}};
+  ws.onclose=()=>{SK.ws=null;if(!S.sk)return;const d=Math.min(60,5*2**SK.retry++);skSt(`Нет связи с сервером Signal K — пробую снова через ${d} с. Проверьте Wi-Fi лодки и адрес.`);SK.tm=setTimeout(()=>{if(S.sk)skStart()},d*1000)};
+  ws.onerror=()=>{logE('signalk ошибка соединения '+u)}}
+function skOwn(){const v=SK.v,p=v['navigation.position'];
+  if(p&&isFinite(p.latitude)&&isFinite(p.longitude)){const sog=v['navigation.speedOverGround'],cog=v['navigation.courseOverGroundTrue'];SK.posT=Date.now();
+    if(G.watch==null){$('#hud').hidden=false;$('#mob').hidden=false}
+    onPos({_sk:true,coords:{latitude:p.latitude,longitude:p.longitude,speed:sog!=null?sog:null,heading:cog!=null?(cog*R2D+360)%360:null,accuracy:5}})}
+  const dk=v['environment.depth.belowKeel'],ds=v['environment.depth.belowSurface'],dt=v['environment.depth.belowTransducer'],dep=ds!=null?ds:dt;
+  const aws=v['environment.wind.speedApparent'],awa=v['environment.wind.angleApparent'],stw=v['navigation.speedThroughWater'],tws=v['environment.wind.speedTrue'];
+  const under=dk!=null?dk:dep!=null?dep-(S.boat.draft||1.8):null,shoal=under!=null&&under<.5;
+  const parts=[];if(dep!=null||dk!=null)parts.push(`Глубина <b>${f1(dep!=null?dep:dk)} м</b>${dk!=null?` (под килем ${f1(dk)})`:''}`);
+  if(aws!=null)parts.push(`Ветер вымп. <b>${f0(aws*MS2KN)} уз</b>${awa!=null?' '+f0(Math.abs(awa*R2D))+'° '+(awa<0?'лев.':'пр.'):''}`);
+  if(tws!=null)parts.push(`ист. ${f0(tws*MS2KN)} уз`);if(stw!=null)parts.push(`лаг ${f1(stw*MS2KN)} уз`);
+  chip('sk',parts.length?(shoal?'⚠ МЕЛКО! ':'')+parts.join(' · '):null,shoal?'bad':'');
+  if(shoal&&Date.now()-SK.beepT>60e3){SK.beepT=Date.now();beep();toast(`⚠ Под килем ${f1(under)} м — мелко!`,8000)}
+  skSt(`Данные с приборов идут · ${new Date().toLocaleTimeString('ru-RU')}${p?' · позиция с бортового GPS':''}`)}
+function skAis(ctx,path,val){if(!/^vessels\./.test(ctx))return;let a=SK.ais.get(ctx);if(!a){a={};SK.ais.set(ctx,a)}a.t=Date.now();
+  if(path==='name')a.name=val;else if(path==='navigation.position'&&val)a.ll=[val.latitude,val.longitude];else if(path==='navigation.speedOverGround')a.sog=val*MS2KN;else if(path==='navigation.courseOverGroundTrue')a.cog=val*R2D;
+  if(!a.ll)return;const mm=(ctx.match(/mmsi:(\d+)/)||[])[1]||'',tip=`${lzE(a.name||'MMSI '+mm)} · ${a.sog!=null?f1(a.sog)+' уз':''} · свой AIS (Signal K)`;
+  const ic=L.divIcon({className:'',iconSize:[18,18],html:`<svg width="18" height="18" viewBox="-9 -9 18 18" style="transform:rotate(${a.cog||0}deg)"><path d="M0,-8 L5,7 L0,4 L-5,7Z" fill="#c78bff" stroke="#fff" stroke-width="1.5"/></svg>`});
+  if(!a.m){a.m=L.marker(a.ll,{icon:ic,zIndexOffset:400}).bindTooltip(tip).addTo(SK.lay)}else{a.m.setLatLng(a.ll).setIcon(ic).setTooltipContent(tip)}}
+setInterval(()=>{if(!S.sk)return;const now=Date.now();for(const[k,a]of SK.ais)if(now-a.t>10*6e4){if(a.m)SK.lay.removeLayer(a.m);SK.ais.delete(k)}
+  if(SK.ws&&SK.t&&now-SK.t>30e3)chip('sk','Приборы лодки молчат '+Math.round((now-SK.t)/1000)+' с','warn')},5000);
+function skInit(){if(S.sk===undefined&&location.port==='3000')S.sk=true; // открыт с самого сервера Signal K на лодке — приборы сразу
+  $('#chkSk').checked=!!S.sk;$('#skUrl').value=S.skUrl||'';if(S.sk)skStart();
+  $('#chkSk').onchange=e=>{S.sk=e.target.checked;saveS();S.sk?skStart():(skStop(),skSt('Выключено.'))};
+  $('#skUrl').onchange=e=>{S.skUrl=e.target.value.trim();saveS();if(S.sk)skStart()}}
 /* ===== старт ===== */
 LOG.push(...store.get('log',[]).slice(-100));
 document.body.classList.toggle('night',S.night);fillBoat();
-mapStatus();setBase(S.base);setSea(S.seamarks);obsInit();map.attributionControl.addAttribution('FMI (CC BY 4.0)');$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
+mapStatus();setBase(S.base);setSea(S.seamarks);obsInit();skInit();map.attributionControl.addAttribution('FMI (CC BY 4.0)');$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
 anchorDraw();renderRoute();sizeCv();netChip();
 {const c=store.get('grid',null);if(c){W.g=buildGrid(c);setupTime();drawField();freshChip()}}
 loadGrid(true);
