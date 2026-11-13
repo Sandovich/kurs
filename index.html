@@ -295,6 +295,26 @@ body.night #hud #btnDash{background:#5a0000;color:#ffb0a8}body.night #hud{backgr
   <label><input type="checkbox" id="chkSk"> Брать данные с приборов: GPS, эхолот, ветер, лаг, свой AIS</label>
   <div class="row"><input id="skUrl" placeholder="адрес сервера на лодке, напр. 192.168.1.10:3000 (demo — проверка)" style="flex:1;min-width:0"></div>
   <p class="small muted" id="skSt">Сервер Signal K стоит на бортовом компьютере (OpenPlotter, Raspberry Pi, Victron Cerbo). Телефон должен быть в Wi-Fi лодки.</p>
+  <div id="skLogin" hidden style="margin:6px 0;padding:10px;border:1px solid var(--warn);border-radius:10px">
+    <p class="small" style="margin:0 0 6px">Сервер на лодке закрыт паролем. Войдите (логин и пароль от сервера Signal K) или попросите доступ — его нужно будет одобрить на сервере: «Security → Access Requests».</p>
+    <div class="row"><input id="skUser" placeholder="логин" autocomplete="username" style="flex:1;min-width:0"><input id="skPass" type="password" placeholder="пароль" autocomplete="current-password" style="flex:1;min-width:0"></div>
+    <div class="row"><button class="primary" id="skLogBtn">Войти</button><button id="skReq">Попросить доступ</button><button id="skForget" hidden>Забыть вход</button></div>
+  </div>
+  <div class="row"><button id="skUsb">Приборы по USB-кабелю (NMEA 0183)</button><select id="skBaud" aria-label="Скорость порта"><option value="4800">4800 — обычные приборы</option><option value="38400">38400 — AIS и быстрые</option><option value="115200">115200 — USB-шлюзы</option><option value="9600">9600</option></select></div>
+  <div class="row"><button id="skDiag">Что пришло с приборов</button></div>
+  <div id="skDiagBox" hidden></div>
+  <details><summary>Какие приборы подойдут и как подключить</summary>
+    <p class="small"><b>Через Signal K (лучший путь — подходит почти всё):</b> бортовой компьютер (Raspberry Pi с OpenPlotter, Victron Cerbo GX с Venus OS Large, Digital Yacht iKommunicate) собирает данные со всех приборов и раздаёт «Курсу» по Wi-Fi.</p>
+    <ul class="small">
+      <li><b>NMEA 2000 / SeaTalkNG / Simnet</b> (Raymarine, B&amp;G, Simrad, Lowrance, Garmin, Yanmar, Volvo): через шлюз Actisense NGT-1/NGX-1, Yacht Devices YDNU/YDEN/YDWG, PiCAN-M, Digital Yacht → в Signal K.</li>
+      <li><b>NMEA 0183</b> (старые эхолоты, лаги, ветромеры, GPS, AIS-приёмники): USB-переходник RS-422/USB или Wi-Fi-мультиплексор (Quark-elec, Digital Yacht, Yacht Devices) → в Signal K. Либо напрямую в «Курс» по USB-кабелю (кнопка выше; Chrome/Edge на компьютере и Android).</li>
+      <li><b>SeaTalk 1</b> (старый Raymarine): переходник SeaTalk→NMEA 0183 или вход SeaTalk на OpenPlotter/MacArthur HAT.</li>
+      <li><b>Victron</b> (аккумуляторы, солнце, зарядка): Cerbo GX или VE.Direct-кабели → Signal K.</li>
+      <li><b>Беспроводные датчики</b> (Bluetooth: ветромер Calypso, датчики Ruuvi, Victron SmartShunt): модуль Bluetooth в Signal K.</li>
+      <li><b>Только Wi-Fi-мультиплексор без Signal K</b> (раздаёт NMEA по TCP/UDP): браузер напрямую такие данные принять не может. Нужен Signal K или будущая версия «Курса» для магазинов приложений.</li>
+    </ul>
+    <p class="small muted">Если чего-то нет — нажмите «Что пришло с приборов»: «Курс» покажет, какой прибор не виден и что проверить.</p>
+  </details>
   <hr>
   <h3 style="margin:6px 0">Мои карты (атлас и лоция экипажа)</h3>
   <p class="small muted" id="mcStat">Листы атласа, привязанные к карте: глубины, изобаты, буи и фарватеры поверх карты, без интернета. Файл хранится только на этом устройстве.</p>
@@ -472,7 +492,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.30';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.31';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -965,7 +985,7 @@ function onPos(p){if(!p._sk&&SK.posT&&Date.now()-SK.posT<10e3)return;const c=p.c
   const acc=c.accuracy;$('#hAcc').innerHTML=`<span style="color:${acc<15?'var(--ok)':acc<50?'var(--warn)':'var(--danger)'}">точность ±${f0(acc)} м</span>`;
   $('#hud').classList.remove('stale');chip('gps',acc>50?`GPS неточный: ±${f0(acc)} м`:null,'warn');
   anchorCheck();aisCpaCheck();navUpdate();shoreCheck();borderCheck();shoalCheck()}
-setInterval(()=>{const skFed=G.watch==null&&!!S.sk&&!!SK.posT&&!!G.pos;if(G.watch==null&&!skFed)return;const s=(Date.now()-G.last)/1000;
+setInterval(()=>{const skFed=G.watch==null&&!!(S.sk||SK.usb)&&!!SK.posT&&!!G.pos;if(G.watch==null&&!skFed)return;const s=(Date.now()-G.last)/1000;
   if(!G.pos){const w=Math.round((Date.now()-G.start)/1000);chip('gps',w<45?`Жду первую позицию GPS… ${w} с`:'Нет позиции. Проверьте: Настройки → Конфиденциальность → Службы геолокации → Safari: «При использовании» и «Точная геопозиция»',w<45?'warn':'bad');return}
   if(s>30)G.marker?.getElement()?.classList.add('stale');
   if(s>20){$('#hud').classList.add('stale');chip('gps',skFed?`Приборы лодки молчат ${Math.round(s)} с — позиция устарела`:`GPS молчит ${Math.round(s)} с`,'bad')}
@@ -1541,26 +1561,47 @@ async function spbMap(){let D;try{D=await spbData()}catch(e){return toast(e.mess
   map.fitBounds(L.latLngBounds(D.b.map(b=>b.ll)).pad(.15));closePanel()}
 $('#spGo').onclick=spbGo;$('#spMap').onclick=spbMap;
 /* ===== приборы лодки по Signal K (открытый стандарт, Apache-2.0): GPS, эхолот, ветер, лаг, свой приёмник AIS ===== */
-const SK={ws:null,self:'',v:{},t:0,posT:0,ais:new Map(),lay:L.layerGroup(),retry:0,tm:null,beepT:0};
+const SK={ws:null,self:'',v:{},base:{},raw:{},pref:{},t:0,posT:0,ais:new Map(),lay:L.layerGroup(),retry:0,tm:null,beepT:0,noHello:0,hello:false,usb:null,varApx:false};
 const MS2KN=1.943844,R2D=180/Math.PI;
+function skTok(u){return S.skTok?u+(u.includes('?')?'&':'?')+'token='+encodeURIComponent(S.skTok):u}
+function skHttp(){const u=skURL(S.skUrl);if(!u)return'';return u.replace(/^ws/,'http').replace(/\/signalk\/v1\/stream.*$/,'')}
+/* склонение (магнитное) примерно для Балтики, Финского залива и Ладоги, ±1°; если приборы его не дают */
+function varApx(lat,lon){if(lat<53||lat>66||lon<9||lon>40)return null;return (0.5*lon-3.3)*Math.PI/180}
+/* один источник на каждый путь: держимся за первый, переходим на другой, только если первый молчит 5 с */
+function skPut(path,val,src){if(path===''&&val&&typeof val==='object'){for(const k in val)if(k!=='mmsi')skPut(k,val[k],src);return}
+  const now=Date.now();const r=SK.raw[path]||(SK.raw[path]={});r[src]={v:val,t:now};const p=SK.pref[path];
+  if(p===src||!p||!r[p]||now-r[p].t>5000){SK.pref[path]=src;SK.base[path]=val}}
+/* замены: если прибор отдаёт величину «по-другому», считаем ту, что нужна программе */
+function skDerive(){const b=SK.base,v=Object.assign({},b),P=b['navigation.position'];let vr=b['navigation.magneticVariation'];SK.varApx=false;
+  if(vr==null&&P){const a=varApx(P.latitude,P.longitude);if(a!=null){vr=a;SK.varApx=true;v['navigation.magneticVariation']=a}}
+  const nz=x=>x!=null&&isFinite(x),w=x=>(x%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
+  if(!nz(v['navigation.headingMagnetic'])&&nz(b['navigation.headingCompass']))v['navigation.headingMagnetic']=w(b['navigation.headingCompass']+(b['navigation.magneticDeviation']||0));
+  if(!nz(v['navigation.headingTrue'])&&nz(v['navigation.headingMagnetic'])&&nz(vr))v['navigation.headingTrue']=w(v['navigation.headingMagnetic']+vr);
+  if(!nz(v['navigation.courseOverGroundTrue'])&&nz(b['navigation.courseOverGroundMagnetic'])&&nz(vr))v['navigation.courseOverGroundTrue']=w(b['navigation.courseOverGroundMagnetic']+vr);
+  if(!nz(v['environment.wind.angleTrueWater'])&&nz(b['environment.wind.angleTrueGround']))v['environment.wind.angleTrueWater']=b['environment.wind.angleTrueGround'];
+  if(!nz(v['environment.wind.speedTrue'])&&nz(b['environment.wind.speedOverGround']))v['environment.wind.speedTrue']=b['environment.wind.speedOverGround'];
+  if(!nz(v['environment.wind.directionTrue'])&&nz(b['environment.wind.directionMagnetic'])&&nz(vr))v['environment.wind.directionTrue']=w(b['environment.wind.directionMagnetic']+vr);
+  if(!nz(v['environment.outside.pressure'])&&nz(b['environment.inside.pressure']))v['environment.outside.pressure']=b['environment.inside.pressure'];
+  if(!nz(v['environment.outside.temperature'])&&nz(b['environment.outside.apparentWindChillTemperature']))v['environment.outside.temperature']=b['environment.outside.apparentWindChillTemperature'];
+  SK.v=v}
+function skSrcName(u){const s=u.$source||(u.source?[u.source.label,u.source.talker||u.source.src||u.source.pgn].filter(Boolean).join('.'):'');return s||'?'}
 function skURL(v){v=(v||'').trim();if(!v)return location.port==='3000'?(location.protocol==='https:'?'wss://':'ws://')+location.host+'/signalk/v1/stream?subscribe=none':'';
   if(/^demo$/i.test(v))return 'wss://demo.signalk.org/signalk/v1/stream?subscribe=none';
   if(!/^wss?:\/\//.test(v))v=(location.protocol==='https:'?'wss://':'ws://')+v;if(!/\/signalk\//.test(v))v=v.replace(/\/$/,'')+'/signalk/v1/stream';return v+(v.includes('?')?'':'?subscribe=none')}
 function skSt(t){$('#skSt').innerHTML=t}
-function skStop(){clearTimeout(SK.tm);if(SK.ws){SK.ws.onclose=null;try{SK.ws.close()}catch(e){}}SK.ws=null;SK.v={};SK.posT=0;chip('sk',null);map.removeLayer(SK.lay);SK.lay.clearLayers();SK.ais.clear()}
+function skStop(){clearTimeout(SK.tm);if(SK.ws){SK.ws.onclose=null;try{SK.ws.close()}catch(e){}}SK.ws=null;SK.v={};SK.base={};SK.raw={};SK.pref={};SK.posT=0;SK.hello=false;chip('sk',null);map.removeLayer(SK.lay);SK.lay.clearLayers();SK.ais.clear()}
 function skStart(){skStop();const u=skURL(S.skUrl);if(!u){skSt('Впишите адрес сервера Signal K на лодке (или demo для проверки).');return}
   if(location.protocol==='https:'&&u.startsWith('ws://')){skSt('<b style="color:var(--warn)">Браузер не даёт сайту по https подключиться к лодке без защиты.</b> Откройте «Курс» с самого сервера Signal K (как его приложение) или включите на сервере https.');return}
-  skSt('Подключаюсь…');let ws;try{ws=new WebSocket(u)}catch(e){skSt('Адрес не подходит: '+lzE(e.message));return}SK.ws=ws;SK.lay.addTo(map);
-  ws.onopen=()=>{SK.retry=0;ws.send(JSON.stringify({context:'vessels.self',subscribe:['navigation.position','navigation.courseOverGroundTrue','navigation.speedOverGround','navigation.headingTrue','navigation.speedThroughWater',
-      'environment.depth.belowKeel','environment.depth.belowSurface','environment.depth.belowTransducer','environment.depth.transducerToKeel','environment.depth.surfaceToTransducer','environment.wind.angleApparent','environment.wind.speedApparent','environment.wind.speedTrue','environment.wind.directionTrue','environment.wind.angleTrueWater',
-      'navigation.headingMagnetic','navigation.magneticVariation','navigation.attitude','navigation.rateOfTurn','navigation.trip.log','navigation.log','steering.rudderAngle','steering.autopilot.state','environment.water.temperature','environment.outside.temperature','environment.outside.pressure','environment.outside.humidity','environment.current','electrical.batteries.*.voltage','electrical.batteries.*.capacity.stateOfCharge','propulsion.*.revolutions','propulsion.*.temperature','tanks.*.*.currentLevel'].map(path=>({path,period:1000}))}));
-    ws.send(JSON.stringify({context:'vessels.*',subscribe:[{path:'navigation.position',period:5000},{path:'navigation.courseOverGroundTrue',period:5000},{path:'navigation.speedOverGround',period:5000},{path:'name',period:30000}]}))};
+  skSt('Подключаюсь…');let ws;try{ws=new WebSocket(skTok(u))}catch(e){skSt('Адрес не подходит: '+lzE(e.message));return}SK.ws=ws;SK.lay.addTo(map);
+  ws.onopen=()=>{SK.retry=0;SK.open=Date.now();ws.send(JSON.stringify({context:'vessels.self',subscribe:[{path:'*',period:1000,policy:'ideal',minPeriod:200}]}));
+    ws.send(JSON.stringify({context:'vessels.*',subscribe:[{path:'navigation.position',period:5000},{path:'navigation.courseOverGroundTrue',period:5000},{path:'navigation.speedOverGround',period:5000},{path:'name',period:30000},{path:'',period:30000}]}))};
   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
-    if(m.roles){SK.self=m.self||'';skSt(`Подключено: ${lzE(m.name||'Signal K')} ${lzE(m.version||'')}. Жду данные…`);return}
+    if(m.roles||m.version&&m.self!==undefined){SK.self=m.self||'';SK.hello=true;SK.noHello=0;$('#skLogin').hidden=true;skSt(`Подключено: ${lzE(m.name||'Signal K')} ${lzE(m.version||'')}. Жду данные…`);return}
+    if(m.errorMessage||m.statusCode===401||m.statusCode===403){skNeedLogin(m.errorMessage);return}
     if(!m.updates)return;const own=!m.context||m.context==='vessels.self'||m.context===SK.self;
-    for(const u of m.updates)for(const x of (u.values||[])){if(own)SK.v[x.path]=x.value;else skAis(m.context,x.path,x.value)}
-    if(own){SK.t=Date.now();skOwn()}};
-  ws.onclose=()=>{SK.ws=null;if(!S.sk)return;const d=Math.min(60,5*2**SK.retry++);skSt(`Нет связи с сервером Signal K — пробую снова через ${d} с. Проверьте Wi-Fi лодки и адрес.`);SK.tm=setTimeout(()=>{if(S.sk)skStart()},d*1000)};
+    for(const u of m.updates){const src=skSrcName(u);for(const x of (u.values||[])){if(own)skPut(x.path,x.value,src);else skAis(m.context,x.path,x.value)}}
+    if(own){SK.t=Date.now();skDerive();skOwn()}};
+  ws.onclose=ev=>{SK.ws=null;if(!S.sk)return;if(!SK.hello&&(ev.code===1008||ev.code===4001||++SK.noHello>=2)){skNeedLogin();SK.noHello=0;if(ev.code===1008||ev.code===4001)return}const d=Math.min(60,5*2**SK.retry++);skSt(`Нет связи с сервером Signal K — пробую снова через ${d} с. Проверьте Wi-Fi лодки и адрес.`);SK.tm=setTimeout(()=>{if(S.sk)skStart()},d*1000)};
   ws.onerror=()=>{logE('signalk ошибка соединения '+u)}}
 /* глубина с приборов: от поверхности, от датчика или уже «под килем»; поправки берём с сервера лодки, иначе — из «Лодки» */
 function skDepth(v){const dk=v['environment.depth.belowKeel'],ds=v['environment.depth.belowSurface'],dt=v['environment.depth.belowTransducer'],dr=S.boat.draft||1.8;
@@ -1585,18 +1626,118 @@ function skAis(ctx,path,val){if(!/^vessels\./.test(ctx))return;let a=SK.ais.get(
   if(!a.ll)return;const mm=(ctx.match(/mmsi:(\d+)/)||[])[1]||'',tip=`${lzE(a.name||'MMSI '+mm)} · ${a.sog!=null?f1(a.sog)+' уз':''} · свой AIS (Signal K)`;
   const ic=L.divIcon({className:'',iconSize:[18,18],html:`<svg width="18" height="18" viewBox="-9 -9 18 18" style="transform:rotate(${a.cog||0}deg)"><path d="M0,-8 L5,7 L0,4 L-5,7Z" fill="#c78bff" stroke="#fff" stroke-width="1.5"/></svg>`});
   if(!a.m){a.m=L.marker(a.ll,{icon:ic,zIndexOffset:400}).bindTooltip(tip).addTo(SK.lay)}else{a.m.setLatLng(a.ll).setIcon(ic).setTooltipContent(tip)}}
-setInterval(()=>{if(!S.sk)return;const now=Date.now();for(const[k,a]of SK.ais)if(now-a.t>10*6e4){if(a.m)SK.lay.removeLayer(a.m);SK.ais.delete(k)}
+setInterval(()=>{if(!S.sk&&!SK.usb)return;const now=Date.now();for(const[k,a]of SK.ais)if(now-a.t>10*6e4){if(a.m)SK.lay.removeLayer(a.m);SK.ais.delete(k)}
   if(SK.t&&now-SK.t>30e3)chip('sk','Приборы лодки молчат '+Math.round((now-SK.t)/1000)+' с'+' <button class="cx" data-skoff title="Отключить приборы лодки (Signal K)">✕ отключить</button>','warn')},5000);
-function skOff(quiet){S.sk=false;saveS();skStop();SK.t=0;if(G.watch==null){G.sog=null;G.cog=null;G.acc=null;G.last=0}$('#chkSk').checked=false;skSt('Выключено.');chip('gps',null);$('#hud').classList.remove('stale');G.warned=false;
+function skNeedLogin(msg){$('#skLogin').hidden=false;$('#skForget').hidden=!S.skTok;
+  skSt('<b style="color:var(--warn)">Сервер не пускает без входа'+(msg?': '+lzE(msg):'')+'.</b> Если пароля нет — проверьте адрес и что телефон в Wi-Fi лодки.')}
+async function skLogin(){const base=skHttp();if(!base){skSt('Сначала впишите адрес сервера.');return}
+  try{const r=await fetch(base+'/signalk/v1/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('#skUser').value.trim(),password:$('#skPass').value})});
+    const j=await r.json().catch(()=>({}));if(!r.ok||!j.token){skSt('<b style="color:var(--warn)">Не вошёл:</b> '+lzE(j.message||('ответ '+r.status)));return}
+    S.skTok=j.token;saveS();$('#skPass').value='';$('#skLogin').hidden=true;skSt('Вход выполнен. Подключаюсь…');if(S.sk)skStart()}
+  catch(e){skSt('<b style="color:var(--warn)">Сервер не ответил на вход.</b> '+(location.protocol==='https:'&&base.startsWith('http:')?'Сайт по https не может открыть сервер без защиты — откройте «Курс» с самого сервера.':lzE(e.message)))}}
+async function skRequest(){const base=skHttp();if(!base){skSt('Сначала впишите адрес сервера.');return}
+  let id=store.get('skClient','');if(!id){id=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random());store.set('skClient',id)}
+  try{const r=await fetch(base+'/signalk/v1/access/requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clientId:id,description:'Курс — навигация яхтсмена',permissions:'readonly'})});
+    const j=await r.json().catch(()=>({}));const href=j.href;if(!href){skSt('<b style="color:var(--warn)">Сервер не принял запрос:</b> '+lzE(j.message||('ответ '+r.status)));return}
+    skSt('Запрос отправлен. Одобрите его на сервере: Security → Access Requests. Жду…');const t0=Date.now();
+    const poll=async()=>{if(Date.now()-t0>10*6e4){skSt('Запрос не одобрили за 10 минут. Попробуйте ещё раз.');return}
+      const q=await fetch(base+href).then(x=>x.json()).catch(()=>null);const a=q&&q.accessRequest;
+      if(a&&a.permission==='APPROVED'&&a.token){S.skTok=a.token;saveS();$('#skLogin').hidden=true;skSt('Доступ одобрен. Подключаюсь…');if(S.sk)skStart();return}
+      if(a&&a.permission==='DENIED'){skSt('<b style="color:var(--warn)">На сервере запрос отклонили.</b>');return}setTimeout(poll,4000)};setTimeout(poll,3000)}
+  catch(e){skSt('<b style="color:var(--warn)">Сервер не ответил.</b> '+lzE(e.message))}}
+function skOff(quiet){usbStop();S.sk=false;saveS();skStop();SK.t=0;if(G.watch==null){G.sog=null;G.cog=null;G.acc=null;G.last=0}$('#chkSk').checked=false;skSt('Выключено.');chip('gps',null);$('#hud').classList.remove('stale');G.warned=false;
   if(G.watch==null){$('#hud').hidden=true;$('#mob').hidden=true;if(!DSH.on)wake(false)}
   if(DSH.on)dashRender();
   if(!quiet)toast(G.watch==null?'Приборы лодки отключены. Чтобы видеть лодку на карте, включите GPS телефона (кнопка «GPS» вверху).':'Приборы лодки отключены. Позиция теперь с GPS телефона.',7000)}
 function skAsk(){dashClose();openPanel('layers');setTimeout(()=>{const e=$('#chkSk');e?.scrollIntoView({block:'center'});$('#skUrl').focus?.()},250)}
 $('#status').addEventListener('click',e=>{if(e.target.closest('[data-skoff]'))skOff()});
+/* ===== NMEA 0183 напрямую по USB-кабелю (Web Serial: Chrome/Edge на компьютере, Chrome на Android) ===== */
+const KN=1/MS2KN,D2R=Math.PI/180;
+function nmeaOk(l){const i=l.indexOf('*');if(i<0)return true;let c=0;for(let k=1;k<i;k++)c^=l.charCodeAt(k);return c===parseInt(l.slice(i+1,i+3),16)}
+function nmeaLL(v,h){if(!v)return null;const d=v.indexOf('.');const deg=+v.slice(0,d-2),min=+v.slice(d-2);let x=deg+min/60;if(h==='S'||h==='W')x=-x;return isFinite(x)?x:null}
+const AISF={};function aisBits(p){let b='';for(const ch of p){let c=ch.charCodeAt(0)-48;if(c>40)c-=8;b+=c.toString(2).padStart(6,'0')}return b}
+function aisU(b,s,l){return parseInt(b.substr(s,l),2)}function aisI(b,s,l){let x=aisU(b,s,l);if(b[s]==='1')x-=2**l;return x}
+function aisS(b,s,l){let o='';for(let i=0;i<l;i+=6){const c=aisU(b,s+i,6);o+=c<32?String.fromCharCode(c+64):String.fromCharCode(c)}return o.replace(/@+$/,'').trim()}
+function aisLine(f){const tot=+f[1],num=+f[2],seq=f[3]||'',key=seq+f[4];let pl=f[5];
+  if(tot>1){const a=AISF[key]||(AISF[key]=[]);a[num-1]=pl;if(a.filter(Boolean).length<tot)return;pl=a.join('');delete AISF[key]}
+  const b=aisBits(pl),t=aisU(b,0,6),mm=aisU(b,8,30),ctx='vessels.urn:mrn:imo:mmsi:'+mm;
+  if(t>=1&&t<=3||t===18||t===19){const o=t>=18?{sog:aisU(b,46,10),lon:aisI(b,57,28),lat:aisI(b,85,27),cog:aisU(b,112,12)}:{sog:aisU(b,50,10),lon:aisI(b,61,28),lat:aisI(b,89,27),cog:aisU(b,116,12)};
+    const lat=o.lat/6e5,lon=o.lon/6e5;if(Math.abs(lat)>90||Math.abs(lon)>180)return;
+    if(o.sog<1023)skAis(ctx,'navigation.speedOverGround',o.sog/10*KN);if(o.cog<3600)skAis(ctx,'navigation.courseOverGroundTrue',o.cog/10*D2R);skAis(ctx,'navigation.position',{latitude:lat,longitude:lon});
+    if(t===19)skAis(ctx,'name',aisS(b,143,120))}
+  else if(t===5)skAis(ctx,'name',aisS(b,112,120));else if(t===24&&aisU(b,38,2)===0)skAis(ctx,'name',aisS(b,40,120))}
+function nmeaLine(l){l=l.trim();if(!l||(l[0]!=='$'&&l[0]!=='!')||!nmeaOk(l))return;const f=l.slice(1).split('*')[0].split(','),id=f[0],tk=id.slice(0,2),ty=id.slice(-3),src='usb.'+tk,P=(k,v)=>{if(v!=null&&isFinite(v))skPut(k,v,src)},n=x=>x===''||x==null?NaN:+x;
+  if(l[0]==='!'){if(ty==='VDM')aisLine(f);return}
+  switch(ty){
+  case'RMC':if(f[2]!=='A')break;{const la=nmeaLL(f[3],f[4]),lo=nmeaLL(f[5],f[6]);if(la!=null&&lo!=null)skPut('navigation.position',{latitude:la,longitude:lo},src)}
+    P('navigation.speedOverGround',n(f[7])*KN);if(f[8]!=='')P('navigation.courseOverGroundTrue',n(f[8])*D2R);if(f[10]!=='')P('navigation.magneticVariation',(f[11]==='W'?-1:1)*n(f[10])*D2R);break;
+  case'GGA':if(f[6]==='0')break;{const la=nmeaLL(f[2],f[3]),lo=nmeaLL(f[4],f[5]);if(la!=null&&lo!=null)skPut('navigation.position',{latitude:la,longitude:lo},src)}break;
+  case'GLL':if(f[6]==='V')break;{const la=nmeaLL(f[1],f[2]),lo=nmeaLL(f[3],f[4]);if(la!=null&&lo!=null)skPut('navigation.position',{latitude:la,longitude:lo},src)}break;
+  case'VTG':if(f[1]!=='')P('navigation.courseOverGroundTrue',n(f[1])*D2R);if(f[3]!=='')P('navigation.courseOverGroundMagnetic',n(f[3])*D2R);if(f[5]!=='')P('navigation.speedOverGround',n(f[5])*KN);break;
+  case'HDT':P('navigation.headingTrue',n(f[1])*D2R);break;
+  case'HDM':P('navigation.headingMagnetic',n(f[1])*D2R);break;
+  case'HDG':if(f[1]==='')break;{let h=n(f[1]);if(f[2]!=='')h+=(f[3]==='W'?-1:1)*n(f[2]);P('navigation.headingMagnetic',((h%360)+360)%360*D2R);if(f[4]!=='')P('navigation.magneticVariation',(f[5]==='W'?-1:1)*n(f[4])*D2R)}break;
+  case'DPT':P('environment.depth.belowTransducer',n(f[1]));if(f[2]!==''){const o=n(f[2]);if(o>=0)P('environment.depth.surfaceToTransducer',o);else P('environment.depth.transducerToKeel',-o)}break;
+  case'DBT':P('environment.depth.belowTransducer',f[3]!==''?n(f[3]):f[1]!==''?n(f[1])*.3048:null);break;
+  case'DBS':P('environment.depth.belowSurface',f[3]!==''?n(f[3]):null);break;
+  case'DBK':P('environment.depth.belowKeel',f[3]!==''?n(f[3]):null);break;
+  case'MWV':{if(f[5]!=='A'||f[1]==='')break;let a=n(f[1]);if(a>180)a-=360;const u=f[4],sp=u==='N'?n(f[3])*KN:u==='K'?n(f[3])/3.6:n(f[3]);
+    if(f[2]==='R'){P('environment.wind.angleApparent',a*D2R);P('environment.wind.speedApparent',sp)}else{P('environment.wind.angleTrueWater',a*D2R);P('environment.wind.speedTrue',sp)}}break;
+  case'MWD':if(f[1]!=='')P('environment.wind.directionTrue',n(f[1])*D2R);P('environment.wind.speedTrue',f[7]!==''?n(f[7]):f[5]!==''?n(f[5])*KN:null);break;
+  case'VWR':{if(f[1]==='')break;const a=n(f[1])*(f[2]==='L'?-1:1);P('environment.wind.angleApparent',a*D2R);P('environment.wind.speedApparent',f[5]!==''?n(f[5]):n(f[3])*KN)}break;
+  case'VHW':if(f[5]!=='')P('navigation.speedThroughWater',n(f[5])*KN);if(f[1]!=='')P('navigation.headingTrue',n(f[1])*D2R);else if(f[3]!=='')P('navigation.headingMagnetic',n(f[3])*D2R);break;
+  case'VLW':if(f[1]!=='')P('navigation.log',n(f[1])*NM);if(f[3]!=='')P('navigation.trip.log',n(f[3])*NM);break;
+  case'MTW':P('environment.water.temperature',n(f[1])+273.15);break;
+  case'MDA':if(f[3]!=='')P('environment.outside.pressure',n(f[3])*1e5);if(f[5]!=='')P('environment.outside.temperature',n(f[5])+273.15);if(f[7]!=='')P('environment.water.temperature',n(f[7])+273.15);break;
+  case'RSA':if(f[1]!==''&&f[2]==='A')P('steering.rudderAngle',n(f[1])*D2R);break;
+  case'ROT':if(f[2]==='A')P('navigation.rateOfTurn',n(f[1])*D2R/60);break;
+  case'XDR':{const att={};for(let i=1;i+3<f.length;i+=4){const t=f[i],v=n(f[i+1]),u=f[i+2],nm=(f[i+3]||'').toUpperCase();if(v==null)continue;
+      if(t==='P')P('environment.outside.pressure',u==='B'?v*1e5:v);else if(t==='C'&&nm.includes('WATER'))P('environment.water.temperature',v+273.15);else if(t==='C'&&!/ENG|EXH|CPU|BAT/.test(nm))P('environment.outside.temperature',v+273.15);
+      else if(t==='H')P('environment.outside.humidity',v/100);else if(t==='A'&&/ROLL|HEEL/.test(nm))att.roll=v*D2R;else if(t==='A'&&/PTCH|PITCH/.test(nm))att.pitch=v*D2R;
+      else if(t==='U'&&/BAT/.test(nm))P('electrical.batteries.'+(nm.replace(/[^A-Z0-9]/g,'')||'1')+'.voltage',v)}
+    if(att.roll!=null||att.pitch!=null)skPut('navigation.attitude',Object.assign({},SK.base['navigation.attitude']||{},att),src)}break;
+  default:return}
+  SK.t=Date.now();SK.usb&&(SK.usb.n++);skDerive();skOwn()}
+async function usbStart(){if(!('serial' in navigator)){skSt('<b style="color:var(--warn)">Этот браузер не умеет работать с USB-портом.</b> Нужен Chrome или Edge на компьютере или Chrome на Android. На iPhone — только через Signal K.');return}
+  let port;try{port=await navigator.serial.requestPort()}catch(e){skSt('Порт не выбран.');return}
+  const baud=+$('#skBaud').value||4800;try{await port.open({baudRate:baud})}catch(e){skSt('<b style="color:var(--warn)">Порт не открылся:</b> '+lzE(e.message)+'. Закройте другие программы, которые держат порт.');return}
+  if(S.sk){S.sk=false;saveS();$('#chkSk').checked=false;if(SK.ws){SK.ws.onclose=null;try{SK.ws.close()}catch(_){}}SK.ws=null}
+  SK.usb={port,n:0,stop:false,baud};const me=SK.usb;SK.lay.addTo(map);$('#skUsb').textContent='Отключить USB-приборы';skSt(`USB-порт открыт (${baud}). Жду данные…`);
+  const dec=new TextDecoderStream();const done=port.readable.pipeTo(dec.writable).catch(()=>{});const rd=dec.readable.getReader();SK.usb.rd=rd;let buf='';
+  setTimeout(()=>{if(SK.usb&&!SK.usb.n)skSt(`USB-порт открыт, но понятных данных нет. Попробуйте другую скорость (сейчас ${baud}) — обычные приборы 4800, AIS 38400.`)},6000);
+  try{for(;;){const{value,done:d}=await rd.read();if(d)break;buf+=value;let i;while((i=buf.search(/\r?\n/))>=0){nmeaLine(buf.slice(0,i));buf=buf.slice(i+1).replace(/^\n/,'')}if(buf.length>4096)buf=''}}catch(e){}
+  try{rd.releaseLock()}catch(_){}await done;try{await port.close()}catch(_){}
+  if(SK.usb===me&&!me.stop){skSt('<b style="color:var(--warn)">USB-кабель отключён.</b>');chip('sk','Приборы по USB отключены','warn');SK.usb=null}$('#skUsb').textContent='Приборы по USB-кабелю (NMEA 0183)'}
+function usbStop(){if(!SK.usb)return;const u=SK.usb;u.stop=true;SK.usb=null;try{u.rd&&u.rd.cancel()}catch(_){}$('#skUsb').textContent='Приборы по USB-кабелю (NMEA 0183)'}
+/* ===== «Что пришло с приборов» ===== */
+function skDiag(){const v=SK.v,raw=SK.raw,now=Date.now(),has=k=>v[k]!=null,age=k=>{const r=raw[k],p=SK.pref[k];return r&&r[p]?Math.round((now-r[p].t)/1000):null},src=k=>SK.pref[k]||(has(k)?'расчёт':'');
+  const G2=[['Позиция (GPS)',['navigation.position'],'Проверьте, что GPS-приёмник или картплоттер передаёт данные в сеть (NMEA 2000 / 0183).'],
+    ['Скорость и курс по GPS',['navigation.speedOverGround','navigation.courseOverGroundTrue'],'Обычно идут вместе с позицией. Если нет — включите передачу RMC/VTG на GPS.'],
+    ['Курс по компасу',['navigation.headingTrue','navigation.headingMagnetic'],'Нужен электронный компас или автопилот. Без него курс берётся по GPS.'],
+    ['Глубина (эхолот)',['environment.depth.belowTransducer','environment.depth.belowSurface','environment.depth.belowKeel'],'Эхолот должен быть в сети. Старые эхолоты — через NMEA 0183 (DPT/DBT).'],
+    ['Скорость по воде (лаг)',['navigation.speedThroughWater'],'Нужен датчик лага (вертушка). Проверьте, что вертушка не забита.'],
+    ['Вымпельный ветер',['environment.wind.angleApparent','environment.wind.speedApparent'],'Нужен ветромер на мачте (NMEA 2000 / 0183 MWV, Bluetooth Calypso).'],
+    ['Истинный ветер',['environment.wind.speedTrue'],'Считаем сами по вымпельному ветру и скорости — достаточно ветромера.'],
+    ['Крен и дифферент',['navigation.attitude'],'Нужен датчик положения (часто в автопилоте или компасе).'],
+    ['Давление',['environment.outside.pressure'],'Барометр на борту. Без него берём из прогноза.'],
+    ['Температура воды',['environment.water.temperature'],'Обычно встроена в датчик лага или эхолота.'],
+    ['Пройдено (лаг)',['navigation.trip.log','navigation.log'],'Даёт датчик лага.'],
+    ['Руль и автопилот',['steering.rudderAngle','steering.autopilot.state'],'Датчик пера руля / автопилот в сети.']];
+  const fmtv=(k)=>{const x=v[k];if(x==null)return'';if(k==='navigation.position')return fmtC(x.latitude,1)+' '+fmtC(x.longitude,0);if(k==='navigation.attitude')return x.roll!=null?'крен '+f0(x.roll*R2D)+'°':'есть';if(k==='environment.wind.angleApparent')return f0((v['environment.wind.speedApparent']||0)*MS2KN)+' уз · '+f0(Math.abs(x*R2D))+'° '+(x<0?'слева':'справа');
+    if(/speed/i.test(k))return f1(x*MS2KN)+' уз';if(/angle|heading|course|direction/i.test(k))return f0(((x*R2D)+360)%360)+'°';if(/depth/.test(k))return f1(x)+' м';if(/pressure/.test(k))return f0(x/100)+' гПа';if(/temperature/.test(k))return f1(x-273.15)+' °C';if(/log/.test(k))return f1(x/NM)+' миль';return typeof x==='number'?f1(x):'есть'};
+  const on=!!SK.t&&now-SK.t<15e3;let h=`<p class="small">${on?'Данные идут':'Данных сейчас нет'} · источник: ${SK.usb?'USB-кабель':S.sk?'Signal K':'—'} · всего величин: ${Object.keys(SK.base).length}${SK.varApx?' · склонение примерное (±1°), приборы его не дают':''}</p><table class="small" style="width:100%;border-collapse:collapse">`;
+  for(const[t,ks,hint]of G2){const k=ks.find(has),a=k?age(k):null;if(!k&&ks[0]==='environment.wind.speedTrue'&&has('environment.wind.angleApparent')){h+=`<tr style="border-top:1px solid var(--line)"><td style="padding:4px 4px 4px 0">✅ <b>${t}</b></td><td style="padding:4px 0"><span class="muted">считаем сами по вымпельному ветру и скорости</span></td></tr>`;continue}h+=`<tr style="border-top:1px solid var(--line)"><td style="padding:4px 4px 4px 0;vertical-align:top">${k?'✅':'—'} <b>${t}</b></td><td style="padding:4px 0;vertical-align:top">${k?`${fmtv(k)} <span class="muted">· ${lzE(src(k))}${a!=null&&a>3?' · '+a+' с назад':''}</span>`:`<span class="muted">${hint}</span>`}</td></tr>`}
+  const ex=Object.keys(SK.base).filter(k=>/^(electrical|propulsion|tanks)\./.test(k)).length;h+=`<tr style="border-top:1px solid var(--line)"><td style="padding:4px 0">${ex?'✅':'—'} <b>Аккумуляторы, мотор, баки</b></td><td style="padding:4px 0">${ex?ex+' величин':'<span class="muted">Victron, датчики баков, мотор — через Signal K.</span>'}</td></tr>`;
+  h+=`<tr style="border-top:1px solid var(--line)"><td style="padding:4px 0">${SK.ais.size?'✅':'—'} <b>Свой приёмник AIS</b></td><td style="padding:4px 0">${SK.ais.size?SK.ais.size+' судов':'<span class="muted">Если на лодке есть AIS — он должен быть подключён к Signal K или по USB (38400).</span>'}</td></tr></table>`;
+  const all=Object.keys(SK.base).sort();if(all.length)h+=`<details><summary class="small">Все величины с приборов (${all.length})</summary><div class="small muted" style="max-height:200px;overflow:auto;font-family:monospace;font-size:11px">${all.map(k=>lzE(k)+' ← '+lzE(SK.pref[k]||'')).join('<br>')}</div></details>`;
+  $('#skDiagBox').innerHTML=h;$('#skDiagBox').hidden=false}
 function skInit(){if(S.sk===undefined&&location.port==='3000')S.sk=true; // открыт с самого сервера Signal K на лодке — приборы сразу
   $('#chkSk').checked=!!S.sk;$('#skUrl').value=S.skUrl||'';if(S.sk)skStart();
   $('#chkSk').onchange=e=>{S.sk=e.target.checked;saveS();S.sk?skStart():skOff(true)};
-  $('#skUrl').onchange=e=>{S.skUrl=e.target.value.trim();saveS();if(S.sk)skStart()}}
+  $('#skUrl').onchange=e=>{S.skUrl=e.target.value.trim();S.skTok='';saveS();if(S.sk)skStart()}
+  $('#skLogBtn').onclick=skLogin;$('#skReq').onclick=skRequest;$('#skForget').onclick=()=>{S.skTok='';saveS();$('#skForget').hidden=true;skSt('Вход забыт.')};
+  $('#skUsb').onclick=()=>SK.usb?skOff():usbStart();$('#skDiag').onclick=()=>{if(!$('#skDiagBox').hidden&&!SK._dg){$('#skDiagBox').hidden=true;return}skDiag()};
+  setInterval(()=>{if(!$('#skDiagBox').hidden&&!$('#p-layers').hidden)skDiag()},2000)}
 /* ===== «Приборы»: весь ход на одном экране ===== */
 const DSH={on:false,tm:null,big:store.get('dashBig',''),max:0,maxT:0,h:{},s:{},damp:store.get('dashDamp',1)};const DAMP=[[1,'без сглаживания'],[.45,'сглаживание качки'],[.2,'сильное сглаживание']];
 const sgn=a=>((a%360)+540)%360-180;
@@ -1762,10 +1903,10 @@ function dashRender(){if(!DSH.on)return;const d=dashData(),B=S.boat,now=Date.now
   h+=dTile('Время',mskT(now),'',TZN?`московское · на телефоне ${new Date().toTimeString().slice(0,5)}`:'московское');
   morph($('#dGrid'),h);$('#dClk').textContent=mskT(Date.now());
   const src=[],pl=(c,t)=>`<span class="pill"><i class="led ${c}"></i>${t}</span>`,skAge=SK.t?(now-SK.t)/1000:null;
-  src.push(d.skOn?pl('on','приборы лодки'):S.sk&&skAge!=null?`<span class="pill bad"><i class="led bad"></i>приборы молчат ${sec(skAge)}</span>`:pl('','приборы не подключены'));
+  src.push(d.skOn?pl('on',SK.usb?'приборы по USB':'приборы лодки'):(S.sk||SK.usb)&&skAge!=null?`<span class="pill bad"><i class="led bad"></i>приборы молчат ${sec(skAge)}</span>`:pl('','приборы не подключены'));
   src.push(!d.pos||d.gpsAge==null?pl('','GPS выключен'):d.gpsAge>20?`<span class="pill bad"><i class="led bad"></i>GPS молчит ${sec(d.gpsAge)}</span>`:pl('on',`GPS ${SK.posT&&now-SK.posT<10e3?'бортовой':'телефона'}${d.acc!=null?' ±'+f0(d.acc)+' м':''}`));
   if(d.src.wind==='прогноз')src.push(pl('am',`ветер — прогноз ${lzE(d.fmodel||'')}`));
-  src.push(S.sk?'<button class="pill" id="dSkOff" title="Отключить приборы лодки (Signal K)">✕ отключить приборы</button>':'<button class="pill" id="dSkOn" title="Подключить приборы лодки (Signal K)">＋ подключить приборы</button>');
+  src.push(S.sk||SK.usb?'<button class="pill" id="dSkOff" title="Отключить приборы лодки (Signal K)">✕ отключить приборы</button>':'<button class="pill" id="dSkOn" title="Подключить приборы лодки (Signal K)">＋ подключить приборы</button>');
   src.push(`<button class="pill" id="dDamp" title="Сглаживание стрелок на волне">${(DAMP[DSH.damp]||DAMP[1])[1]}</button>`);
   morph($('#dSrc'),src.join(''));$('#dGps').hidden=G.watch!=null||d.skOn}
 function dashOpen(){DSH.on=true;DSH.s={};document.body.classList.add('dashOn');$('#dash').hidden=false;closePanel();wake(true);dashRender();clearInterval(DSH.tm);DSH.tm=setInterval(dashRender,1000);history.pushState?.({dash:1},'')}
