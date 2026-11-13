@@ -215,6 +215,7 @@ body.night #timebar select,body.night #play{background-color:#140000;border-colo
 #hud #btnDash{display:inline-flex;align-items:center;gap:7px;border-radius:11px;background:linear-gradient(180deg,#1f86e0,#1467b8);border:0;color:#fff;font-weight:650}
 #hud #btnDash::before{content:'';width:14px;height:14px;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M4.5 17a8 8 0 1 1 15 0'/%3E%3Cpath d='M12 13l4-4'/%3E%3C/svg%3E")}
 body.night #hud #btnDash{background:#5a0000;color:#ffb0a8}body.night #hud{background:rgba(20,0,0,.92)}
+.chip .cx{pointer-events:auto;margin-left:8px;background:rgba(255,255,255,.14);border:0;color:inherit;border-radius:999px;padding:3px 9px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer}.chip .cx:active{background:rgba(255,255,255,.28)}
 .chip{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-color:rgba(255,255,255,.1);font-weight:550}
 @media (max-width:819px){#legend{width:56px}}
 </style>
@@ -471,7 +472,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.29';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.30';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1576,7 +1577,7 @@ function skOwn(){const v=SK.v,p=v['navigation.position'];
   const parts=[];if(dep!=null||dk!=null)parts.push(`Глубина <b>${f1(dep!=null?dep:dk)} м</b>${dk!=null?` (под килем ${f1(dk)})`:''}`);
   if(aws!=null)parts.push(`Ветер вымп. <b>${f0(aws*MS2KN)} уз</b>${awa!=null?' '+f0(Math.abs(awa*R2D))+'° '+(awa<0?'лев.':'пр.'):''}`);
   if(tws!=null)parts.push(`ист. ${f0(tws*MS2KN)} уз`);if(stw!=null)parts.push(`лаг ${f1(stw*MS2KN)} уз`);
-  chip('sk',parts.length?(shoal?'⚠ МЕЛКО! ':'')+parts.join(' · '):null,shoal?'bad':'');
+  chip('sk',parts.length?(shoal?'⚠ МЕЛКО! ':'')+parts.join(' · ')+' <button class="cx" data-skoff title="Отключить приборы лодки (Signal K)">✕ отключить</button>':null,shoal?'bad':'');
   if(shoal&&Date.now()-SK.beepT>60e3){SK.beepT=Date.now();beep();toast(`⚠ Под килем ${f1(under)} м — мелко!`,8000)}
   skSt(`Данные с приборов идут · ${new Date().toLocaleTimeString('ru-RU',{timeZone:TZ})}${p?' · позиция с бортового GPS':''}`)}
 function skAis(ctx,path,val){if(!/^vessels\./.test(ctx))return;let a=SK.ais.get(ctx);if(!a){a={};SK.ais.set(ctx,a)}a.t=Date.now();
@@ -1585,10 +1586,16 @@ function skAis(ctx,path,val){if(!/^vessels\./.test(ctx))return;let a=SK.ais.get(
   const ic=L.divIcon({className:'',iconSize:[18,18],html:`<svg width="18" height="18" viewBox="-9 -9 18 18" style="transform:rotate(${a.cog||0}deg)"><path d="M0,-8 L5,7 L0,4 L-5,7Z" fill="#c78bff" stroke="#fff" stroke-width="1.5"/></svg>`});
   if(!a.m){a.m=L.marker(a.ll,{icon:ic,zIndexOffset:400}).bindTooltip(tip).addTo(SK.lay)}else{a.m.setLatLng(a.ll).setIcon(ic).setTooltipContent(tip)}}
 setInterval(()=>{if(!S.sk)return;const now=Date.now();for(const[k,a]of SK.ais)if(now-a.t>10*6e4){if(a.m)SK.lay.removeLayer(a.m);SK.ais.delete(k)}
-  if(SK.t&&now-SK.t>30e3)chip('sk','Приборы лодки молчат '+Math.round((now-SK.t)/1000)+' с','warn')},5000);
+  if(SK.t&&now-SK.t>30e3)chip('sk','Приборы лодки молчат '+Math.round((now-SK.t)/1000)+' с'+' <button class="cx" data-skoff title="Отключить приборы лодки (Signal K)">✕ отключить</button>','warn')},5000);
+function skOff(quiet){S.sk=false;saveS();skStop();SK.t=0;if(G.watch==null){G.sog=null;G.cog=null;G.acc=null;G.last=0}$('#chkSk').checked=false;skSt('Выключено.');chip('gps',null);$('#hud').classList.remove('stale');G.warned=false;
+  if(G.watch==null){$('#hud').hidden=true;$('#mob').hidden=true;if(!DSH.on)wake(false)}
+  if(DSH.on)dashRender();
+  if(!quiet)toast(G.watch==null?'Приборы лодки отключены. Чтобы видеть лодку на карте, включите GPS телефона (кнопка «GPS» вверху).':'Приборы лодки отключены. Позиция теперь с GPS телефона.',7000)}
+function skAsk(){dashClose();openPanel('layers');setTimeout(()=>{const e=$('#chkSk');e?.scrollIntoView({block:'center'});$('#skUrl').focus?.()},250)}
+$('#status').addEventListener('click',e=>{if(e.target.closest('[data-skoff]'))skOff()});
 function skInit(){if(S.sk===undefined&&location.port==='3000')S.sk=true; // открыт с самого сервера Signal K на лодке — приборы сразу
   $('#chkSk').checked=!!S.sk;$('#skUrl').value=S.skUrl||'';if(S.sk)skStart();
-  $('#chkSk').onchange=e=>{S.sk=e.target.checked;saveS();S.sk?skStart():(skStop(),skSt('Выключено.'))};
+  $('#chkSk').onchange=e=>{S.sk=e.target.checked;saveS();S.sk?skStart():skOff(true)};
   $('#skUrl').onchange=e=>{S.skUrl=e.target.value.trim();saveS();if(S.sk)skStart()}}
 /* ===== «Приборы»: весь ход на одном экране ===== */
 const DSH={on:false,tm:null,big:store.get('dashBig',''),max:0,maxT:0,h:{},s:{},damp:store.get('dashDamp',1)};const DAMP=[[1,'без сглаживания'],[.45,'сглаживание качки'],[.2,'сильное сглаживание']];
@@ -1756,8 +1763,9 @@ function dashRender(){if(!DSH.on)return;const d=dashData(),B=S.boat,now=Date.now
   morph($('#dGrid'),h);$('#dClk').textContent=mskT(Date.now());
   const src=[],pl=(c,t)=>`<span class="pill"><i class="led ${c}"></i>${t}</span>`,skAge=SK.t?(now-SK.t)/1000:null;
   src.push(d.skOn?pl('on','приборы лодки'):S.sk&&skAge!=null?`<span class="pill bad"><i class="led bad"></i>приборы молчат ${sec(skAge)}</span>`:pl('','приборы не подключены'));
-  src.push(!d.pos?pl('','GPS выключен'):d.gpsAge>20?`<span class="pill bad"><i class="led bad"></i>GPS молчит ${sec(d.gpsAge)}</span>`:pl('on',`GPS ${SK.posT&&now-SK.posT<10e3?'бортовой':'телефона'}${d.acc!=null?' ±'+f0(d.acc)+' м':''}`));
+  src.push(!d.pos||d.gpsAge==null?pl('','GPS выключен'):d.gpsAge>20?`<span class="pill bad"><i class="led bad"></i>GPS молчит ${sec(d.gpsAge)}</span>`:pl('on',`GPS ${SK.posT&&now-SK.posT<10e3?'бортовой':'телефона'}${d.acc!=null?' ±'+f0(d.acc)+' м':''}`));
   if(d.src.wind==='прогноз')src.push(pl('am',`ветер — прогноз ${lzE(d.fmodel||'')}`));
+  src.push(S.sk?'<button class="pill" id="dSkOff" title="Отключить приборы лодки (Signal K)">✕ отключить приборы</button>':'<button class="pill" id="dSkOn" title="Подключить приборы лодки (Signal K)">＋ подключить приборы</button>');
   src.push(`<button class="pill" id="dDamp" title="Сглаживание стрелок на волне">${(DAMP[DSH.damp]||DAMP[1])[1]}</button>`);
   morph($('#dSrc'),src.join(''));$('#dGps').hidden=G.watch!=null||d.skOn}
 function dashOpen(){DSH.on=true;DSH.s={};document.body.classList.add('dashOn');$('#dash').hidden=false;closePanel();wake(true);dashRender();clearInterval(DSH.tm);DSH.tm=setInterval(dashRender,1000);history.pushState?.({dash:1},'')}
@@ -1765,7 +1773,7 @@ function dashClose(){DSH.on=false;document.body.classList.remove('dashOn');$('#d
 $('#btnDash').onclick=dashOpen;$('#mDash').onclick=dashOpen;$('#dClose').onclick=()=>{if(history.state?.dash)history.back();else dashClose()};
 window.addEventListener('popstate',()=>{if(DSH.on)dashClose()});
 $('#dGps').onclick=()=>{if(G.watch==null)$('#btnGps').click()};
-$('#dSrc').onclick=e=>{if(!e.target.closest('#dDamp'))return;DSH.damp=(DSH.damp+1)%DAMP.length;store.set('dashDamp',DSH.damp);DSH.s={};dashRender();toast('Приборы: '+DAMP[DSH.damp][1])};
+$('#dSrc').onclick=e=>{if(e.target.closest('#dSkOff')){skOff();return}if(e.target.closest('#dSkOn')){skAsk();return}if(!e.target.closest('#dDamp'))return;DSH.damp=(DSH.damp+1)%DAMP.length;store.set('dashDamp',DSH.damp);DSH.s={};dashRender();toast('Приборы: '+DAMP[DSH.damp][1])};
 $('#dGrid').onclick=e=>{const g=e.target.closest('.gc');if(!g)return;DSH.big=DSH.big===g.dataset.g?'':g.dataset.g;store.set('dashBig',DSH.big);dashRender()};
 /* ===== старт ===== */
 LOG.push(...store.get('log',[]).slice(-100));
