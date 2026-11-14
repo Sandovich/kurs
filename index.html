@@ -215,6 +215,7 @@ body.night #timebar select,body.night #play{background-color:#140000;border-colo
 #hud #btnDash{display:inline-flex;align-items:center;gap:7px;border-radius:11px;background:linear-gradient(180deg,#1f86e0,#1467b8);border:0;color:#fff;font-weight:650}
 #hud #btnDash::before{content:'';width:14px;height:14px;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M4.5 17a8 8 0 1 1 15 0'/%3E%3Cpath d='M12 13l4-4'/%3E%3C/svg%3E")}
 body.night #hud #btnDash{background:#5a0000;color:#ffb0a8}body.night #hud{background:rgba(20,0,0,.92)}
+#aiLog .me{color:var(--muted)}#aiLog .ai b,#aiLog .me b{font-weight:650}#aiLog>div{padding:4px 0;border-bottom:1px solid var(--line)}#aiMic.on{background:var(--danger);color:#fff}
 .chip .cx{pointer-events:auto;margin-left:8px;background:rgba(255,255,255,.14);border:0;color:inherit;border-radius:999px;padding:3px 9px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer}.chip .cx:active{background:rgba(255,255,255,.28)}
 .chip{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-color:rgba(255,255,255,.1);font-weight:550}
 @media (max-width:819px){#legend{width:56px}}
@@ -425,6 +426,7 @@ body.night #hud #btnDash{background:#5a0000;color:#ffb0a8}body.night #hud{backgr
     <button id="mWatch" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.8l2.5 1.6M9.5 3h5"/></svg><span>Вахтенный таймер: выкл</span></button>
     <button id="mDash" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16a7.5 7.5 0 1115 0"/><path d="M12 16l4-5"/><circle cx="12" cy="16" r="1.3" fill="currentColor"/><path d="M6.5 11.5l1 .7M17.5 11.5l-1 .7M12 8.5V10"/></svg><span>Приборы: скорость, ветер, компас, глубина — всё на одном экране</span></button>
     <button data-go="spb" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16c3-5 6-7 9-7s6 2 9 7"/><path d="M3 16h18M7 16v3M17 16v3M12 9V5M10 6l2-2 2 2"/></svg><span>Проход через Петербург: разводка мостов</span></button>
+    <button data-go="ai" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21M9 21h6"/></svg><span>ИИ-помощник: спросить голосом или текстом (проба)</span></button>
     <button data-go="lotsia" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2 2 0 016 4h5v15H6a2 2 0 00-2 1.5z"/><path d="M20 5.5A2 2 0 0018 4h-5v15h5a2 2 0 012 1.5z"/></svg><span>Лоция и штурман</span></button>
     <button data-go="diag" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a7 7 0 0114 0M8 12a4 4 0 018 0"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><path d="M12 13v7"/></svg><span>Проверка связи</span></button>
   </div>
@@ -467,6 +469,21 @@ body.night #hud #btnDash{background:#5a0000;color:#ffb0a8}body.night #hud{backgr
   <div id="dOut" class="scroll" style="margin-top:10px"></div>
 </section>
 
+<section class="panel" id="p-ai" hidden>
+  <button class="close">✕</button>
+  <h2>ИИ-помощник (проба)</h2>
+  <p class="small muted">Помощник работает на вашем сервере или бортовом компьютере, без интернета. «Курс» даёт ему смотреть приборы, прогноз, маршрут, лоцию и нажимать кнопки. Всё, что меняет маршрут, тревоги или приборы, — только после вашего «Да».</p>
+  <label><input type="checkbox" id="chkAi"> Подключить помощника</label>
+  <div class="row"><input id="aiUrl" placeholder="адрес сервера помощника, напр. 192.168.1.10:8765" style="flex:1;min-width:0"></div>
+  <p class="small muted" id="aiSt">Выключено.</p>
+  <div id="aiLog" class="scroll" style="max-height:240px;overflow:auto;font-size:14px;line-height:1.45"></div>
+  <div class="row"><input id="aiTxt" placeholder="Спросите текстом…" style="flex:1;min-width:0" enterkeyhint="send"><button id="aiSend" class="primary" aria-label="Отправить">→</button><button id="aiMic" aria-label="Держите и говорите" title="Держите и говорите">🎙</button></div>
+  <label class="small"><input type="checkbox" id="chkAiVoice"> Читать ответы вслух</label>
+</section>
+<div id="aiAsk" hidden role="alertdialog" style="position:fixed;z-index:3000;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 96px);max-width:460px;margin:0 auto;background:rgba(16,34,51,.97);border:2px solid var(--warn);border-radius:16px;padding:14px 14px 6px;box-shadow:0 10px 40px rgba(0,0,0,.5)">
+  <p id="aiAskT" style="margin:0 0 4px;font-weight:600"></p><p id="aiAskD" class="small muted" style="margin:0"></p>
+  <div class="row"><button id="aiYes" class="primary" style="flex:1">Да, выполнить</button><button id="aiNo" style="flex:1">Нет</button></div>
+</div>
 <section class="panel" id="p-help" hidden>
   <button class="close">✕</button>
   <h2>Как пользоваться</h2>
@@ -492,13 +509,13 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.31';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.32';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
   boat:{name:'',type:'sail',speed:5.5,motor:5,draft:1.8}},store.get('settings',{}));
 const saveS=()=>store.set('settings',S);
-function toast(m,ms=4000){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
+function toast(m,ms=4000){if(typeof kaEvent==='function')kaEvent('toast',m);const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
 
 /* ===== геометрия и форматы ===== */
 const R=6371008.8, NM=1852, rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
@@ -981,7 +998,7 @@ function onPos(p){if(!p._sk&&SK.posT&&Date.now()-SK.posT<10e3)return;const c=p.c
   if(G.vec){map.removeLayer(G.vec);G.vec=null}if(sog>=.5&&G.cog!=null){const dnm=sog*10/60,k=Math.cos(rad(ll[0]));G.vec=L.polyline([ll,[ll[0]+Math.cos(rad(G.cog))*dnm/60,ll[1]+Math.sin(rad(G.cog))*dnm/60/k]],{color:'#ff8a3d',weight:2,dashArray:'6 4',interactive:false}).addTo(map)}
   const last=G.track[G.track.length-1];if(!last||dist(last,ll)>10){G.track.push([ll[0],ll[1],Math.round(now/1000)]);if(G.track.length>20000)G.track.shift();G.line.addLatLng(ll);if(Date.now()-G.saved>15000){store.set('track',G.track);G.saved=Date.now()}}
   if(G.follow)map.panTo(ll);
-  $('#hSog').textContent=f1(sog);$('#hCog').textContent=G.cog!=null?f0(G.cog)+'°':'—';$('#hPos').innerHTML=`${fmtC(ll[0],1)}<br>${fmtC(ll[1],0)}`;
+  $('#hSog').textContent=f1(sog);$('#hCog').textContent=G.cog!=null?String(Math.round(G.cog)%360).padStart(3,'0')+'°':'—';$('#hPos').innerHTML=`${fmtC(ll[0],1)}<br>${fmtC(ll[1],0)}`;
   const acc=c.accuracy;$('#hAcc').innerHTML=`<span style="color:${acc<15?'var(--ok)':acc<50?'var(--warn)':'var(--danger)'}">точность ±${f0(acc)} м</span>`;
   $('#hud').classList.remove('stale');chip('gps',acc>50?`GPS неточный: ±${f0(acc)} м`:null,'warn');
   anchorCheck();aisCpaCheck();navUpdate();shoreCheck();borderCheck();shoalCheck()}
@@ -1738,6 +1755,122 @@ function skInit(){if(S.sk===undefined&&location.port==='3000')S.sk=true; // от
   $('#skLogBtn').onclick=skLogin;$('#skReq').onclick=skRequest;$('#skForget').onclick=()=>{S.skTok='';saveS();$('#skForget').hidden=true;skSt('Вход забыт.')};
   $('#skUsb').onclick=()=>SK.usb?skOff():usbStart();$('#skDiag').onclick=()=>{if(!$('#skDiagBox').hidden&&!SK._dg){$('#skDiagBox').hidden=true;return}skDiag()};
   setInterval(()=>{if(!$('#skDiagBox').hidden&&!$('#p-layers').hidden)skDiag()},2000)}
+
+/* ===== ИИ-помощник: мост между сервером помощника и «Курсом» (протокол kurs-assist/1, описание — kurs_work/assistant/bridge/PROTOCOL.md) ===== */
+const KA={ws:null,retry:0,tm:null,rec:null,log:[]};
+const KA_CONFIRM={route_clear:'стереть маршрут',route_auto:'проложить путь под ветер (заменит маршрут)',route_export_gpx:'сохранить маршрут в файл',nav_start:'начать ведение к точке или по маршруту',nav_stop:'закончить ведение',mob_finish:'закончить режим «Человек за бортом»',ais_set:'включить или выключить AIS',anchor_set:'поставить якорную вахту',anchor_off:'снять якорную вахту',instruments_connect:'подключить приборы лодки',instruments_disconnect:'отключить приборы лодки',track_export_gpx:'сохранить трек в файл',boat_settings:'изменить настройки лодки и пределы'};
+const kr0=x=>x==null||!isFinite(x)?null:Math.round(x),kr1=x=>x==null||!isFinite(x)?null:Math.round(x*10)/10,kr2=x=>x==null||!isFinite(x)?null:Math.round(x*100)/100;
+const kaHere=()=>G.pos||[map.getCenter().lat,map.getCenter().lng];
+const kaLL=a=>a&&a.lat!=null&&a.lon!=null&&isFinite(a.lat)&&isFinite(a.lon)?[+a.lat,+a.lon]:null;
+async function kaLz(){if(!LZ.f)await lzBuiltin();return LZ.f||[]}
+const kaFact=x=>x?{text:x.t,kind:x.k,regions:x.r,lat:x.ll?x.ll[0]:null,lon:x.ll?x.ll[1]:null,source:x.src||x.s||'лоция «Курса»'}:null;
+/* опорные места района (примерно, для «покажи/проложи до …»); остальное ищем в лоции */
+const KA_PL={'кронштадт':[59.987,29.775],'сестрорецк':[60.098,29.948],'лахта':[59.99,30.18],'петергоф':[59.885,29.905],'ломоносов':[59.915,29.77],'стрельна':[59.855,30.04],'зеленогорск':[60.195,29.7],'выборг':[60.71,28.745],'высоцк':[60.627,28.57],'приморск':[60.365,28.615],'шлиссельбург':[59.945,31.035],'осиновец':[60.124,31.067],'валаам':[61.385,30.948],'приозерск':[61.04,30.13],'сортавала':[61.705,30.69],'новая ладога':[60.11,32.3],'коневец':[60.86,30.6],'санкт-петербург':[59.935,30.29],'петербург':[59.935,30.29],'питер':[59.935,30.29],'таллин':[59.445,24.765],'хельсинки':[60.16,24.955],'котка':[60.465,26.945]};
+async function kaPlace(name){if(!name)return null;const n=String(name).toLowerCase().replace(/ё/g,'е').trim();for(const k in KA_PL)if(n.includes(k.slice(0,Math.max(5,k.length-2))))return KA_PL[k];await kaLz();const r=lzSearch(String(name),{n:12}).map(i=>typeof i==='number'?LZ.f[i]:i).find(x=>x&&x.ll);return r?r.ll:null}
+async function kaPt(a,kL='lat',kO='lon',kP='place'){const p=kaLL({lat:a[kL],lon:a[kO]});if(p)return p;if(a[kP])return await kaPlace(a[kP]);return null}
+function kaIdx(when){if(!W.g)return null;if(!when)return nowIdx();const t=Date.parse(when)/1000;if(!isFinite(t))return nowIdx();let b=0;W.g.times.forEach((x,i)=>{if(Math.abs(x-t)<Math.abs(W.g.times[b]-t))b=i});return b}
+const kaTxt=(sel,n=900)=>{const e=$(sel);return e?e.innerText.replace(/\s+\n/g,'\n').trim().slice(0,n):''};
+const KA_T={
+ get_position:()=>G.pos?{lat:kr2(G.pos[0]*1000)/1000,lon:kr2(G.pos[1]*1000)/1000,text:fmtC(G.pos[0],1)+' '+fmtC(G.pos[1],0),sog_kn:kr1(G.sog),cog_deg:kr0(G.cog),acc_m:kr0(G.acc),age_s:G.last?kr0((Date.now()-G.last)/1000):null,source:SK.posT&&Date.now()-SK.posT<10e3?'бортовой GPS':G.watch!=null?'GPS телефона':'нет'}:{known:false,error:'Позиции нет: GPS телефона и приборы выключены'},
+ get_instruments:({fields}={})=>{const d=dashData(),K=['sog','stw','cog','hdg','aws','awa','tws','twa','twd','heel','pitch','dep','under','pres','pd3','tw','ta','hum','drift','set','tgt','pct','vmgW','trip','log','rud','ap','fws','fwd','fgust','max','avg','run'],o={live:!!d.skOn,source:d.src,units:'скорость уз; углы градусы (awa/twa: минус — слева); глубина м; давление гПа; температура °C; пройдено мили'};
+   for(const k of K)if(d[k]!=null&&(!fields||!fields.length||fields.includes(k)))o[k]=typeof d[k]==='number'?kr1(d[k]):d[k];
+   if(d.bat&&d.bat.length)o.batteries=d.bat.map(b=>({name:b.n,volt:kr2(b.v),soc:b.soc!=null?kr0(b.soc*100):null}));if(d.eng&&d.eng.length)o.engines=d.eng.map(e=>({name:e.n,rpm:kr0(e.rpm),temp_c:e.t!=null?kr0(e.t-273.15):null}));if(d.tank&&d.tank.length)o.tanks=d.tank.map(t=>({type:t.n,level_pct:kr0(t.v*100)}));return o},
+ get_depth:a=>{const p=kaLL(a);if(!p){const d=dashData();return{depth_m:kr1(d.dep),under_keel_m:kr1(d.under),source:d.src.dep||'нет',draft_m:S.boat.draft,mark_dist_m:kr0(d.depD)}}
+   let b=null,bd=300;for(const q of MC.depAll||[]){const x=dist(p,[q[0],q[1]]);if(x<bd){bd=x;b=q}}return b?{depth_m:b[2],mark_dist_m:kr0(bd),source:'отметка атласа (место примерное)',draft_m:S.boat.draft,under_keel_m:kr1(b[2]-(S.boat.draft||1.8))}:{error:'Рядом (300 м) нет отметок глубин в атласе'}},
+ polar_target:({tws_kn,twa_deg})=>{const t=polT();return{target_kn:kr1(polarSpeed(+tws_kn,Math.abs(+twa_deg))),best_beat_twa:t?beatA(t,+tws_kn):null,best_run_twa:t?runA(t,+tws_kn):null,polar:t?t.name||'своя':'простая модель',efficiency_pct:S.polEff||90}},
+ get_sun:a=>{const p=kaLL(a)||kaHere(),n=sunNext(p[0],p[1]);return n?{event:n.set?'закат':'рассвет',time_msk:mskT(n.t),in_min:kr0((n.t-Date.now())/6e4)}:{event:null,note:'полярный день или ночь'}},
+ pressure_trend:()=>{const d=dashData();return{hpa:kr0(d.pres),change_3h_hpa:kr1(d.pd3),source:d.src.pres||'нет',note:d.pd3!=null&&d.pd3<=-3?'быстрое падение — жди усиления ветра':''}},
+ get_weather_point:async a=>{if(a.model&&a.model!==S.model&&KA_T.set_forecast_model(a).ok)await new Promise(r=>setTimeout(r,4000));if(!W.g)return{error:'Прогноз ещё не загружен'};
+   const p=(await kaPt(a))||kaHere(),i=kaIdx(a.when),sm=gridSample(W.g,p[0],p[1],i);if(!sm)return{error:'Точка вне сетки прогноза'};
+   const we=sm.dir!=null?waveEst(sm.spd,fetchKm(p[0],p[1],sm.dir)):null;return{model:MODEL_NAME[W.g.model]||W.g.model,time_msk:mskT(W.g.times[i]*1000),lat:kr2(p[0]),lon:kr2(p[1]),wind_kn:kr0(sm.spd),gust_kn:kr0(sm.gust),dir_deg:kr0(sm.dir),dir_text:sm.dir!=null?rumb(sm.dir):null,wave_m_est:we?kr1(we.h):null,limits:{wind:S.windMax,gust:S.gustMax,wave:S.waveMax}}},
+ get_observed_wind:async a=>{const p=(await kaPt(a))||kaHere(),R=(+a.radius_nm||15)*NM,now=Date.now()/1000;if(!S.obs){S.obs=true;saveS();$('#chkObs').checked=true;OB.layer.addTo(map);await obsLoad()}
+   return{stations:OB.list.filter(o=>now-o.t<6*3600&&dist(p,[o.lat,o.lon])<R).map(o=>({name:o.name,dist_nm:kr1(dist(p,[o.lat,o.lon])/NM),wind_kn:kr0(o.spd),gust_kn:kr0(o.gust),dir_deg:kr0(o.dir),age_min:kr0((now-o.t)/60)})).sort((x,y)=>x.dist_nm-y.dist_nm).slice(0,8)}},
+ set_forecast_model:({model})=>{const sel=$('#model'),ok=[...sel.options].map(o=>o.value);if(!ok.includes(model))return{error:'Нет такой модели',models:ok};sel.value=model;sel.dispatchEvent(new Event('change'));return{ok:true,model:MODEL_NAME[model]||model}},
+ wave_estimate:a=>{let km=a.fetch_km!=null?+a.fetch_km:null;const p=kaHere();if(km==null&&W.g){const sm=gridSample(W.g,p[0],p[1],nowIdx());if(sm&&sm.dir!=null)km=fetchKm(p[0],p[1],sm.dir)}const w=waveEst(+a.wind_kn,km);return w?{height_m:kr1(w.h),period_s:kr1(w.t),fetch_km:kr1(km),note:'оценка по ветру и разгону, не измерение'}:{error:'Не знаю разгон (расстояние до берега с наветра)'}},
+ route_get:()=>{const L2=legs();return{points:RT.pts.map(q=>[kr2(q[0]*1000)/1000,kr2(q[1]*1000)/1000]),legs:L2.map((l,i)=>({n:i+1,nm:kr1(l.d/NM),course_deg:kr0(l.c)})),total_nm:kr1(L2.reduce((s,l)=>s+l.d,0)/NM),departure_msk:mskT(depTs())}},
+ route_add_point:async a=>{const p=await kaPt(a);if(!p)return{error:'Не нашёл это место'};RT.pts.push(p);routeChanged();return{ok:true,count:RT.pts.length}},
+ route_clear:()=>{RT.pts=[];routeChanged();return{ok:true}},
+ route_reverse:()=>{RT.pts.reverse();routeChanged();return{ok:true}},
+ route_set_departure:({when})=>{const t=Date.parse(when);if(!isFinite(t))return{error:'Не понял время'};setDep(new Date(t));return{ok:true,departure_msk:mskT(t)}},
+ route_weather:async()=>{if(RT.pts.length<2)return{error:'Нужно минимум две точки маршрута'};await routeWx();const rows=evalRoute(depTs());if(!rows)return{error:'Прогноз на это время не загрузился'};
+   return{departure_msk:mskT(depTs()),arrive_msk:mskT(rows.arrive),legs:rows.map((r,i)=>({n:i+1,nm:kr1(r.d/NM),wind_kn:kr0(r.spd),gust_kn:kr0(r.gst),dir:r.dir!=null?rumb(r.dir):null,wave_m:kr1(r.wave),eta_msk:r.eta?mskT(r.eta):null})),max_gust_kn:kr0(Math.max(...rows.map(r=>r.gst||0))),limits:{wind:S.windMax,gust:S.gustMax,wave:S.waveMax}}},
+ route_best_windows:async()=>{if(RT.pts.length<2)return{error:'Нужно минимум две точки маршрута'};if(!RT.fc)await routeWx();bestWindows();return{text:kaTxt('#rWin')}},
+ route_auto:async a=>{const B=await kaPt(a,'to_lat','to_lon','to_place'),A=G.pos||RT.pts[0];if(!A||!B)return{error:!A?'Нет точки старта (позиции)':'Не нашёл точку финиша'};RT.pts=[A.slice(),B];routeChanged();if(a.when)setDep(new Date(Date.parse(a.when)));
+   await $('#rIso').onclick();const t=kaTxt('#rIsoOut',1200);if(a.apply){const b=[...$$('#rIsoOut button')].find(x=>/маршрут|взять|примен/i.test(x.textContent));if(b)b.click()}return{text:t,applied:!!a.apply}},
+ route_ensemble:async()=>{if(RT.pts.length<2)return{error:'Нужно минимум две точки маршрута'};await $('#rEns').onclick();await new Promise(r=>setTimeout(r,500));return{text:kaTxt('#rEnsOut',1200)}},
+ route_export_gpx:()=>{$('#rGpx').click();return{ok:true}},
+ nav_start:async a=>{if(a.target==='route'||(!kaLL(a)&&!a.place)){if(RT.pts.length<2)return{error:'Маршрута нет'};navStart('route',RT.pts.map(p=>p.slice()),Math.max(0,Math.min(RT.pts.length-1,+a.from_index||0)),'Маршрут');return{ok:true,mode:'route'}}
+   const p=await kaPt(a);if(!p)return{error:'Не нашёл точку'};navStart('point',[p],0,a.place||('Точка '+fmtC(p[0],1)));return{ok:true,mode:'point'}},
+ nav_status:()=>{if(!NAV.mode)return{active:false};const d=dashData();return{active:true,mode:NAV.mode,name:d.wpName||NAV.name,bearing_deg:kr0(d.btw),dist_nm:kr2(d.dtw),xte_nm:kr2(d.xte),vmg_kn:kr1(d.vmg),eta_msk:d.eta?mskT(d.eta):null,to_end_nm:kr1(d.dEnd)}},
+ nav_stop:()=>{navStop();return{ok:true}},
+ mob_start:()=>{$('#mob').onclick();return{started:NAV.mode==='mob',position:G.pos?fmtC(G.pos[0],1)+' '+fmtC(G.pos[1],0):null,say:G.pos?'Точка падения отмечена. Бросьте круг, назначьте наблюдателя, разворачивайтесь.':'Позиции нет! Бросьте круг, назначьте наблюдателя, запомните ориентиры.'}},
+ mob_finish:()=>{if(NAV.mode!=='mob')return{error:'Режим «Человек за бортом» не включён'};navStop();return{ok:true}},
+ mayday_text:a=>{const p=NAV.pts[0]||G.pos;if(!p)return{error:'Нет позиции'};const nm=S.boat.name||'(название яхты)',t=new Date(NAV.mobT||Date.now()),utc=t.toISOString().slice(11,16),pers=a.persons||'___';
+   const kind=(a.kind||'MAYDAY').toUpperCase(),nat=a.nature||(NAV.mode==='mob'?`Человек за бортом в ${utc} UTC`:'___');
+   return{channel:'УКВ 16',text_ru:`${kind}, ${kind}, ${kind}. Это яхта ${nm}, ${nm}, ${nm}. ${kind}, яхта ${nm}. Позиция: ${fmtC(p[0],1)}, ${fmtC(p[1],0)}. ${nat}. На борту ${pers} человек. Приём.`,note:'Помощник по рации не говорит — читает человек'}},
+ ais_targets:a=>{const R=(+a.radius_nm||10)*NM,arr=[];const add=(s,src)=>{if(s.lat==null||!G.pos)return;const d=dist(G.pos,[s.lat,s.lon]);if(d>R)return;const c=cpa(s);arr.push({name:s.name||('MMSI '+(s.id||'')),src,dist_nm:kr2(d/NM),sog_kn:kr1(s.sog),cog_deg:kr0(s.cog),cpa_nm:c?kr2(c.cpa):null,tcpa_min:c?kr0(c.t):null,danger:!!(c&&c.t>0&&c.t<30&&c.cpa<.5)})};
+   for(const s of AIS.ships.values())add(s,'интернет-AIS');for(const[k,s]of SK.ais)if(s.ll)add({name:s.name,id:(k.match(/mmsi:(\d+)/)||[])[1],lat:s.ll[0],lon:s.ll[1],sog:s.sog,cog:s.cog,t:s.t},'свой AIS');
+   let o=arr.sort((x,y)=>x.dist_nm-y.dist_nm);if(a.only_dangerous)o=o.filter(x=>x.danger);return{ais_on:AIS.on||SK.ais.size>0,targets:o.slice(0,+a.limit||10)}},
+ ais_set:({on})=>{on?aisStart():aisStop();return{ok:true,on:!!on}},
+ anchor_set:async a=>{const p=a.center==='point'?await kaPt(a):G.pos;if(!p)return{error:'Нет позиции: включите GPS'};A.pos=p.slice();if(a.radius_m)A.r=Math.max(10,Math.min(500,+a.radius_m));store.set('anchorR',A.r);anchorSave();return{ok:true,radius_m:A.r}},
+ anchor_status:()=>({set:!!A.pos,radius_m:A.r,dist_m:A.pos&&G.pos?kr0(dist(A.pos,G.pos)):null,alarm:!!A.alarm}),
+ anchor_off:()=>{A.pos=null;anchorSave();alarmOff();return{ok:true}},
+ alarm_silence:()=>{alarmOff();return{ok:true}},
+ watch_timer:({minutes})=>{const m=Math.max(0,Math.min(60,+minutes||0));WT.min=m;store.set('watchMin',m);wtLabel();wtArm();return{ok:true,minutes:m}},
+ border_check:()=>{if(!G.pos)return{error:'Нет позиции'};const d=borderDist(G.pos);return{dist_nm:d!=null?kr2(d/NM):null,note:d!=null&&d<3*NM?'Близко к морской границе':''}},
+ lotsia_search:async({query,limit})=>{await kaLz();return{facts:lzSearch(String(query||''),{n:+limit||5}).map(i=>kaFact(typeof i==='number'?LZ.f[i]:i)).filter(Boolean).slice(0,+limit||5)}},
+ lotsia_near:async a=>{const f=await kaLz(),p=kaLL(a)||kaHere(),R=(+a.radius_nm||2)*NM;return{facts:f.filter(x=>x.ll&&(!a.kind||x.k===a.kind)&&dist(p,x.ll)<R).map(x=>({...kaFact(x),dist_nm:kr2(dist(p,x.ll)/NM)})).sort((x,y)=>x.dist_nm-y.dist_nm).slice(0,10)}},
+ rules_search:()=>({error:'Поиск по правилам выполняет сам сервер помощника (карточки правил), не «Курс»'}),
+ spb_bridges_plan:async a=>{const D=await spbData();const date=a.date||new Date(Date.now()+3*36e5).toISOString().slice(0,10);let old;if(a.speed_kn){old=S.boat.motor;S.boat.motor=+a.speed_kn}
+   const r=spbPlan(D,a.direction==='up'?'up':'down',date);if(old!==undefined)S.boat.motor=old;return JSON.parse(JSON.stringify(r,(k,v)=>typeof v==='number'&&v>1e12?mskT(v):v))},
+ map_show:async a=>{const p=await kaPt(a);if(!p)return{error:'Не нашёл место'};G.follow=false;map.setView(p,+a.zoom||12);return{ok:true}},
+ layers_set:({layer,on})=>{const C={seamarks:'#chkSea',buoys:'#chkSea',obs:'#chkObs',stations:'#chkObs',wind:'#chkWind',track:'#chkTrack'};if(/^base:/.test(layer||'')){setBase(layer.slice(5));return{ok:true}}
+   const e=$(C[layer]);if(!e)return{error:'Нет такого слоя',layers:Object.keys(C).concat(['base:kurs','base:osm','base:topo'])};if(e.checked!==!!on){e.checked=!!on;e.dispatchEvent(new Event('change'))}return{ok:true}},
+ night_mode:({mode})=>{if(mode==='auto'){S.autoNight=true;saveS();autoNight();return{ok:true,night:!!S.night}}const want=mode==='on';if(!!S.night!==want)$('#mNight').onclick();else{S.autoNight=false;saveS()}return{ok:true,night:!!S.night}},
+ dashboard:({open})=>{open===false?dashClose():dashOpen();return{ok:true}},
+ instruments_connect:({address})=>{if(address){S.skUrl=String(address).trim();S.skTok='';$('#skUrl').value=S.skUrl}S.sk=true;saveS();$('#chkSk').checked=true;skStart();return{ok:true,status:kaTxt('#skSt',200)}},
+ instruments_disconnect:()=>{skOff();return{ok:true}},
+ instruments_usb:()=>{openPanel('layers');setTimeout(()=>$('#skUsb').scrollIntoView({block:'center'}),200);return{needs_user:true,say:'Нажмите «Приборы по USB-кабелю» и выберите порт — браузер разрешает это только по нажатию.'}},
+ instruments_diag:()=>{skDiag();return{text:kaTxt('#skDiagBox',1500)}},
+ track_export_gpx:()=>{$('#sTrkGpx').click();return{ok:true}},
+ boat_settings:a=>{if((a.action||'get')==='set'){const B=S.boat;if(a.draft_m!=null)B.draft=+a.draft_m;if(a.mast_m!=null)B.mast=+a.mast_m;if(a.cruise_kn!=null)B.speed=+a.cruise_kn;if(a.wind_max_kn!=null)S.windMax=+a.wind_max_kn;if(a.gust_max_kn!=null)S.gustMax=+a.gust_max_kn;if(a.wave_max_m!=null)S.waveMax=+a.wave_max_m;saveS();try{fillBoat()}catch(_){}}
+   return{name:S.boat.name,type:S.boat.type,draft_m:S.boat.draft,mast_m:S.boat.mast??null,cruise_kn:S.boat.speed,motor_kn:S.boat.motor,wind_max_kn:S.windMax,gust_max_kn:S.gustMax,wave_max_m:S.waveMax}},
+ connection_check:async()=>{await $('#dRun').onclick();return{text:kaTxt('#dOut',900)}}
+};
+function kaURL(){let v=(S.aiUrl||'').trim();if(!v)return'';if(!/^wss?:\/\//.test(v))v=(location.protocol==='https:'?'wss://':'ws://')+v;return v}
+function kaSt(t){$('#aiSt').innerHTML=t}
+function kaLog(who,t){KA.log.push({who,t});if(KA.log.length>40)KA.log.shift();$('#aiLog').innerHTML=KA.log.map(m=>`<div class="${m.who}"><b>${m.who==='me'?'Вы':m.who==='ai'?'Помощник':'·'}:</b> ${lzE(m.t)}</div>`).join('');$('#aiLog').scrollTop=1e9}
+function kaStop(){clearTimeout(KA.tm);if(KA.ws){KA.ws.onclose=null;try{KA.ws.close()}catch(_){}}KA.ws=null}
+function kaStart(){kaStop();const u=kaURL();if(!u){kaSt('Впишите адрес сервера помощника.');return}
+  if(location.protocol==='https:'&&u.startsWith('ws://')){kaSt('<b style="color:var(--warn)">Сайт по https не может подключиться к серверу без защиты.</b> Откройте «Курс» с бортового сервера или включите на сервере помощника https (wss).');return}
+  let ws;try{ws=new WebSocket(u)}catch(e){kaSt('Адрес не подходит: '+lzE(e.message));return}KA.ws=ws;kaSt('Подключаюсь…');
+  ws.onopen=()=>{KA.retry=0;ws.send(JSON.stringify({type:'hello',proto:'kurs-assist/1',app:'Курс',ver:VER,tools:Object.keys(KA_T),confirm:Object.keys(KA_CONFIRM),caps:{audio:!!window.MediaRecorder,tts:'speechSynthesis' in window}}));kaSt('Помощник на связи.')};
+  ws.onmessage=async e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+    if(m.type==='tool_call'){const r=await kaCall(m.name,m.args||{});if(ws.readyState===1)ws.send(JSON.stringify({type:'tool_result',id:m.id,name:m.name,...r}))}
+    else if(m.type==='say'){kaLog('ai',m.text||'');kaSpeak(m)}else if(m.type==='status')kaSt(lzE(m.text||''))};
+  ws.onclose=()=>{KA.ws=null;if(!S.ai)return;const d=Math.min(60,5*2**KA.retry++);kaSt(`Нет связи с помощником — пробую снова через ${d} с.`);KA.tm=setTimeout(()=>{if(S.ai)kaStart()},d*1000)}}
+async function kaCall(name,args){const f=KA_T[name];if(!f)return{ok:false,error:'Нет такого действия: '+name};
+  const need=KA_CONFIRM[name]&&!(name==='boat_settings'&&(args.action||'get')==='get');
+  if(need&&!(await kaAsk(KA_CONFIRM[name],args)))return{ok:false,error:'declined',say:'Капитан не подтвердил'};
+  try{const res=await f(args);return{ok:!(res&&res.error),result:res}}catch(e){logE('ai '+name+' '+e.message);return{ok:false,error:String(e.message)}}}
+function kaAsk(what,args){return new Promise(res=>{const d=$('#aiAsk');$('#aiAskT').textContent='Помощник просит: '+what+'. Выполнить?';const a=Object.entries(args||{}).filter(([k,v])=>v!=null&&v!=='').map(([k,v])=>k+': '+v).join(' · ');$('#aiAskD').textContent=a;d.hidden=false;try{navigator.vibrate?.(200)}catch(_){}
+  const done=v=>{clearTimeout(t);d.hidden=true;res(v)},t=setTimeout(()=>done(false),30000);$('#aiYes').onclick=()=>done(true);$('#aiNo').onclick=()=>done(false)})}
+function kaSpeak(m){if(m.audio){try{new Audio('data:'+(m.mime||'audio/wav')+';base64,'+m.audio).play()}catch(_){}return}
+  if(m.text&&S.aiVoice&&'speechSynthesis' in window){try{const u=new SpeechSynthesisUtterance(m.text);u.lang='ru-RU';speechSynthesis.cancel();speechSynthesis.speak(u)}catch(_){}}}
+function kaSend(){const t=$('#aiTxt').value.trim();if(!t)return;if(!KA.ws||KA.ws.readyState!==1){kaSt('Помощник не подключён.');return}KA.ws.send(JSON.stringify({type:'user_text',id:'u'+Date.now(),text:t}));kaLog('me',t);$('#aiTxt').value=''}
+async function kaMic(on){if(on){if(KA.rec)return;if(!KA.ws||KA.ws.readyState!==1){kaSt('Помощник не подключён.');return}
+    try{const st=await navigator.mediaDevices.getUserMedia({audio:true}),rec=new MediaRecorder(st),ch=[];rec.ondataavailable=e=>ch.push(e.data);
+      rec.onstop=async()=>{st.getTracks().forEach(t=>t.stop());const u8=new Uint8Array(await new Blob(ch,{type:rec.mimeType}).arrayBuffer());if(u8.length<800)return;let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));
+        if(KA.ws&&KA.ws.readyState===1){KA.ws.send(JSON.stringify({type:'user_audio',id:'a'+Date.now(),mime:rec.mimeType,data:btoa(s)}));kaLog('me','🎙 голосом')}};
+      rec.start();KA.rec=rec;$('#aiMic').classList.add('on')}catch(e){kaSt('Микрофон недоступен: '+lzE(e.message))}}
+  else if(KA.rec){KA.rec.stop();KA.rec=null;$('#aiMic').classList.remove('on')}}
+function kaEvent(kind,text){try{if(KA.ws&&KA.ws.readyState===1)KA.ws.send(JSON.stringify({type:'event',kind,text:String(text).replace(/<[^>]+>/g,''),at:Date.now()}))}catch(_){}}
+function kaInit(){$('#chkAi').checked=!!S.ai;$('#aiUrl').value=S.aiUrl||'';$('#chkAiVoice').checked=!!S.aiVoice;if(S.ai)kaStart();
+  $('#chkAi').onchange=e=>{S.ai=e.target.checked;saveS();S.ai?kaStart():(kaStop(),kaSt('Выключено.'))};
+  $('#aiUrl').onchange=e=>{S.aiUrl=e.target.value.trim();saveS();if(S.ai)kaStart()};
+  $('#chkAiVoice').onchange=e=>{S.aiVoice=e.target.checked;saveS()};
+  $('#aiSend').onclick=kaSend;$('#aiTxt').onkeydown=e=>{if(e.key==='Enter')kaSend()};
+  const mb=$('#aiMic');mb.onpointerdown=e=>{e.preventDefault();kaMic(true)};mb.onpointerup=mb.onpointerleave=mb.onpointercancel=()=>kaMic(false)}
 /* ===== «Приборы»: весь ход на одном экране ===== */
 const DSH={on:false,tm:null,big:store.get('dashBig',''),max:0,maxT:0,h:{},s:{},damp:store.get('dashDamp',1)};const DAMP=[[1,'без сглаживания'],[.45,'сглаживание качки'],[.2,'сильное сглаживание']];
 const sgn=a=>((a%360)+540)%360-180;
@@ -1919,7 +2052,7 @@ $('#dGrid').onclick=e=>{const g=e.target.closest('.gc');if(!g)return;DSH.big=DSH
 /* ===== старт ===== */
 LOG.push(...store.get('log',[]).slice(-100));
 document.body.classList.toggle('night',S.night);fillBoat();
-mapStatus();setBase(S.base);setSea(S.seamarks);obsInit();skInit();map.attributionControl.addAttribution('FMI (CC BY 4.0)');$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
+mapStatus();setBase(S.base);setSea(S.seamarks);obsInit();skInit();kaInit();map.attributionControl.addAttribution('FMI (CC BY 4.0)');$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
 anchorDraw();renderRoute();sizeCv();netChip();if(TZN)chip('tz','Время в программе — московское');
 {const c=store.get('grid',null);if(c){W.g=buildGrid(c);setupTime();drawField();freshChip()}}
 loadGrid(true);
