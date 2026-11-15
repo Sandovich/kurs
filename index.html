@@ -91,6 +91,22 @@ body:has(#mob:not([hidden])) .leaflet-bottom.leaflet-left{left:80px}
 #addBar button{min-height:40px}
 #mob{position:fixed;z-index:1001;left:10px;bottom:calc(env(safe-area-inset-bottom) + 96px);width:64px;height:64px;min-height:64px;padding:0;border-radius:50%;background:#e01e1e;color:#fff;border:3px solid #fff;font-weight:800;font-size:16px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
 #hud span{color:var(--muted);font-size:11px}
+#hud #btnCU{display:inline-flex;align-items:center;justify-content:center;width:44px;padding:0}
+#cu{position:fixed;inset:0;z-index:1500;background:#0d2236}#cuMap{position:absolute;inset:0}
+#cu .cuTop{position:absolute;left:10px;right:10px;top:calc(env(safe-area-inset-top) + 10px);display:flex;gap:8px;align-items:flex-start;pointer-events:none}#cu .cuTop>*{pointer-events:auto}
+#cu button{background:rgba(16,34,51,.94);border:1px solid var(--line);color:var(--text);border-radius:12px;min-width:48px;min-height:48px;font-size:18px}
+#cu .cuHud{flex:1;display:flex;gap:16px;justify-content:center;background:rgba(16,34,51,.94);border:1px solid var(--line);border-radius:12px;padding:6px 12px;font-variant-numeric:tabular-nums}
+#cu .cuHud b{font-size:26px;display:block;line-height:1.05}#cu .cuHud span{font-size:11px;color:var(--muted)}
+#cuMode{position:relative;font-weight:800}#cuN{display:inline-block;transition:transform .5s ease}#cuMode.north{border-color:var(--accent);color:var(--accent)}
+#cuNav{position:absolute;left:10px;right:10px;top:calc(env(safe-area-inset-top) + 74px);background:rgba(16,34,51,.94);border:1px solid #d63ce0;border-radius:12px;padding:6px 12px;font-size:15px;font-variant-numeric:tabular-nums;text-align:center}
+#cu .cuBot{position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 44px);display:flex;gap:8px;align-items:center;pointer-events:none}#cu .cuBot>*{pointer-events:auto}
+#cu .cuZ{margin-left:auto;display:flex;gap:6px}#cuNote{font-size:12px;color:var(--muted);background:rgba(16,34,51,.85);border-radius:8px;padding:3px 8px}#cuNote:empty{display:none}
+#cuMe{font-size:15px!important;padding:0 14px}
+#cu .cuBoat{width:34px;height:34px}#cu .maplibregl-ctrl-attrib{font-size:10px}
+body.night #cu{background:#000}body.night #cu .cuHud,body.night #cu button,body.night #cuNav,body.night #cuNote{background:rgba(20,0,0,.94);border-color:#4a0a0a;color:#ff5a4a}
+body.night #cu .maplibregl-ctrl-attrib,body.night #cu .maplibregl-ctrl-attrib-button{background-color:#140000;color:#a8332b}body.night #cu .maplibregl-ctrl-attrib a{color:#a8332b}body.night .cuBoat path{fill:#ff3b30;stroke:#5a0000}
+body.night #cuMap .maplibregl-canvas{filter:grayscale(1) contrast(1.25) brightness(.5) sepia(1) hue-rotate(-50deg) saturate(3.2) brightness(.62)}
+
 #dash{--dlab:#9fb3c6;--dsub:#b9c8d6;--dseg:rgba(255,255,255,.075);--dring:rgba(255,255,255,.07);--dring2:rgba(140,190,235,.22);--hub:#0a1622;--needle:#ff7a3a;--port:#ff4d5e;--btw:#c77dff;--spf:rgba(63,182,255,.13);--gc1:#15304a;--gc2:#0a1623;--b1:#8db4da;--b2:#132a40;--arc2:#8ae6ff;position:fixed;inset:0;z-index:1600;background:radial-gradient(130% 70% at 50% -10%,#123049 0%,#08121c 55%,#060d15 100%);color:var(--text);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top) + 10px) 12px calc(env(safe-area-inset-bottom) + 16px);font-variant-numeric:tabular-nums}
 body.night #dash{--dlab:#a8332b;--dsub:#c4392d;--dseg:rgba(255,60,40,.1);--dring:rgba(255,60,40,.09);--dring2:rgba(255,60,40,.3);--hub:#0a0000;--needle:#ff3b30;--port:#ff3b30;--btw:#ff6a5a;--spf:rgba(255,59,48,.13);--gc1:#1a0202;--gc2:#060000;--b1:#80201a;--b2:#200000;--arc2:#ff7a6a;background:#000}
 body.dashOn #map,body.dashOn #top,body.dashOn #timebar,body.dashOn #hud{visibility:hidden}
@@ -293,6 +309,7 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
   <div><b id="hCog">—</b><span>курс</span></div>
   <div class="small"><div id="hPos">—</div><span id="hAcc"></span></div>
   <button id="btnFollow" title="Держать лодку в центре">⊙</button>
+  <button id="btnCU" title="Карта по курсу: нос лодки всегда вверх" aria-label="Карта по курсу"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l6 17-6-4-6 4z"/></svg></button>
   <button id="btnDash" title="Все приборы на одном экране">Приборы</button>
 </div>
 <div id="dash" hidden role="dialog" aria-label="Приборы">
@@ -302,6 +319,14 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
   <div class="dg" id="dGrid"></div>
 </div>
 <div id="status"></div>
+<div id="cu" hidden role="dialog" aria-label="Карта по курсу">
+  <div id="cuMap"></div>
+  <div class="cuTop"><button id="cuX" aria-label="Закрыть карту по курсу">✕</button>
+    <div class="cuHud"><div><b id="cuSog">—</b><span>уз</span></div><div><b id="cuCog">—</b><span>курс</span></div></div>
+    <button id="cuMode" title="По курсу / север вверх" aria-label="Переключить: по курсу или север вверх"><span id="cuN">N</span></button></div>
+  <div id="cuNav" hidden></div>
+  <div class="cuBot"><button id="cuMe" hidden>⊙ К лодке</button><span id="cuNote"></span><span class="cuZ"><button id="cuZm" aria-label="Мельче">−</button><button id="cuZp" aria-label="Крупнее">＋</button></span></div>
+</div>
 <div id="navd" hidden>
   <div class="nt"><span id="nName">—</span><button id="nStop" title="Закончить ведение">✕</button></div>
   <div class="ng">
@@ -586,7 +611,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.41';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.42';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -2074,6 +2099,61 @@ function kaInit(){if(S.aiVoice==null)S.aiVoice=true;$('#chkAi').checked=!!S.ai;$
   $('#aiFab').onclick=()=>kaOpen(true);$('#aiOrb').onclick=kaTap;$('#aiVX').onclick=kaClose;$('#aiVH').onclick=()=>{if(!kaOn()){kaClose();openPanel('ai')}};
   $$('#aiVC button').forEach(b=>b.onclick=()=>{$('#aiTxt').value=b.textContent;kaSend()});$('#aiVKb').onclick=()=>{const r=$('#aiVT');r.hidden=!r.hidden;if(!r.hidden){kaMic(false,true);$('#aiTxt').focus()}};
   $('#aiOpenBtn').onclick=()=>{closePanel();kaOpen(false)}}
+/* ===== Карта по курсу: отдельный вид на MapLibre GL JS (лицензия BSD-3), грузится только при открытии ===== */
+const CU={on:false,map:null,mode:store.get('cuMode','course'),brg:0,free:0,tm:null,ld:null,boat:null,t2:0,z:15};
+const CU_LIB='https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min';
+function cuLoad(){if(window.maplibregl)return Promise.resolve();if(CU.ld)return CU.ld;
+  CU.ld=new Promise((res,rej)=>{const l=document.createElement('link');l.rel='stylesheet';l.href=CU_LIB+'.css';document.head.appendChild(l);
+    const sc=document.createElement('script');sc.src=CU_LIB+'.js';sc.onload=res;sc.onerror=()=>{CU.ld=null;rej(new Error('нет связи, а карта по курсу ещё ни разу не открывалась'))};document.head.appendChild(sc)});return CU.ld}
+const cuFC=f=>({type:'FeatureCollection',features:f});
+function cuPt(ll,pr){return{type:'Feature',properties:pr||{},geometry:{type:'Point',coordinates:[ll[1],ll[0]]}}}
+function cuLn(a,pr){return{type:'Feature',properties:pr||{},geometry:{type:'LineString',coordinates:a.map(q=>[q[1],q[0]])}}}
+function cuTri(col){const c=document.createElement('canvas');c.width=c.height=28;const g=c.getContext('2d');g.fillStyle=col;g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.moveTo(14,2);g.lineTo(24,25);g.lineTo(14,20);g.lineTo(4,25);g.closePath();g.fill();g.stroke();return g.getImageData(0,0,28,28)}
+function cuStyle(){const sea=S.seamarks!==false;return{version:8,glyphs:'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',
+  sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:19,attribution:'© OSM'},sea:{type:'raster',tiles:['https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png'],tileSize:256,maxzoom:18,attribution:'© OpenSeaMap'},
+    dep:{type:'geojson',data:cuFC([])},trk:{type:'geojson',data:cuFC([])},rt:{type:'geojson',data:cuFC([])},nav:{type:'geojson',data:cuFC([])},mk:{type:'geojson',data:cuFC([])},ais:{type:'geojson',data:cuFC([])}},
+  layers:[{id:'osm',type:'raster',source:'osm'},{id:'sea',type:'raster',source:'sea',layout:{visibility:sea?'visible':'none'}},
+    {id:'trk',type:'line',source:'trk',paint:{'line-color':S.trackCol||'#ff8a3d','line-width':3,'line-opacity':.85}},
+    {id:'rt',type:'line',source:'rt',filter:['==','$type','LineString'],paint:{'line-color':'#3fb6ff','line-width':4}},
+    {id:'rtp',type:'circle',source:'rt',filter:['==','$type','Point'],paint:{'circle-radius':9,'circle-color':'#3fb6ff','circle-stroke-color':'#fff','circle-stroke-width':2}},
+    {id:'rtn',type:'symbol',source:'rt',filter:['==','$type','Point'],layout:{'text-field':['get','n'],'text-font':['Noto Sans Medium'],'text-size':11,'text-rotation-alignment':'viewport','text-allow-overlap':true},paint:{'text-color':'#001321'}},
+    {id:'nav',type:'line',source:'nav',paint:{'line-color':'#d63ce0','line-width':2.5,'line-dasharray':[2,2]}},
+    {id:'dep',type:'symbol',source:'dep',minzoom:11.5,layout:{'text-field':['get','t'],'text-font':['Noto Sans Medium'],'text-size':['interpolate',['linear'],['zoom'],12,10,16,14],'text-rotation-alignment':'viewport','text-allow-overlap':false,'text-padding':1},
+      paint:{'text-color':['get','c'],'text-halo-color':'#fff','text-halo-width':1.4}},
+    {id:'mk',type:'circle',source:'mk',paint:{'circle-radius':7,'circle-color':'#ff6b2c','circle-stroke-color':'#fff','circle-stroke-width':2.5}},
+    {id:'mkn',type:'symbol',source:'mk',layout:{'text-field':['get','n'],'text-font':['Noto Sans Medium'],'text-size':13,'text-offset':[0,1.3],'text-anchor':'top','text-rotation-alignment':'viewport'},paint:{'text-color':'#10202f','text-halo-color':'#fff','text-halo-width':1.6}},
+    {id:'ais',type:'symbol',source:'ais',layout:{'icon-image':'ais','icon-rotate':['get','r'],'icon-rotation-alignment':'map','icon-allow-overlap':true,'text-field':['get','n'],'text-font':['Noto Sans Regular'],'text-size':11,'text-offset':[0,1.6],'text-anchor':'top','text-optional':true,'text-rotation-alignment':'viewport'},paint:{'text-color':'#10202f','text-halo-color':'#fff','text-halo-width':1.4}}]}}
+function cuData(all){const m=CU.map;if(!m||!m.isStyleLoaded())return;const src=k=>m.getSource(k);
+  if(all){src('dep').setData(cuFC((MC.depAll||[]).map(q=>cuPt(q,{t:dpTxt(q[2]),c:dpCol(q[2])}))));
+    src('mk').setData(cuFC((MK.list||[]).map(q=>cuPt(q.ll,{n:q.n}))));
+    src('rt').setData(cuFC(RT.pts.length?[...(RT.pts.length>1?[cuLn(RT.pts)]:[]),...RT.pts.map((q,i)=>cuPt(q,{n:String(i+1)}))]:[]))}
+  src('trk').setData(cuFC(S.track&&G.track.length>1?[cuLn(G.track.slice(-3000))]:[]));
+  const tg=NAV.mode&&NAV.pts[NAV.idx];src('nav').setData(cuFC(tg&&G.pos?[cuLn([G.pos,tg])]:[]));
+  src('ais').setData(cuFC(AIS.on?[...AIS.ships.values()].filter(q=>q.lat!=null).map(q=>cuPt([q.lat,q.lon],{r:q.cog!=null?q.cog:0,n:q.name||''})):[]))}
+function cuTick(){if(!CU.on||!CU.map)return;const m=CU.map,me=G.pos;
+  $('#cuSog').textContent=G.sog!=null?f1(G.sog):'—';$('#cuCog').textContent=G.cog!=null?String(Math.round(G.cog)%360).padStart(3,'0')+'°':'—';
+  const tg=NAV.mode&&NAV.pts[NAV.idx];if(tg&&me){const d=dist(me,tg);$('#cuNav').hidden=false;$('#cuNav').textContent=`→ ${NAV.name||'точка'} · ${String(Math.round(brg(me,tg))%360).padStart(3,'0')}° · ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}`}else $('#cuNav').hidden=true;
+  const slow=G.sog==null||G.sog<1||G.cog==null;
+  if(!slow)CU.lastCog=G.cog;const tc=slow?CU.lastCog:G.cog;if(CU.mode==='course'&&tc!=null){let d=((tc-CU.brg+540)%360)-180;CU.brg=(CU.brg+d*.6+360)%360}else if(CU.mode==='north')CU.brg=0;
+  $('#cuN').style.transform=`rotate(${-CU.brg}deg)`;$('#cuMode').classList.toggle('north',CU.mode==='north');
+  $('#cuNote').textContent=!me?'Жду позицию GPS…':CU.mode==='course'&&slow?'Ход меньше 1 уз — курс по GPS неустойчив, карта не поворачивается':'';
+  if(me){if(!CU.boat){const el=document.createElement('div');el.className='cuBoat';el.innerHTML='<svg viewBox="0 0 34 34" width="34" height="34"><path d="M17 2l11 29-11-7-11 7z" fill="#ff6b2c" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/></svg>';
+      CU.boat=new maplibregl.Marker({element:el,rotationAlignment:'map'}).setLngLat([me[1],me[0]]).addTo(m)}
+    CU.boat.setLngLat([me[1],me[0]]).setRotation(G.cog!=null?G.cog:CU.brg);
+    if(Date.now()>CU.free){const h=m.getContainer().clientHeight;m.easeTo({center:[me[1],me[0]],bearing:CU.brg,offset:[0,CU.mode==='course'?h*.24:0],duration:900,essential:true})}}
+  $('#cuMe').hidden=Date.now()>CU.free;if(Date.now()-CU.t2>4000){CU.t2=Date.now();cuData(false)}}
+async function cuOpen(){$('#cu').hidden=false;CU.on=true;try{await cuLoad()}catch(e){$('#cu').hidden=true;CU.on=false;toast('Карта по курсу не открылась: '+e.message,6000);return}
+  if(!CU.map){const c=G.pos||[map.getCenter().lat,map.getCenter().lng];
+    CU.map=new maplibregl.Map({container:'cuMap',style:cuStyle(),center:[c[1],c[0]],zoom:Math.max(13,Math.min(16,map.getZoom())),attributionControl:{compact:true},dragRotate:false,pitchWithRotate:false,touchPitch:false,maxZoom:18});
+    CU.map.touchZoomRotate.disableRotation();
+    CU.map.on('load',()=>{CU.map.addImage('ais',cuTri('#2ee59d'));cuData(true)});
+    CU.map.on('dragstart',()=>{CU.free=Date.now()+20000});}
+  else{CU.map.resize();cuData(true)}
+  clearInterval(CU.tm);CU.tm=setInterval(cuTick,1000);cuTick();try{navigator.wakeLock?.request('screen').then(w=>CU.wl=w).catch(()=>{})}catch(_){}}
+function cuClose(){CU.on=false;clearInterval(CU.tm);$('#cu').hidden=true;try{CU.wl?.release()}catch(_){}CU.wl=null}
+$('#btnCU').onclick=cuOpen;$('#cuX').onclick=cuClose;
+$('#cuMode').onclick=()=>{CU.mode=CU.mode==='course'?'north':'course';store.set('cuMode',CU.mode);CU.free=0;toast(CU.mode==='course'?'Карта по курсу: нос лодки вверх':'Север вверх',2500);cuTick()};
+$('#cuMe').onclick=()=>{CU.free=0;cuTick()};$('#cuZp').onclick=()=>CU.map&&CU.map.zoomIn();$('#cuZm').onclick=()=>CU.map&&CU.map.zoomOut();
 /* ===== «Приборы»: весь ход на одном экране ===== */
 const DSH={on:false,tm:null,big:store.get('dashBig',''),max:0,maxT:0,h:{},s:{},damp:store.get('dashDamp',1)};const DAMP=[[1,'без сглаживания'],[.45,'сглаживание качки'],[.2,'сильное сглаживание']];
 const sgn=a=>((a%360)+540)%360-180;
