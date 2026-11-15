@@ -177,6 +177,11 @@ tr.bad td{background:rgba(255,77,79,.13)}
 #alarm button{font-size:20px;padding:14px 30px;background:#fff;color:#a00;border:0}
 @keyframes blink{50%{background:rgba(120,0,0,.9)}}
 [hidden]{display:none!important}
+.mk{position:relative}.mk i{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;background:#ff6b2c;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.55)}.mk span{position:absolute;left:12px;top:-10px;white-space:nowrap;font-size:12.5px;font-weight:700;color:#10202f;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 2px #fff}
+body.night .mk i{background:#ff3b30;border-color:#5a0000}body.night .mk span{color:#ff6a5a;text-shadow:0 0 3px #000,0 0 3px #000}
+.evL{position:relative}.evL b{position:absolute;left:0;top:-44px;transform:translateX(-50%);white-space:nowrap;display:inline-flex;align-items:center;gap:8px;background:rgba(16,34,51,.95);color:#ffd23f;border:1px solid #ffd23f;border-radius:999px;padding:5px 6px 5px 12px;font-size:14px;font-weight:700;box-shadow:0 3px 12px rgba(0,0,0,.45)}.evL b u{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:12px}
+body.night .evL b{background:#140000;color:#ff6a5a;border-color:#7a0000}
+.lpAct input{background:#fff;color:#10202f;border:1px solid #c5d0db;border-radius:10px;min-height:40px;padding:0 10px;font-size:15px;width:100%}body.night .lpAct input{background:#2a0000;color:#ff6a5a;border-color:#5a0000}
 .wp{background:var(--accent);color:#001321;border:2px solid #fff;border-radius:50%;display:flex!important;align-items:center;justify-content:center;font-size:11px;font-weight:700}
 .chart{width:100%;height:auto;display:block;margin:6px 0}
 .boat.stale::after{content:'?';position:absolute;right:-10px;top:-12px;background:#ff4d4f;color:#fff;border-radius:50%;width:18px;height:18px;font:700 13px/18px system-ui;text-align:center}
@@ -336,6 +341,7 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
   <label><input type="checkbox" id="chkObs"> Ветер на станциях — измерен сейчас</label>
   <label><input type="checkbox" id="chkWind"> Ветер на карте</label>
   <label><input type="checkbox" id="chkTrack"> Мой трек</label>
+  <label class="small">Цвет трека <select id="selTrk"><option value="#ff8a3d">оранжевый</option><option value="#ffd23f">жёлтый</option><option value="#3fb6ff">голубой</option><option value="#ffffff">белый</option><option value="#ff3bd4">малиновый</option><option value="#2ee59d">зелёный</option></select></label>
   <hr>
   <h3 style="margin:6px 0">Приборы лодки (Signal K)</h3>
   <label><input type="checkbox" id="chkSk"> Брать данные с приборов: GPS, эхолот, ветер, лаг, свой AIS</label>
@@ -387,6 +393,8 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
     <button id="rClear">Очистить</button>
   </div>
   <div class="row"><label>Выход (по Москве) <input id="rDep" type="datetime-local"></label></div>
+  <div class="row" style="flex-wrap:nowrap;align-items:center"><label style="flex:1;min-width:0">Прийти к <input id="rPta" type="datetime-local" style="flex:1;min-width:0"></label><button id="rPtaX" title="Убрать время прихода" aria-label="Убрать время прихода">✕</button></div>
+  <div id="rPtaOut"></div>
   <div class="row">
     <button class="primary" id="rWx">Погода по маршруту</button>
     <button id="rGo">▶ Вести по маршруту</button>
@@ -396,6 +404,7 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
     <button id="rGpx">Сохранить GPX</button>
     <label class="small" style="margin:0"><input type="file" id="rImp" accept=".gpx" hidden><button id="rImpBtn" type="button">Открыть GPX</button></label>
   </div>
+  <div class="row" style="align-items:center"><span class="small muted" id="mkN" style="flex:1;white-space:normal"></span><button id="mkExp">Сохранить метки</button><input type="file" id="mkImp" accept=".gpx" hidden><button id="mkImpBtn" type="button">Открыть метки</button></div>
   <div class="row"><button id="rEns" style="flex:1">📅 Календарь выхода на 7 суток (51 вариант прогноза)</button></div>
   <div id="rIsoOut"></div>
   <div id="rEnsOut"></div>
@@ -571,7 +580,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.34';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.35';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -788,6 +797,7 @@ $$('.panel .close').forEach(b=>b.onclick=closePanel);
 $$('input[name=base]').forEach(r=>r.onchange=()=>setBase(r.value));
 $('#chkSea').onchange=e=>setSea(e.target.checked);
 $('#chkWind').onchange=e=>{S.wind=e.target.checked;saveS();S.wind?loadGrid(true):clearWind()};
+$('#selTrk').onchange=e=>{S.trackCol=e.target.value;saveS();G.line.setStyle({color:S.trackCol})};
 $('#chkTrack').onchange=e=>{S.track=e.target.checked;saveS();S.track?G.line.addTo(map):map.removeLayer(G.line)};
 
 /* ===== прогноз в точке ===== */
@@ -846,6 +856,7 @@ $('#rRev').onclick=()=>{RT.pts.reverse();routeChanged()};
 $('#rClear').onclick=()=>{if(RT.pts.length&&!confirmTwice('rClear'))return;RT.pts=[];routeChanged()};
 function confirmTwice(id){const b=$('#'+id);if(b.dataset.sure){delete b.dataset.sure;b.textContent='Очистить';return true}b.dataset.sure=1;b.textContent='Точно?';setTimeout(()=>{delete b.dataset.sure;b.textContent='Очистить'},3000);return false}
 $('#rDep').onchange=()=>{renderRoute();renderEns()};
+$('#rPta').value=S.pta||'';$('#rPta').onchange=e=>{S.pta=e.target.value||'';saveS();renderRoute()};$('#rPtaX').onclick=()=>{S.pta='';$('#rPta').value='';saveS();renderRoute()};
 $('#rWx').onclick=()=>routeWx();
 $('#rGpx').onclick=()=>{if(RT.pts.length<2)return toast('Нужно минимум две точки');
   const x=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Kurs" xmlns="http://www.topografix.com/GPX/1/1"><rte><name>${lzE(S.boat.name||'Переход')} ${new Date().toLocaleDateString('ru-RU')}</name>${RT.pts.map((p,i)=>`<rtept lat="${p[0].toFixed(6)}" lon="${p[1].toFixed(6)}"><name>WP${i+1}</name></rtept>`).join('')}</rte></gpx>`;
@@ -857,6 +868,8 @@ $('#rImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;const x=new
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 function addBarUpd(){const n=RT.pts.length;$('#addTxt').textContent=n?`Точек: ${n}${n>1?' · '+f1(legs().reduce((a,l)=>a+l.d,0)/NM)+' миль':''}`:'Нажимайте на карту'}
 function routeChanged(){if(RT.adding)setTimeout(addBarUpd);store.set('route',RT.pts);RT.fc=null;store.set('routefc',null);RT.ens=null;store.set('routeens',null);$('#rWin').innerHTML='';$('#rEnsOut').innerHTML='';renderRoute()}
+function ptaTs(){const v=S.pta;return v?Date.parse(v.slice(0,16)+':00+03:00'):null}
+const fmtHm=ts=>new Date(ts).toLocaleString('ru-RU',{timeZone:TZ,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+TZN;
 function depTs(){const v=$('#rDep').value;return v?Date.parse(v.slice(0,16)+':00+03:00'):Date.now()}
 function legs(){const L2=[];let cum=0;for(let i=1;i<RT.pts.length;i++){const a=RT.pts[i-1],b=RT.pts[i],d=dist(a,b);L2.push({a,b,d,c:brg(a,b),cum});cum+=d}return L2}
 function drawRoute(colors){RT.layer.clearLayers();
@@ -906,6 +919,10 @@ function renderRoute(){const L2=legs(),total=L2.reduce((s,l)=>s+l.d,0),dep=depTs
       <span class="small">порывы до ${f0(mg)} уз${mw?` · волна до ${f1(mw)} м`:''}${head?` · ${head} уч. в лоб`:''} · прогноз ${conf(ms)}</span></div>
       <p class="muted small">Прогноз ${MODEL_NAME[RT.fc.model]} получен ${ago(RT.fc.fetched)}, сохранён для работы без сети.</p>`}
   $('#rSum').innerHTML=sum;
+  {const pt=ptaTs(),o=$('#rPtaOut');if(!pt)o.innerHTML='';else{const h=(pt-dep)/36e5;
+    if(h<=0)o.innerHTML='<p class="warnbox">Время прихода раньше выхода — поправьте одно из двух.</p>';
+    else{const need=total/NM/h,arr=rows?rows.arrive:dep+total/(S.boat.speed*NM/3600000),late=arr-pt;
+      o.innerHTML=`<div class="${late>0?'badbox':'okbox'}">Чтобы прийти к <b>${fmtHm(pt)}</b>, нужен средний ход <b>${f1(need)} уз</b>.<br><span class="small">${late>0?`${rows?'По прогнозу':'С вашей скоростью '+f1(S.boat.speed)+' уз'} опаздываете на ${fmtHM(late)} — выходите раньше или добавляйте ход.`:`Успеваете, запас ${fmtHM(-late)}.`}</span></div>`}}}
   let t='<table><tr><th>Уч.</th><th>Миль</th><th>Курс</th>'+(rows?'<th>Начало</th><th>Ветер</th><th>К ветру</th><th>Ход</th><th>Волна</th><th>Прогноз</th>':'')+'</tr>';
   (rows||L2).forEach((r,i)=>{const bad=rows&&(r.spd>S.windMax||r.gst>S.gustMax||r.wave>S.waveMax);
     t+=`<tr class="${bad?'bad':''}"><td>${i+1}→${i+2}</td><td>${f1(r.d/NM)}</td><td>${f0(r.c)}°</td>`+(rows?`<td>${r.eta?fmtT(r.eta/1000):'—'}</td><td><span class="dot" style="background:${css(r.spd)}"></span>${f0(r.spd)}/${f0(r.gst)} ${rumb(r.dir)}</td><td>${r.dir!=null?sail(offBow(r.dir,r.c)):'—'}</td><td>${f1(r.boat)} уз</td><td>${r.wave!=null?f1(r.wave)+' м':'—'}</td><td>${conf(r.spread)}</td>`:'')+'</tr>'});
@@ -1034,7 +1051,7 @@ function renderEns(){const E=RT.ens,out=$('#rEnsOut');if(!E){out.innerHTML='';re
 
 /* ===== GPS со сторожем (жалоба: «теряет GPS и молчит») ===== */
 const G={watch:null,pos:null,prev:null,sog:null,cog:null,acc:null,last:0,follow:true,marker:null,accC:null,track:store.get('track',[]),saved:0,wake:null,warned:false};
-G.line=L.polyline(G.track,{color:'#ff8a3d',weight:3,opacity:.85});
+G.line=L.polyline(G.track,{color:S.trackCol||'#ff8a3d',weight:3,opacity:.85});
 const boatHTML='<svg width="30" height="30" viewBox="-15 -15 30 30"><path d="M0,-13 L7,10 L0,6 L-7,10Z" fill="#ff8a3d" stroke="#fff" stroke-width="2"/></svg>';
 async function wake(on){try{if(on&&'wakeLock' in navigator&&!G.wake){G.wake=await navigator.wakeLock.request('screen');G.wake.addEventListener('release',()=>G.wake=null)}else if(!on&&G.wake){await G.wake.release();G.wake=null}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{const vis=document.visibilityState==='visible';if(vis&&(G.watch!=null||A.pos))wake(true);
@@ -1123,6 +1140,8 @@ function navUpdate(){if(!NAV.mode)return;$('#navd').hidden=false;const tgt=NAV.p
     note.push(`цель против ветра (${f0(w.spd)} уз с ${rumb(w.dir)}): пунктир — лэйлайны`)}
   $('#nMob').hidden=NAV.mode!=='mob';
   if(NAV.mode==='mob')note.unshift('Бросьте круг, назначьте наблюдателя, подходите против ветра');
+  {const pt=ptaTs();if(pt&&NAV.mode==='route'){let rem=d;for(let i=NAV.idx;i<NAV.pts.length-1;i++)rem+=dist(NAV.pts[i],NAV.pts[i+1]);const h=(pt-Date.now())/36e5;
+    note.push(h>0?`к ${fmtHm(pt)} нужно ${f1(rem/NM/h)} уз`+(G.sog!=null?` (идём ${f1(G.sog)})`:''):'назначенное время прихода прошло')}}
   $('#nNote').textContent=note.join(' · ')}
 /* берег по курсу: луч по маске воды вперёд по курсу */
 let shoreT=0;
@@ -1467,14 +1486,46 @@ function autoNight(){if(!S.autoNight)return;const c=G.pos||[map.getCenter().lat,
   if(night!==S.night){S.night=night;saveS();document.body.classList.toggle('night',night);$('#sNight').checked=night;if(S.base==='kurs')setBase('kurs');toast(night?'Стемнело: включил ночной режим':'Рассвело: дневной режим')}}
 setInterval(autoNight,300000);setTimeout(autoNight,1500);
 
+/* ===== свои метки на карте ===== */
+const MK={list:store.get('marks',[]),layer:L.layerGroup().addTo(map)};
+function mkSave(){store.set('marks',MK.list);mkDraw()}
+function mkDraw(){MK.layer.clearLayers();MK.list.forEach((m,i)=>L.marker(m.ll,{icon:L.divIcon({className:'mk',html:`<i></i><span>${lzE(m.n)}</span>`,iconSize:[0,0]})}).addTo(MK.layer).on('click',()=>mkPop(i)));
+  $('#mkN').textContent=MK.list.length?`Моих меток на карте: ${MK.list.length}`:'Своих меток пока нет: долгое нажатие на карту → «Поставить метку».'}
+function mkNew(ll){const pop=L.popup({closeButton:true,autoPan:true,autoPanPaddingTopLeft:[10,150],autoPanPaddingBottomRight:[10,110]}).setLatLng(ll).setContent(`<div style="font-size:13px;line-height:1.4"><b>Новая метка</b><div class="lpAct"><input id="mkName" maxlength="40" placeholder="Название, например «Стоянка у острова»"><button data-a="ok" class="pri">Сохранить метку</button></div></div>`).openOn(map);
+  const el=pop.getElement(),inp=el.querySelector('#mkName'),okf=()=>{MK.list.push({n:inp.value.trim()||'Метка '+(MK.list.length+1),ll:[+ll.lat.toFixed(6),+ll.lng.toFixed(6)]});mkSave();map.closePopup();toast('Метка поставлена. Нажмите на неё, чтобы идти к ней или удалить.')};
+  el.querySelector('button[data-a=ok]').onclick=okf;inp.onkeydown=e=>{if(e.key==='Enter')okf()};setTimeout(()=>inp.focus(),80)}
+function mkPop(i){const m=MK.list[i];if(!m)return;const me=G.pos;let info=`<b>${lzE(m.n)}</b><br>${fmtC(m.ll[0],1)} ${fmtC(m.ll[1],0)}`;
+  if(me){const d=dist(me,m.ll);info+=`<br>от лодки: ${f0(brg(me,m.ll))}°, ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}`}
+  const pop=L.popup({closeButton:true,autoPan:true,autoPanPaddingTopLeft:[10,150],autoPanPaddingBottomRight:[10,110]}).setLatLng(m.ll).setContent(`<div style="font-size:13px;line-height:1.4">${info}<div class="lpAct"><button data-a="go" class="pri">Идти к метке</button><button data-a="rt">Добавить в маршрут</button>${me?'<button data-a="ev">Пеленг и кольцо от лодки</button>':''}<button data-a="del">Удалить метку</button></div></div>`).openOn(map);
+  pop.getElement().querySelectorAll('button').forEach(b=>b.onclick=()=>{map.closePopup();const a=b.dataset.a;
+    if(a==='go')navStart('point',[m.ll.slice()],0,m.n);else if(a==='rt'){RT.pts.push(m.ll.slice());routeChanged();toast(`Точка ${RT.pts.length} добавлена в маршрут`)}
+    else if(a==='ev')evSet('boat',m.ll.slice());else{MK.list.splice(i,1);mkSave();toast('Метка удалена')}})}
+$('#mkExp').onclick=()=>{if(!MK.list.length)return toast('Меток пока нет');download(`kurs-metki-${new Date().toISOString().slice(0,10)}.gpx`,`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Kurs" xmlns="http://www.topografix.com/GPX/1/1">${MK.list.map(m=>`<wpt lat="${m.ll[0].toFixed(6)}" lon="${m.ll[1].toFixed(6)}"><name>${lzE(m.n)}</name></wpt>`).join('')}</gpx>`,'application/gpx+xml')};
+$('#mkImpBtn').onclick=()=>$('#mkImp').click();
+$('#mkImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;e.target.value='';try{const x=new DOMParser().parseFromString(await f.text(),'application/xml');let n=0;
+    x.querySelectorAll('wpt').forEach(w=>{const la=+w.getAttribute('lat'),lo=+w.getAttribute('lon');if(!isFinite(la)||!isFinite(lo)||Math.abs(la)>90||Math.abs(lo)>180)return;
+      if(MK.list.some(m=>Math.abs(m.ll[0]-la)<1e-5&&Math.abs(m.ll[1]-lo)<1e-5))return;MK.list.push({n:(w.querySelector('name')?.textContent||'Метка '+(MK.list.length+1)).slice(0,40),ll:[la,lo]});n++});
+    mkSave();toast(n?`Добавлено меток: ${n}`:'В файле нет новых меток')}catch(err){toast('Файл не прочитался: '+err.message)}};
+/* ===== пеленг и кольцо дальности: от лодки (живёт вместе с ней) или между двумя точками ===== */
+const EV={o:null,t:null,pend:null,layer:L.layerGroup().addTo(map)};
+function evDraw(){EV.layer.clearLayers();const o=EV.o==='boat'?G.pos:EV.o;if(!o||!EV.t)return;const d=dist(o,EV.t),b=Math.round(brg(o,EV.t))%360,col=S.night?'#ff3b30':'#ffd23f';
+  L.circle(o,{radius:d,color:col,weight:2,fill:false,dashArray:'7 7',interactive:false}).addTo(EV.layer);L.polyline([o,EV.t],{color:col,weight:2.5,interactive:false}).addTo(EV.layer);
+  if(EV.o!=='boat')L.circleMarker(o,{radius:5,color:col,weight:2,fillColor:col,fillOpacity:1,interactive:false}).addTo(EV.layer);
+  const tm=EV.o==='boat'&&G.sog>.5?` · ${fmtHM(d/NM/G.sog*36e5)}`:'';
+  L.marker(EV.t,{icon:L.divIcon({className:'evL',html:`<b>${String(b).padStart(3,'0')}° · ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}${tm}<u>✕</u></b>`,iconSize:[0,0]})}).addTo(EV.layer).on('click',evOff)}
+function evSet(o,t){EV.o=o;EV.t=t;EV.pend=null;evDraw()}
+function evOff(){EV.o=EV.t=EV.pend=null;EV.layer.clearLayers()}
+setInterval(()=>{if(EV.o==='boat'&&EV.t)evDraw()},2000);mkDraw();
 /* ===== долгое нажатие на карту: пеленг/дистанция и действия ===== */
 const LP={t:null,x:0,y:0,suppress:false};
 function lpMenu(ll){const me=G.pos;let info=`<b>${fmtC(ll.lat,1)}<br>${fmtC(ll.lng,0)}</b>`;
   if(me){const d=dist(me,[ll.lat,ll.lng]);info+=`<br>от лодки: ${f0(brg(me,[ll.lat,ll.lng]))}°, ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}`;if(G.sog>.5)info+=`, ≈${fmtHM(d/NM/G.sog*36e5)} при ${f1(G.sog)} уз`}
   const w=WM.g?isWater(ll.lat,ll.lng):null;if(w===false)info+='<br><span style="color:#c00">суша</span>';
-  const pop=L.popup({closeButton:true,autoPan:true}).setLatLng(ll).setContent(`<div style="font-size:13px;line-height:1.4">${info}<div class="lpAct"><button data-a="go" class="pri">Идти сюда</button><button data-a="wx">Прогноз здесь</button><button data-a="rt">Добавить в маршрут</button></div></div>`).openOn(map);
+  const pop=L.popup({closeButton:true,autoPan:true,autoPanPaddingTopLeft:[10,150],autoPanPaddingBottomRight:[10,110]}).setLatLng(ll).setContent(`<div style="font-size:13px;line-height:1.4">${info}<div class="lpAct"><button data-a="go" class="pri">Идти сюда</button><button data-a="wx">Прогноз здесь</button><button data-a="rt">Добавить в маршрут</button><button data-a="mk">Поставить метку</button>${me?'<button data-a="ev">Пеленг и кольцо от лодки</button>':''}<button data-a="evp">${EV.pend?'Пеленг и кольцо от отмеченной точки':'Мерить отсюда до другой точки'}</button>${EV.t?'<button data-a="evx">Убрать пеленг и кольцо</button>':''}</div></div>`).openOn(map);
   const el=pop.getElement();el.querySelectorAll('button').forEach(b=>b.onclick=()=>{map.closePopup();const a=b.dataset.a;
-    if(a==='go')navStart('point',[[ll.lat,ll.lng]],0,'Точка '+fmtC(ll.lat,1));else if(a==='wx')showPoint(ll);else{RT.pts.push([ll.lat,ll.lng]);routeChanged();toast(`Точка ${RT.pts.length} добавлена в маршрут`)}})}
+    if(a==='go')navStart('point',[[ll.lat,ll.lng]],0,'Точка '+fmtC(ll.lat,1));else if(a==='wx')showPoint(ll);else if(a==='mk')mkNew(ll);else if(a==='ev')evSet('boat',[ll.lat,ll.lng]);else if(a==='evx')evOff();
+    else if(a==='evp'){if(EV.pend)evSet(EV.pend,[ll.lat,ll.lng]);else{EV.pend=[ll.lat,ll.lng];toast('Начало отмечено. Теперь долгим нажатием укажите вторую точку и выберите «Пеленг и кольцо от отмеченной точки».',7000)}}
+    else{RT.pts.push([ll.lat,ll.lng]);routeChanged();toast(`Точка ${RT.pts.length} добавлена в маршрут`)}})}
 const mc=map.getContainer();
 mc.addEventListener('touchstart',e=>{if(e.touches.length!==1)return clearTimeout(LP.t);const t=e.touches[0];LP.x=t.clientX;LP.y=t.clientY;clearTimeout(LP.t);
   LP.t=setTimeout(()=>{LP.suppress=true;setTimeout(()=>LP.suppress=false,700);navigator.vibrate?.(30);const r=mc.getBoundingClientRect();lpMenu(map.containerPointToLatLng([LP.x-r.left,LP.y-r.top]))},600)},{passive:true});
@@ -2139,7 +2190,7 @@ $('#dGrid').onclick=e=>{const g=e.target.closest('.gc');if(!g)return;DSH.big=DSH
 /* ===== старт ===== */
 LOG.push(...store.get('log',[]).slice(-100));
 document.body.classList.toggle('night',S.night);fillBoat();
-mapStatus();setBase(S.base);setSea(S.seamarks);obsInit();skInit();kaInit();map.attributionControl.addAttribution('FMI (CC BY 4.0)');$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;if(S.track)G.line.addTo(map);
+mapStatus();setBase(S.base);setSea(S.seamarks);obsInit();skInit();kaInit();map.attributionControl.addAttribution('FMI (CC BY 4.0)');$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;$('#selTrk').value=S.trackCol||'#ff8a3d';if(S.track)G.line.addTo(map);
 anchorDraw();renderRoute();sizeCv();netChip();if(TZN)chip('tz','Время в программе — московское');
 {const c=store.get('grid',null);if(c){W.g=buildGrid(c);setupTime();drawField();freshChip()}}
 loadGrid(true);
