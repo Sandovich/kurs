@@ -353,7 +353,7 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
   </select>
   <button id="play" aria-label="Проиграть">▶</button>
   <input type="range" id="time" min="0" max="0" value="0" aria-label="Время прогноза">
-  <div id="timeLabel"><b id="tl">Прогноз загружается…</b><span style="display:flex;gap:6px;align-items:center;flex:none">0<span id="legend"></span>40 уз</span></div>
+  <div id="timeLabel"><b id="tl">Прогноз загружается…</b><span style="display:flex;gap:6px;align-items:center;flex:none">0<span id="legend"></span><span id="legendU">40 уз</span></span></div>
 </footer>
 
 <section class="panel" id="p-layers" hidden>
@@ -477,9 +477,9 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
   <h2>Лодка и пределы</h2>
   <div class="row"><label>Название <input id="bName" style="width:160px"></label></div>
   <div class="row"><label>Тип <select id="bType"><option value="sail">Парусная</option><option value="motor">Моторная</option></select></label>
-    <label>Крейсерская <input id="bSpeed" type="number" step="0.5" min="1" max="30" style="width:70px"> уз</label></div>
+    <label>Крейсерская <input id="bSpeed" type="number" step="0.5" min="1" max="60" style="width:70px"> <span class="uSp">уз</span></label></div>
   <div class="row"><label>Осадка <input id="bDraft" type="number" step="0.1" min="0.2" max="5" style="width:70px"> м</label>
-    <label>Мотор <input id="bMotor" type="number" step="0.5" min="0" max="30" style="width:70px"> уз</label></div>
+    <label>Мотор <input id="bMotor" type="number" step="0.5" min="0" max="60" style="width:70px"> <span class="uSp">уз</span></label></div>
   <div class="row"><label>Высота над водой (с мачтой и антеннами) <input id="bMast" type="number" step="0.1" min="0" max="40" style="width:70px"> м</label></div>
   <div class="row"><label>Датчик эхолота ниже воды <input id="bXd" type="number" step="0.1" min="0" max="3" style="width:70px"> м</label></div>
   <p class="muted small">Нужно, только если эхолот лодки отдаёт глубину от датчика, а не от поверхности: тогда «под килем» считается точно. Пусто — запас под килем занижается, в безопасную сторону.</p>
@@ -487,8 +487,10 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
   <div class="row"><select id="bPolar" style="flex:1"><option value="simple">Упрощённо, от крейсерской скорости</option><option value="p28">Крейсерская 28–30 футов</option><option value="p33">Крейсерская 32–34 фута</option><option value="p35">Крейсерская 35–37 футов</option><option value="p40">Крейсерская 38–42 фута</option><option value="p45">Быстрая крейсерская 44–46 футов</option><option value="cat40">Катамаран 38–42 фута</option><option value="file">Свой файл поляр</option></select></div>
   <div class="row"><button id="bPolLoad">Загрузить файл поляр</button><input type="file" id="bPolFile" accept=".pol,.txt,.csv,.tsv" hidden><label>КПД <input id="bEff" type="number" min="50" max="115" style="width:64px"> %</label></div>
   <div id="bPolPrev"></div>
+  <h3>Единицы</h3>
+  <div class="row"><label>Скорость <select id="uSpd"><option value="kn">узлы</option><option value="kmh">км/ч</option></select></label><label>Ветер <select id="uWind"><option value="kn">узлы</option><option value="ms">м/с</option><option value="kmh">км/ч</option></select></label><label>Расстояние <select id="uDist"><option value="nm">мили</option><option value="km">км</option></select></label></div>
   <h3>Мои пределы (выше — красным)</h3>
-  <div class="row"><label>Ветер <input id="sWind" type="number" style="width:64px"> уз</label><label>Порывы <input id="sGust" type="number" style="width:64px"> уз</label><label>Волна <input id="sWave" type="number" step="0.1" style="width:64px"> м</label></div>
+  <div class="row"><label>Ветер <input id="sWind" type="number" style="width:64px"> <span class="uW">уз</span></label><label>Порывы <input id="sGust" type="number" style="width:64px"> <span class="uW">уз</span></label><label>Волна <input id="sWave" type="number" step="0.1" style="width:64px"> м</label></div>
   <h3>Режимы</h3>
   <label><input type="checkbox" id="sNight"> Ночной режим (красный, не слепит)</label>
   <label><input type="checkbox" id="sAutoN"> Ночной режим сам по солнцу (закат / рассвет)</label>
@@ -611,7 +613,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.42';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.43';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -636,6 +638,13 @@ const fmtHM=ms=>{const m=Math.round(ms/60000);return `${Math.floor(m/60)} ч ${S
 const ago=ms=>{const m=Math.round((Date.now()-ms)/60000);return m<1?'только что':m<60?`${m} мин назад`:m<1440?`${Math.round(m/60)} ч назад`:`${Math.round(m/1440)} сут назад`};
 const f1=v=>v==null||isNaN(v)?'—':(Math.round(v*10)/10).toString().replace('.',',');
 const f0=v=>v==null||isNaN(v)?'—':Math.round(v);
+/* единицы показа: внутри программы скорость и ветер — в узлах, расстояния — в метрах */
+const UN={sp:{kn:[1,'уз'],kmh:[1.852,'км/ч']},w:{kn:[1,'уз'],ms:[.514444,'м/с'],kmh:[1.852,'км/ч']}};
+const uS=()=>UN.sp[S.uSpd]||UN.sp.kn,uW=()=>UN.w[S.uWind]||UN.w.kn,uKm=()=>S.uDist==='km';
+const uSV=(kn,d0)=>kn==null||isNaN(kn)?'—':(d0?f0:f1)(kn*uS()[0]),spU=()=>uS()[1],fSp=(kn,d0)=>uSV(kn,d0)+' '+spU();
+const uWV=kn=>kn==null||isNaN(kn)?'—':f0(kn*uW()[0]),wU=()=>uW()[1],fW=kn=>uWV(kn)+' '+wU();
+const uDV=nm=>nm==null||isNaN(nm)?'—':f1(uKm()?nm*1.852:nm),fDn=(nm,w)=>uDV(nm)+' '+(uKm()?'км':w||'мили'),dU=w=>uKm()?'км':w||'мили';
+const fDm=(m,w)=>m==null||isNaN(m)?'—':m<1000?Math.round(m)+' м':fDn(m/NM,w);
 const uniq=a=>[...new Set(a)];
 function offBow(windFrom,course){return Math.abs(((windFrom-course)%360+540)%360-180)}
 function sail(a){return a<40?'в лоб, галсами':a<70?'бейдевинд':a<110?'галфвинд':a<150?'бакштаг':'фордевинд'}
@@ -681,9 +690,9 @@ map.attributionControl.setPrefix(false);
 map.attributionControl.addAttribution('<a href="https://open-meteo.com">Open-Meteo</a>');
 L.control.zoom({position:'bottomright'}).addTo(map);
 const NmScale=L.Control.extend({options:{position:'bottomleft'},onAdd(){this._d=L.DomUtil.create('div','nmscale');map.on('moveend zoomend',()=>this.upd());setTimeout(()=>this.upd());return this._d},
-  upd(){const y=map.getSize().y/2,a=map.containerPointToLatLng([0,y]),b=map.containerPointToLatLng([100,y]),nm=dist([a.lat,a.lng],[b.lat,b.lng])/NM;
-    const nice=[.05,.1,.2,.25,.5,1,2,5,10,20,50,100].reverse().find(v=>v<=nm)||.05;this._d.style.width=Math.round(100*nice/nm)+'px';this._d.textContent=(nice<1?String(nice).replace('.',','):nice)+' миль'}});
-new NmScale().addTo(map);
+  upd(){const y=map.getSize().y/2,a=map.containerPointToLatLng([0,y]),b=map.containerPointToLatLng([100,y]),km=uKm(),nm=dist([a.lat,a.lng],[b.lat,b.lng])/(km?1000:NM);
+    const nice=[.05,.1,.2,.25,.5,1,2,5,10,20,50,100].reverse().find(v=>v<=nm)||.05;this._d.style.width=Math.round(100*nice/nm)+'px';this._d.textContent=(nice<1?String(nice).replace('.',','):nice)+(km?' км':' миль')}});
+const nmScale=new NmScale().addTo(map);
 map.on('moveend',()=>{const c=map.getCenter();store.set('view',{c:[c.lat,c.lng],z:map.getZoom()})});
 const REG={id:'ladoga',W:28.4,S:59.55,E:33.2,N:61.85,maxz:12};
 const pmOpts=()=>({url:`map/${REG.id}/{z}/{x}/{y}.mvt`,maxDataZoom:REG.maxz,maxZoom:19,flavor:S.night?'dark':'light',lang:'ru',bounds:[[REG.S,REG.W],[REG.N,REG.E]],attribution:'Protomaps'});
@@ -807,7 +816,7 @@ function setupTime(){const t=W.g.times,r=$('#time');r.max=t.length-1;
   if(!W.timeSet){const now=Date.now()/1000;let b=0;t.forEach((x,i)=>{if(Math.abs(x-now)<Math.abs(t[b]-now))b=i});W.idx=b;W.timeSet=true}
   W.idx=Math.min(W.idx,t.length-1);r.value=W.idx;updT()}
 function updT(){if(!W.g)return;const ts=W.g.times[W.idx],c=map.getCenter(),s=sample(c.lat,c.lng);
-  $('#tl').textContent=`${fmtT0(ts)} · ${MODEL_NAME[W.g.model]}`+(s?` · центр ${f0(s.spd)} уз ${rumb(s.dir)}`:'')}
+  $('#tl').textContent=`${fmtT0(ts)} · ${MODEL_NAME[W.g.model]}`+(s?` · центр ${fW(s.spd)} ${rumb(s.dir)}`:'')}
 $('#time').addEventListener('input',e=>{W.idx=+e.target.value;updT();drawField()});
 $('#play').onclick=()=>{if(W.play){clearInterval(W.play);W.play=null;$('#play').textContent='▶';return}
   $('#play').textContent='❚❚';W.play=setInterval(()=>{if(!W.g)return;W.idx=(W.idx+1)%W.g.times.length;$('#time').value=W.idx;updT();drawField()},700)};
@@ -852,23 +861,23 @@ async function showPoint(ll){const my=PT.seq=(PT.seq||0)+1;
   const main=fb||wantF?(models.includes('fmi_harmonie')?'fmi_harmonie':models[0]):S.model;
   let spread=0,spAt=null;for(let i=i0;i<Math.min(t.length,i0+72);i++){const vs=models.map(k=>sp(k)[i]).filter(v=>v!=null);if(vs.length>1){const d=Math.max(...vs)-Math.min(...vs);if(d>spread){spread=d;spAt=t[i]}}}
   let html=a.value._at?`<div class="warnbox small">Нет связи: это сохранённый прогноз, получен ${ago(a.value._at)}.</div>`:'';html+=fb?'<div class="warnbox small">Основной прогноз сейчас недоступен — показываю финскую модель HARMONIE 2,5 км (FMI).</div>':'';
-  html+=fb?'':spread>=8?`<div class="badbox">⚠ Модели сильно спорят: до <b>${f0(spread)} уз</b> разницы (${fmtT(spAt)}). Прогнозу верить нельзя, закладывайте худший вариант.</div>`
-       :spread>=5?`<div class="warnbox">Модели расходятся до ${f0(spread)} уз (${fmtT(spAt)}). Уверенность средняя.</div>`
-       :`<div class="okbox small">Модели согласны (разброс до ${f0(spread)} уз за 72 ч). Уверенность высокая.</div>`;
+  html+=fb?'':spread>=8?`<div class="badbox">⚠ Модели сильно спорят: до <b>${fW(spread)}</b> разницы (${fmtT(spAt)}). Прогнозу верить нельзя, закладывайте худший вариант.</div>`
+       :spread>=5?`<div class="warnbox">Модели расходятся до ${fW(spread)} (${fmtT(spAt)}). Уверенность средняя.</div>`
+       :`<div class="okbox small">Модели согласны (разброс до ${fW(spread)} за 72 ч). Уверенность высокая.</div>`;
   html+=chart(t,i0,Math.min(t.length,i0+120),[...models.map(k=>({v:sp(k),c:MODEL_COLOR[k]})),{v:gu(main),c:MODEL_COLOR[main],dash:1}],dr(main));
   html+=`<div class="row small">${models.map(k=>`<span><span class="dot" style="background:${MODEL_COLOR[k]}"></span>${MODEL_NAME[k]}</span>`).join('')}<span class="muted">пунктир — порывы ${MODEL_NAME[main]}</span></div>`;
   html+='<div class="scroll"><table><tr><th>Время</th>'+models.map(k=>`<th>${MODEL_NAME[k]}</th>`).join('')+'<th>Откуда</th><th>Волна</th>'+(WM.g&&isWater(ll.lat,ll.lng)?'<th>По разгону</th>':'')+'</tr>';const est=WM.g&&isWater(ll.lat,ll.lng);
   for(let i=i0;i<Math.min(t.length,i0+48);i+=3){const d=dr(main)[i];const wi=mh?mh.time.indexOf(t[i]):-1;const wv=wi>=0?mh.wave_height[wi]:null,wp=wi>=0?mh.wave_period[wi]:null;
-    html+=`<tr><td>${fmtT(t[i])}</td>`+models.map(k=>{const s=sp(k)[i],g=gu(k)[i],bad=s>S.windMax||g>S.gustMax;return `<td style="${bad?'color:var(--danger);font-weight:600':''}"><span class="dot" style="background:${css(s)}"></span>${f0(s)}<span class="muted">/${f0(g)}</span></td>`}).join('')+
+    html+=`<tr><td>${fmtT(t[i])}</td>`+models.map(k=>{const s=sp(k)[i],g=gu(k)[i],bad=s>S.windMax||g>S.gustMax;return `<td style="${bad?'color:var(--danger);font-weight:600':''}"><span class="dot" style="background:${css(s)}"></span>${uWV(s)}<span class="muted">/${uWV(g)}</span></td>`}).join('')+
       `<td>${rumb(d)} ${f0(d)}°</td><td style="${wv>S.waveMax?'color:var(--danger);font-weight:600':''}">${wv!=null?f1(wv)+' м'+(wp?` <span class="muted">${f0(wp)} с</span>`:''):'—'}</td>`+(est?(()=>{const sp0=sp(main)[i],F=fetchKm(ll.lat,ll.lng,d),e=waveEst(sp0,F);return `<td style="${e&&e.h>S.waveMax?'color:var(--danger);font-weight:600':''}">${e?f1(e.h)+' м <span class="muted">'+f0(e.t)+' с</span>':'—'}</td>`})():'')+'</tr>'}
-  html+='</table></div><p class="muted small">Ветер, уз: средний/порыв (1 уз ≈ 0,5 м/с). Красным — выше ваших пределов («Лодка»).</p>';
+  html+=`</table></div><p class="muted small">Ветер, ${wU()}: средний/порыв. Красным — выше ваших пределов («Лодка»).</p>`;
   const pr=h['pressure_msl_'+main];if(pr&&pr[i0]!=null&&pr[i0+12]!=null){const dp=pr[i0+12]-pr[i0];html+=`<p class="small">Давление ${f0(pr[i0])} гПа, за 12 ч ${dp>0?'+':''}${f1(dp)}${dp<=-4?' — <b style="color:var(--warn)">быстро падает: жди усиления ветра</b>':''}</p>`}
   if(est){const d0=dr(main)[i0],F=fetchKm(ll.lat,ll.lng,d0);html+=`<p class="note">«По разгону» — своя оценка волны: сколько километров воды ветер прошёл до этой точки (сейчас с ${rumb(d0)}: ${f0(F)} км). На Ладоге и в заливе это надёжнее морской модели. Расчёт для глубокой воды: на мелководье юга Ладоги волна ниже, но круче.</p>`}
   if(!mh&&!est)html+='<p class="note">Волну в этой точке морская модель не считает.</p>';
   body.innerHTML=`<div class="row"><button id="ptGo">➜ Идти сюда</button></div>`+html;$('#ptGo').onclick=()=>{navStart('point',[PT.last],0,'Точка '+fmtC(PT.last[0],1));closePanel()}}
 function chart(t,a,b,series,dirs){const Wd=360,H=170,P=26;let mx=10;series.forEach(s=>{for(let i=a;i<b;i++)if(s.v[i]>mx)mx=s.v[i]});mx=Math.ceil(mx/5)*5;
   const X=i=>P+(i-a)/Math.max(1,b-a-1)*(Wd-P-6),Y=v=>H-22-(v/mx)*(H-40);let g=`<svg class="chart" viewBox="0 0 ${Wd} ${H}" font-size="9" fill="var(--muted)">`;
-  for(let v=0;v<=mx;v+=5){g+=`<line x1="${P}" x2="${Wd-6}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="2" y="${Y(v)+3}">${v}</text>`}
+  for(let v=0;v<=mx;v+=5){g+=`<line x1="${P}" x2="${Wd-6}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="2" y="${Y(v)+3}">${Math.round(v*uW()[0])}</text>`}
   if(S.windMax<=mx)g+=`<line x1="${P}" x2="${Wd-6}" y1="${Y(S.windMax)}" y2="${Y(S.windMax)}" stroke="var(--danger)" stroke-dasharray="2 4"/>`;
   for(let i=a;i<b;i++){const d=new Date(t[i]*1000);if(mskH(t[i]*1000)===0){g+=`<line x1="${X(i)}" x2="${X(i)}" y1="10" y2="${H-22}" stroke="var(--line)"/><text x="${X(i)+2}" y="${H-12}">${d.toLocaleDateString('ru-RU',{timeZone:TZ,weekday:'short',day:'numeric'})}</text>`}}
   series.forEach(s=>{let p='';for(let i=a;i<b;i++)if(s.v[i]!=null)p+=(p?'L':'M')+X(i).toFixed(1)+','+Y(s.v[i]).toFixed(1);g+=`<path d="${p}" fill="none" stroke="${s.c}" stroke-width="${s.dash?1:1.8}" ${s.dash?'stroke-dasharray="3 3"':''}/>`});
@@ -897,7 +906,7 @@ $('#rImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;const x=new
   const pts=[...x.querySelectorAll('rtept,wpt')];const use=pts.length?pts:[...x.querySelectorAll('trkpt')].filter((p,i,a)=>i%Math.max(1,Math.floor(a.length/50))===0);
   RT.pts=use.map(p=>[+p.getAttribute('lat'),+p.getAttribute('lon')]).filter(p=>!isNaN(p[0]));routeChanged();if(RT.pts.length)map.fitBounds(RT.pts,{padding:[40,40]});toast(`Загружено точек: ${RT.pts.length}`);e.target.value=''};
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
-function addBarUpd(){const n=RT.pts.length;$('#addTxt').textContent=n?`Точек: ${n}${n>1?' · '+f1(legs().reduce((a,l)=>a+l.d,0)/NM)+' миль':''}`:'Нажимайте на карту'}
+function addBarUpd(){const n=RT.pts.length;$('#addTxt').textContent=n?`Точек: ${n}${n>1?' · '+fDn(legs().reduce((a,l)=>a+l.d,0)/NM,'миль'):''}`:'Нажимайте на карту'}
 function routeChanged(){if(RT.adding)setTimeout(addBarUpd);store.set('route',RT.pts);RT.fc=null;store.set('routefc',null);RT.ens=null;store.set('routeens',null);$('#rWin').innerHTML='';$('#rEnsOut').innerHTML='';renderRoute()}
 function ptaTs(){const v=S.pta;return v?Date.parse(v.slice(0,16)+':00+03:00'):null}
 const fmtHm=ts=>new Date(ts).toLocaleString('ru-RU',{timeZone:TZ,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+TZN;
@@ -910,7 +919,7 @@ function drawRoute(colors){RT.layer.clearLayers();
 async function routeWx(){if(RT.pts.length<2)return toast('Поставьте минимум две точки');
   $('#rSum').innerHTML='<p class="muted">Считаю погоду вдоль маршрута по нескольким моделям…</p>';
   let smp=[],stepNm=4;const mk=()=>{smp=[];for(const [li,l] of legs().entries()){const n=Math.max(1,Math.ceil(l.d/NM/stepNm));for(let k=0;k<n;k++){smp.push({li,p:lerpPt(l.a,l.b,(k+.5)/n),len:l.d/n})}}};mk();
-  if(smp.length>120){while(smp.length>120&&stepNm<200){stepNm*=1.5;mk()}toast('Маршрут очень длинный: точки прогноза стоят реже, через '+f0(stepNm)+' миль')}
+  if(smp.length>120){while(smp.length>120&&stepNm<200){stepNm*=1.5;mk()}toast('Маршрут очень длинный: точки прогноза стоят реже, через '+fDn(stepNm,'миль')+'')}
   const my=RT.wseq=(RT.wseq||0)+1;const models=uniq([S.model,...CMP]).filter(x=>x!=='fmi_harmonie');const la=smp.map(s=>s.p[0].toFixed(3)),lo=smp.map(s=>s.p[1].toFixed(3));
   try{const [a,m]=await Promise.allSettled([
       S.model==='fmi_harmonie'?Promise.reject(Object.assign(new Error('выбрана модель FMI'),{status:0,own:1})):getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${models}`),
@@ -942,21 +951,21 @@ function renderRoute(){rPtsDraw();const L2=legs(),total=L2.reduce((s,l)=>s+l.d,0
   drawRoute(rows?rows.map(r=>r.spd!=null?css(r.spd):null):null);
   if(!L2.length){$('#rSum').innerHTML='<p class="muted">Нажмите «＋ Ставить точки» и ставьте точки на карте. Точки можно двигать пальцем. Или откройте свой GPX.</p>';$('#rLegs').innerHTML='';return}
   let sum='';
-  if(!rows){const dur=total/(S.boat.speed*NM/3600000);sum=`<p><b>${f1(total/NM)} миль</b> · при ${f1(S.boat.speed)} уз ≈ <b>${fmtHM(dur)}</b></p>`;
+  if(!rows){const dur=total/(S.boat.speed*NM/3600000);sum=`<p><b>${fDn(total/NM,'миль')}</b> · при ${fSp(S.boat.speed)} ≈ <b>${fmtHM(dur)}</b></p>`;
     if(RT.fc)sum+='<p class="warnbox">Выход за горизонтом прогноза (5 суток).</p>';else sum+='<p class="muted small">Нажмите «Погода по маршруту», и время посчитается по ветру с вашей скоростью.</p>'}
   else{const dur=rows.arrive-dep,mg=Math.max(...rows.map(r=>r.gst||0)),mw=Math.max(...rows.map(r=>r.wave||0)),ms=Math.max(...rows.map(r=>r.spread||0)),head=rows.filter(r=>r.dir!=null&&offBow(r.dir,r.c)<40).length;
     const bad=mg>S.gustMax||rows.some(r=>r.spd>S.windMax)||mw>S.waveMax;
-    sum=`<div class="${bad?'badbox':'okbox'}"><b>${bad?'⚠ Выше ваших пределов':'✓ В пределах'}</b> · ${f1(total/NM)} миль · в пути <b>${fmtHM(dur)}</b> · приход <b>${fmtT(rows.arrive/1000)}</b><br>
-      <span class="small">порывы до ${f0(mg)} уз${mw?` · волна до ${f1(mw)} м`:''}${head?` · ${head} уч. в лоб`:''} · прогноз ${conf(ms)}</span></div>
+    sum=`<div class="${bad?'badbox':'okbox'}"><b>${bad?'⚠ Выше ваших пределов':'✓ В пределах'}</b> · ${fDn(total/NM,'миль')} · в пути <b>${fmtHM(dur)}</b> · приход <b>${fmtT(rows.arrive/1000)}</b><br>
+      <span class="small">порывы до ${fW(mg)}${mw?` · волна до ${f1(mw)} м`:''}${head?` · ${head} уч. в лоб`:''} · прогноз ${conf(ms)}</span></div>
       <p class="muted small">Прогноз ${MODEL_NAME[RT.fc.model]} получен ${ago(RT.fc.fetched)}, сохранён для работы без сети.</p>`}
   $('#rSum').innerHTML=sum;
   {const pt=ptaTs(),o=$('#rPtaOut');if(!pt)o.innerHTML='';else{const h=(pt-dep)/36e5;
     if(h<=0)o.innerHTML='<p class="warnbox">Время прихода раньше выхода — поправьте одно из двух.</p>';
     else{const need=total/NM/h,arr=rows?rows.arrive:dep+total/(S.boat.speed*NM/3600000),late=arr-pt;
-      o.innerHTML=`<div class="${late>0?'badbox':'okbox'}">Чтобы прийти к <b>${fmtHm(pt)}</b>, нужен средний ход <b>${f1(need)} уз</b>.<br><span class="small">${late>0?`${rows?'По прогнозу':'С вашей скоростью '+f1(S.boat.speed)+' уз'} опаздываете на ${fmtHM(late)} — выходите раньше или добавляйте ход.`:`Успеваете, запас ${fmtHM(-late)}.`}</span></div>`}}}
-  let t='<table><tr><th>Уч.</th><th>Миль</th><th>Курс</th>'+(rows?'<th>Начало</th><th>Ветер</th><th>К ветру</th><th>Ход</th><th>Волна</th><th>Прогноз</th>':'')+'</tr>';
+      o.innerHTML=`<div class="${late>0?'badbox':'okbox'}">Чтобы прийти к <b>${fmtHm(pt)}</b>, нужен средний ход <b>${fSp(need)}</b>.<br><span class="small">${late>0?`${rows?'По прогнозу':'С вашей скоростью '+fSp(S.boat.speed)} опаздываете на ${fmtHM(late)} — выходите раньше или добавляйте ход.`:`Успеваете, запас ${fmtHM(-late)}.`}</span></div>`}}}
+  let t=`<table><tr><th>Уч.</th><th>${uKm()?'Км':'Миль'}</th><th>Курс</th>`+(rows?'<th>Начало</th><th>Ветер</th><th>К ветру</th><th>Ход</th><th>Волна</th><th>Прогноз</th>':'')+'</tr>';
   (rows||L2).forEach((r,i)=>{const bad=rows&&(r.spd>S.windMax||r.gst>S.gustMax||r.wave>S.waveMax);
-    t+=`<tr class="${bad?'bad':''}"><td>${i+1}→${i+2}</td><td>${f1(r.d/NM)}</td><td>${f0(r.c)}°</td>`+(rows?`<td>${r.eta?fmtT(r.eta/1000):'—'}</td><td><span class="dot" style="background:${css(r.spd)}"></span>${f0(r.spd)}/${f0(r.gst)} ${rumb(r.dir)}</td><td>${r.dir!=null?sail(offBow(r.dir,r.c)):'—'}</td><td>${f1(r.boat)} уз</td><td>${r.wave!=null?f1(r.wave)+' м':'—'}</td><td>${conf(r.spread)}</td>`:'')+'</tr>'});
+    t+=`<tr class="${bad?'bad':''}"><td>${i+1}→${i+2}</td><td>${uDV(r.d/NM)}</td><td>${f0(r.c)}°</td>`+(rows?`<td>${r.eta?fmtT(r.eta/1000):'—'}</td><td><span class="dot" style="background:${css(r.spd)}"></span>${uWV(r.spd)}/${uWV(r.gst)} ${rumb(r.dir)}</td><td>${r.dir!=null?sail(offBow(r.dir,r.c)):'—'}</td><td>${fSp(r.boat)}</td><td>${r.wave!=null?f1(r.wave)+' м':'—'}</td><td>${conf(r.spread)}</td>`:'')+'</tr>'});
   $('#rLegs').innerHTML=t+'</table>'+(rows?`<p class="muted small">Ветер — средний/порыв в худшей точке участка на время вашего прохода. «Ход» — скорость ${S.boat.type==='sail'?'под парусом при этом ветре (в штиль — мотор)':'под мотором'}. «Прогноз» — насколько согласны модели. «Волна» — большее из морской модели и своей оценки по ветру и разгону.</p>`:'');brief(rows)}
 function bestWindows(){const fc=RT.fc;if(!fc)return;const now=Date.now(),res=[];
   for(let h=0;h<=96;h++){const dep=Math.ceil(now/3600000)*3600000+h*3600000,rows=evalRoute(dep);if(!rows)break;
@@ -965,7 +974,7 @@ function bestWindows(){const fc=RT.fc;if(!fc)return;const now=Date.now(),res=[];
     res.push({dep,mg,mw,head,dur:rows.arrive-dep,score:over+mg+.5*ms+4*head+8*mw+(rows.arrive-dep)/3600000*.8+((night<5||night>22)?3:0)})}
   if(!res.length){$('#rWin').innerHTML='';return}
   res.sort((a,b)=>a.score-b.score);const pick=[];for(const r of res){if(pick.every(p=>Math.abs(p.dep-r.dep)>=6*3600000))pick.push(r);if(pick.length===3)break}RT.best=pick[0];brief();
-  $('#rWin').innerHTML='<p class="small"><b>Лучшие окна выхода</b> (на 4 суток, учтены ваши пределы, время в пути и ночь):</p>'+pick.map(p=>`<button data-dep="${p.dep}">${fmtT(p.dep/1000)} · в пути ${fmtHM(p.dur)} · порывы до ${f0(p.mg)} уз${p.mw?` · волна ${f1(p.mw)} м`:''}${p.head?` · ${p.head} уч. в лоб`:''}</button>`).join('');
+  $('#rWin').innerHTML='<p class="small"><b>Лучшие окна выхода</b> (на 4 суток, учтены ваши пределы, время в пути и ночь):</p>'+pick.map(p=>`<button data-dep="${p.dep}">${fmtT(p.dep/1000)} · в пути ${fmtHM(p.dur)} · порывы до ${fW(p.mg)}${p.mw?` · волна ${f1(p.mw)} м`:''}${p.head?` · ${p.head} уч. в лоб`:''}</button>`).join('');
   $$('#rWin button').forEach(b=>b.onclick=()=>{setDep(new Date(+b.dataset.dep));renderRoute()})}
 
 /* ===== автопрокладка под ветер: изохроны по прогнозу и полярам, обход суши ===== */
@@ -1016,7 +1025,7 @@ $('#rIso').onclick=async()=>{const A=G.pos&&RT.pts.length<2?G.pos:RT.pts[0],B=RT
     const direct=RT.fc?evalRoute(dep):null,dd=direct?direct.arrive-dep:null;
     const tacks=pts.length-2,mg=Math.max(...r.path.slice(1).map(q=>q.w?.gust||0));
     const offMap=!WM.g||r.path.some(q=>isWater(q.p[0],q.p[1])===undefined);
-    out.innerHTML=(offMap?'<div class="badbox small">⚠ Часть пути лежит вне карты воды «Курса» (она есть для Невы, Ладоги и востока Финского залива). Там берег, острова и мели в расчёте не учтены: путь может идти через сушу. Проверьте его по карте.</div>':'')+`<div class="okbox small"><b>🧭 Путь под ветер найден</b> за ${f1((performance.now()-t0)/1000)} с<br>${f1(r.path.reduce((a,q,i)=>i?a+dist(r.path[i-1].p,q.p):0,0)/NM)} миль · в пути <b>${fmtHM(dur)}</b> · приход <b>${fmtT(r.t/1000)}</b>${dd?`<br>${dd>dur?`быстрее прямого маршрута на <b>${fmtHM(dd-dur)}</b>`:`прямой маршрут не медленнее (${fmtHM(dd)})`}`:''}<br>поворотов: ${tacks} · порывы на пути до ${f0(mg)} уз</div>
+    out.innerHTML=(offMap?'<div class="badbox small">⚠ Часть пути лежит вне карты воды «Курса» (она есть для Невы, Ладоги и востока Финского залива). Там берег, острова и мели в расчёте не учтены: путь может идти через сушу. Проверьте его по карте.</div>':'')+`<div class="okbox small"><b>🧭 Путь под ветер найден</b> за ${f1((performance.now()-t0)/1000)} с<br>${fDn(r.path.reduce((a,q,i)=>i?a+dist(r.path[i-1].p,q.p):0,0)/NM,'миль')} · в пути <b>${fmtHM(dur)}</b> · приход <b>${fmtT(r.t/1000)}</b>${dd?`<br>${dd>dur?`быстрее прямого маршрута на <b>${fmtHM(dd-dur)}</b>`:`прямой маршрут не медленнее (${fmtHM(dd)})`}`:''}<br>поворотов: ${tacks} · порывы на пути до ${fW(mg)}</div>
       <div class="row"><button class="primary" id="isoUse">Взять как маршрут</button><button id="isoClr">Убрать</button></div>
       <p class="note">Глубин в расчёте нет: путь держится не ближе ~300 м от берега по карте воды, но мели и камни он не видит. Проверьте по карте с глубинами. Скорость — по упрощённым полярам; с полярами вашей лодки будет точнее.</p>`;
     $('#isoUse').onclick=()=>{RT.pts=pts;routeChanged();ISO.layer.clearLayers();$('#rIsoOut').innerHTML='';toast(`Маршрут заменён: ${pts.length} точек. Нажмите «Погода по маршруту»`)};
@@ -1030,17 +1039,17 @@ function brief(rows){const el=$('#rBrief');if(rows===undefined)rows=RT.fc?evalRo
   const L=[];const ens=RT.ens?ensEval(dep):null;
   const over=rows.filter(r=>r.spd>S.windMax||r.gst>S.gustMax||r.wave>S.waveMax);
   let verdict=ens?(ens.p<.2?'Выход нормальный':ens.p<.5?'Выход возможен, но с риском':'Выход не советую'):(over.length?'Выход не советую':'Выход нормальный');
-  L.push(`${verdict}: ${fmtT(dep/1000)}, ${f1(total/NM)} миль, в пути около ${fmtHM(dur)}, приход ${fmtT(rows.arrive/1000)}.`+(ens?` По 51 варианту прогноза риск превысить ваши пределы — ${Math.round(ens.p*100)} %.`:''));
+  L.push(`${verdict}: ${fmtT(dep/1000)}, ${fDn(total/NM,'миль')}, в пути около ${fmtHM(dur)}, приход ${fmtT(rows.arrive/1000)}.`+(ens?` По 51 варианту прогноза риск превысить ваши пределы — ${Math.round(ens.p*100)} %.`:''));
   const w=rows.reduce((a,r)=>(r.gst||0)>(a.gst||0)?r:a,rows[0]),wi=rows.indexOf(w);
-  if(w.spd!=null)L.push(`Сильнее всего на участке ${wi+1}→${wi+2} (около ${hm(w.eta)}): ветер ${f0(w.spd)} уз, порывы до ${f0(w.gst)}, с ${rumb(w.dir)}, ${sail(offBow(w.dir,w.c))}${w.wave!=null?`, волна до ${f1(w.wave)} м`:''}.`);
+  if(w.spd!=null)L.push(`Сильнее всего на участке ${wi+1}→${wi+2} (около ${hm(w.eta)}): ветер ${fW(w.spd)}, порывы до ${f0(w.gst)}, с ${rumb(w.dir)}, ${sail(offBow(w.dir,w.c))}${w.wave!=null?`, волна до ${f1(w.wave)} м`:''}.`);
   const sails=uniq(rows.filter(r=>r.dir!=null).map(r=>sail(offBow(r.dir,r.c))));if(sails.length)L.push(`Курсы к ветру: ${sails.join(', ')}.`);
   const head=rows.map((r,i)=>r.dir!=null&&offBow(r.dir,r.c)<40?(i+1)+'→'+(i+2):null).filter(Boolean);if(head.length)L.push(`В лоб на участках ${head.join(', ')}: закладывайте галсы, путь там примерно в 1,5 раза длиннее и медленнее.`);
   const calm=rows.map((r,i)=>r.spd!=null&&r.spd<4?(i+1)+'→'+(i+2):null).filter(Boolean);if(calm.length)L.push(`Штиль на участках ${calm.join(', ')}: пойдёте под мотором, проверьте топливо.`);
   const unsure=rows.map((r,i)=>r.spread>=8?(i+1)+'→'+(i+2):null).filter(Boolean);if(unsure.length)L.push(`Модели спорят на участках ${unsure.join(', ')}: перед выходом обновите прогноз.`);
   const ah=mskH(rows.arrive);if(ah>=22||ah<5)L.push('Приход в тёмное время: заранее проверьте огни подхода и место стоянки.');
-  if(RT.best&&Math.abs(RT.best.dep-dep)>3*36e5){L.push(`Если можно сдвинуть выход: ${fmtT(RT.best.dep/1000)} спокойнее, порывы до ${f0(RT.best.mg)} уз${RT.best.mw?`, волна до ${f1(RT.best.mw)} м`:''}.`)}
+  if(RT.best&&Math.abs(RT.best.dep-dep)>3*36e5){L.push(`Если можно сдвинуть выход: ${fmtT(RT.best.dep/1000)} спокойнее, порывы до ${fW(RT.best.mg)}${RT.best.mw?`, волна до ${f1(RT.best.mw)} м`:''}.`)}
   if(LZ.f)L.push(...lzBrief());
-  L.push(`Пределы лодки: ветер ${S.windMax}, порывы ${S.gustMax} уз, волна ${f1(S.waveMax)} м. Прогноз ${MODEL_NAME[RT.fc.model]} от ${new Date(RT.fc.fetched).toLocaleString('ru-RU',{timeZone:TZ,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}.`);
+  L.push(`Пределы лодки: ветер ${uWV(S.windMax)}, порывы ${fW(S.gustMax)}, волна ${f1(S.waveMax)} м. Прогноз ${MODEL_NAME[RT.fc.model]} от ${new Date(RT.fc.fetched).toLocaleString('ru-RU',{timeZone:TZ,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}.`);
   const txt=L.join('\n');el.innerHTML=`<div class="${verdict==='Выход нормальный'?'okbox':verdict.startsWith('Выход возможен')?'warnbox':'badbox'}"><b>🧭 Брифинг штурмана</b><div class="small" style="margin-top:6px;white-space:pre-line">${txt}</div><div class="row"><button id="bCopy">Скопировать</button>${navigator.share?'<button id="bShare">Отправить экипажу</button>':''}</div></div>`;
   $('#bCopy').onclick=()=>{navigator.clipboard?.writeText(txt).then(()=>toast('Брифинг скопирован'),()=>toast('Не удалось скопировать'))};
   if($('#bShare'))$('#bShare').onclick=()=>navigator.share({title:'Брифинг перехода',text:txt}).catch(()=>{});}
@@ -1076,8 +1085,8 @@ function renderEns(){const E=RT.ens,out=$('#rEnsOut');if(!E){out.innerHTML='';re
       html+=`<button class="${c}${Math.abs(t-dep0)<90*60e3?' sel':''}" data-t="${t}" title="${Math.round(r.p*100)} %">${Math.round(r.p*100)}</button>`}}
   html+='</div>';
   const cur=ensEval(dep0);
-  if(cur)html+=`<div class="${cur.p<.2?'okbox':cur.p<.5?'warnbox':'badbox'} small"><b>${cur.p<.2?'Идти':cur.p<.5?'Осторожно':'Не идти'}</b> при выходе ${fmtT(dep0/1000)}: в <b>${Math.round(cur.p*100)} %</b> вариантов прогноза будет выше ваших пределов. Порывы на пути: обычно до ${cur.med} уз, в худших 10 % — до ${cur.p90} уз.</div>`;
-  html+=`<p class="muted small">Число в клетке — вероятность превысить ваши пределы (ветер ${S.windMax}, порывы ${S.gustMax} уз, волна ${f1(S.waveMax)} м) за весь переход при выходе в это время. Зелёный — до 20 %, жёлтый — до 50 %, красный — больше. Нажмите клетку, чтобы выбрать время выхода. Ансамбль ECMWF получен ${ago(E.fetched)}.</p>`;
+  if(cur)html+=`<div class="${cur.p<.2?'okbox':cur.p<.5?'warnbox':'badbox'} small"><b>${cur.p<.2?'Идти':cur.p<.5?'Осторожно':'Не идти'}</b> при выходе ${fmtT(dep0/1000)}: в <b>${Math.round(cur.p*100)} %</b> вариантов прогноза будет выше ваших пределов. Порывы на пути: обычно до ${fW(cur.med)}, в худших 10 % — до ${fW(cur.p90)}.</div>`;
+  html+=`<p class="muted small">Число в клетке — вероятность превысить ваши пределы (ветер ${uWV(S.windMax)}, порывы ${fW(S.gustMax)}, волна ${f1(S.waveMax)} м) за весь переход при выходе в это время. Зелёный — до 20 %, жёлтый — до 50 %, красный — больше. Нажмите клетку, чтобы выбрать время выхода. Ансамбль ECMWF получен ${ago(E.fetched)}.</p>`;
   out.innerHTML=html;brief();$$('#rEnsOut .cal button[data-t]').forEach(b=>b.onclick=()=>{setDep(new Date(+b.dataset.t));renderRoute();renderEns()})}
 
 /* ===== GPS со сторожем (жалоба: «теряет GPS и молчит») ===== */
@@ -1108,7 +1117,7 @@ function onPos(p){if(!p._sk&&SK.posT&&Date.now()-SK.posT<10e3)return;const c=p.c
   if(G.vec){map.removeLayer(G.vec);G.vec=null}if(sog>=.5&&G.cog!=null){const dnm=sog*10/60,k=Math.cos(rad(ll[0]));G.vec=L.polyline([ll,[ll[0]+Math.cos(rad(G.cog))*dnm/60,ll[1]+Math.sin(rad(G.cog))*dnm/60/k]],{color:'#ff8a3d',weight:2,dashArray:'6 4',interactive:false}).addTo(map)}
   const last=G.track[G.track.length-1];if(!last||dist(last,ll)>10){G.track.push([ll[0],ll[1],Math.round(now/1000)]);if(G.track.length>20000)G.track.shift();G.line.addLatLng(ll);if(Date.now()-G.saved>15000){store.set('track',G.track);G.saved=Date.now()}}
   if(G.follow)map.panTo(ll);
-  $('#hSog').textContent=f1(sog);$('#hCog').textContent=G.cog!=null?String(Math.round(G.cog)%360).padStart(3,'0')+'°':'—';$('#hPos').innerHTML=`${fmtC(ll[0],1)}<br>${fmtC(ll[1],0)}`;
+  $('#hSog').textContent=uSV(sog);$('#hCog').textContent=G.cog!=null?String(Math.round(G.cog)%360).padStart(3,'0')+'°':'—';$('#hPos').innerHTML=`${fmtC(ll[0],1)}<br>${fmtC(ll[1],0)}`;
   const acc=c.accuracy;$('#hAcc').innerHTML=`<span style="color:${acc<15?'var(--ok)':acc<50?'var(--warn)':'var(--danger)'}">точность ±${f0(acc)} м</span>`;
   $('#hud').classList.remove('stale');chip('gps',acc>50?`GPS неточный: ±${f0(acc)} м`:null,'warn');
   anchorCheck();aisCpaCheck();navUpdate();shoreCheck();borderCheck();shoalCheck()}
@@ -1153,26 +1162,26 @@ function navUpdate(){if(!NAV.mode)return;$('#navd').hidden=false;const tgt=NAV.p
   L.polyline([me,tgt],{color:col,weight:2,dashArray:'4 6'}).addTo(navLayer);
   const d=dist(me,tgt),b=brg(me,tgt),dnm=d/NM,vmg=G.sog!=null&&G.cog!=null?G.sog*Math.cos(rad(G.cog-b)):null;
   $('#nBrg').textContent=f0(b)+'°';
-  if(d<1000){$('#nDtw').textContent=f0(d);$('#nDtw').nextElementSibling.textContent='метров до'}else{$('#nDtw').textContent=dnm<10?f1(dnm):f0(dnm);$('#nDtw').nextElementSibling.textContent='миль до'}
+  if(d<1000){$('#nDtw').textContent=f0(d);$('#nDtw').nextElementSibling.textContent='метров до'}else{const dd=uKm()?dnm*1.852:dnm;$('#nDtw').textContent=dd<10?f1(dd):f0(dd);$('#nDtw').nextElementSibling.textContent=uKm()?'км до':'миль до'}
   const note=[];
   if(NAV.mode==='route'&&NAV.idx>0){const x=xtk(NAV.pts[NAV.idx-1],tgt,me),ax=Math.abs(x.xte);
-    $('#nXte').textContent=ax<10?'0':`${x.xte>0?'◀ ':''}${ax<1000?f0(ax)+' м':f1(ax/NM)+' мили'}${x.xte<0?' ▶':''}`;
+    $('#nXte').textContent=ax<10?'0':`${x.xte>0?'◀ ':''}${fDm(ax)}${x.xte<0?' ▶':''}`;
     if(ax/NM>NAV.xteNm){chip('nav',`Ушли с линии на ${f0(ax)} м`,'warn');if(!NAV.xteWarned){NAV.xteWarned=true;beep();navigator.vibrate?.([200,100,200]);toast(`Ушли с линии на ${f0(ax)} м — держите ${x.xte>0?'левее':'правее'}`,6000)}}
     else{NAV.xteWarned=false;chip('nav',null)}
     if(NAV.lastD!=null&&dnm>NAV.lastD&&dnm<.5)NAV.away=(NAV.away||0)+1;else NAV.away=0;NAV.lastD=dnm;
     if(dnm<NAV.arrNm||x.t>1||NAV.away>=3){NAV.away=0;NAV.lastD=null;if(NAV.idx<NAV.pts.length-1){NAV.idx++;navSave();beep();toast(`Точка ${NAV.idx} пройдена. Новый курс ${f0(brg(me,NAV.pts[NAV.idx]))}°`,6000);return navUpdate()}
       if(dnm<NAV.arrNm){beep();toast('Прибыли! Маршрут пройден.',8000);navStop();return}}}
   else{$('#nXte').textContent='—';if(NAV.mode==='point'&&dnm<NAV.arrNm){beep();toast('Прибыли в точку.',8000);navStop();return}}
-  if(vmg!=null&&vmg>.3){const ms=dnm/vmg*36e5;$('#nEta').textContent=mskT(Date.now()+ms);note.push(`в пути ${fmtHM(ms)}, к цели ${f1(vmg)} уз`)}
+  if(vmg!=null&&vmg>.3){const ms=dnm/vmg*36e5;$('#nEta').textContent=mskT(Date.now()+ms);note.push(`в пути ${fmtHM(ms)}, к цели ${fSp(vmg)}`)}
   else{$('#nEta').textContent='—';if(G.sog>.5)note.push('удаляетесь от цели или идёте поперёк')}
   const w=W.g?sample(tgt[0],tgt[1],nowIdx()):null;
   if(w&&NAV.mode!=='mob'&&offBow(w.dir,b)<50){const k=Math.cos(rad(tgt[0])),Ld=5*NM/111320;
     for(const h of[w.dir+45,w.dir-45]){const back=rad(h+180);L.polyline([tgt,[tgt[0]+Math.cos(back)*Ld,tgt[1]+Math.sin(back)*Ld/k]],{color:'#9fb4c7',weight:1.5,dashArray:'2 6'}).addTo(navLayer)}
-    note.push(`цель против ветра (${f0(w.spd)} уз с ${rumb(w.dir)}): пунктир — лэйлайны`)}
+    note.push(`цель против ветра (${fW(w.spd)} с ${rumb(w.dir)}): пунктир — лэйлайны`)}
   $('#nMob').hidden=NAV.mode!=='mob';
   if(NAV.mode==='mob')note.unshift('Бросьте круг, назначьте наблюдателя, подходите против ветра');
   {const pt=ptaTs();if(pt&&NAV.mode==='route'){let rem=d;for(let i=NAV.idx;i<NAV.pts.length-1;i++)rem+=dist(NAV.pts[i],NAV.pts[i+1]);const h=(pt-Date.now())/36e5;
-    note.push(h>0?`к ${fmtHm(pt)} нужно ${f1(rem/NM/h)} уз`+(G.sog!=null?` (идём ${f1(G.sog)})`:''):'назначенное время прихода прошло')}}
+    note.push(h>0?`к ${fmtHm(pt)} нужно ${fSp(rem/NM/h)}`+(G.sog!=null?` (идём ${f1(G.sog)})`:''):'назначенное время прихода прошло')}}
   $('#nNote').textContent=note.join(' · ')}
 /* берег по курсу: луч по маске воды вперёд по курсу */
 let shoreT=0;
@@ -1259,7 +1268,7 @@ function aisDraw(s){if(!s.mk){s.mk=L.marker([s.lat,s.lon],{icon:shipIcon(s)}).ad
   const age=(Date.now()-(s.t||0))/60000;if(s.vec){AIS.layer.removeLayer(s.vec);s.vec=null}
   if(s.sog>0.5&&s.cog!=null&&age<=10){const dnm=s.sog*10/60,k=Math.cos(rad(s.lat));s.vec=L.polyline([[s.lat,s.lon],[s.lat+Math.cos(rad(s.cog))*dnm/60,s.lon+Math.sin(rad(s.cog))*dnm/60/k]],{color:SHIPT(s.type)[1],weight:1.5,opacity:.8,interactive:false}).addTo(AIS.layer)}
   if(isSart(s.id)&&!AIS.warned.has('sart'+s.id)){AIS.warned.add('sart'+s.id);const d=G.pos?dist(G.pos,[s.lat,s.lon])/NM:null;
-    alarmOn(null,'🆘 AIS-МАЯК БЕДСТВИЯ РЯДОМ');$('#alarmDist').textContent=`MMSI ${s.id}${d!=null?` · ${f1(d)} мили, пеленг ${f0(brg(G.pos,[s.lat,s.lon]))}°`:''}`;logE('SART '+s.id)}
+    alarmOn(null,'🆘 AIS-МАЯК БЕДСТВИЯ РЯДОМ');$('#alarmDist').textContent=`MMSI ${s.id}${d!=null?` · ${fDn(d)}, пеленг ${f0(brg(G.pos,[s.lat,s.lon]))}°`:''}`;logE('SART '+s.id)}
   $('#aisCount').textContent=AIS.ships.size}
 function cpa(s){if(!G.pos||G.sog==null||(G.sog>.5&&G.cog==null)||s.sog==null||s.cog==null||s.lat==null)return null;const k=Math.cos(rad(G.pos[0]));
   const age=s.t?Math.max(0,(Date.now()-s.t)/36e5):0;if(age>10/60)return null; // отметке больше 10 минут — не гадаем
@@ -1267,21 +1276,24 @@ function cpa(s){if(!G.pos||G.sog==null||(G.sog>.5&&G.cog==null)||s.sog==null||s.
   const vo=[G.sog*Math.sin(rad(G.cog||0)),G.sog*Math.cos(rad(G.cog||0))],vt=[s.sog*Math.sin(rad(s.cog)),s.sog*Math.cos(rad(s.cog))];
   const vx=vt[0]-vo[0],vy=vt[1]-vo[1],v2=vx*vx+vy*vy;if(v2<1e-6)return{cpa:Math.hypot(px,py),t:Infinity};const t=-(px*vx+py*vy)/v2;return{cpa:Math.hypot(px+vx*t,py+vy*t),t:t*60}}
 function aisPopup(s){const c=cpa(s),d=G.pos?dist(G.pos,[s.lat,s.lon])/NM:null;
-  return `<b>${s.name||'MMSI '+s.id}</b><br>${f1(s.sog)} уз · ${f0(s.cog)}°${s.len?` · ${s.len} м`:''}${s.dest?`<br>→ ${s.dest}`:''}${d!=null?`<br>до него ${f1(d)} мили`:''}${c&&c.t>0&&c.t<120?`<br>сближение до ${f1(c.cpa)} мили через ${f0(c.t)} мин`:''}<br><span style="color:#888">данные ${ago(s.t)} · ${s.src||'интернет-AIS'}</span>`}
+  return `<b>${s.name||'MMSI '+s.id}</b><br>${fSp(s.sog)} · ${f0(s.cog)}°${s.len?` · ${s.len} м`:''}${s.dest?`<br>→ ${s.dest}`:''}${d!=null?`<br>до него ${fDn(d)}`:''}${c&&c.t>0&&c.t<120?`<br>сближение до ${fDn(c.cpa)} через ${f0(c.t)} мин`:''}<br><span style="color:#888">данные ${ago(s.t)} · ${s.src||'интернет-AIS'}</span>`}
 function aisList(){const arr=[...AIS.ships.values()].filter(s=>s.lat!=null).map(s=>({s,d:G.pos?dist(G.pos,[s.lat,s.lon])/NM:null,c:cpa(s)})).sort((a,b)=>(a.d??1e9)-(b.d??1e9)).slice(0,30);
   $('#aisList').innerHTML=arr.length?'<table><tr><th>Судно</th><th>Уз</th><th>Миль</th><th>Сближение</th><th>Данные</th></tr>'+arr.map(({s,d,c})=>`<tr><td>${s.name||s.id}</td><td>${f1(s.sog)}</td><td>${f1(d)}</td><td>${c&&c.t>0&&c.t<120?`${f1(c.cpa)} м. через ${f0(c.t)} мин`:'—'}</td><td>${ago(s.t)}</td></tr>`).join('')+'</table>':''}
 function aisCpaCheck(){ // интернет-AIS + свой приёмник через Signal K (одно судно — один номер MMSI)
   const sk=typeof SK!=='undefined'?[...SK.ais].map(([k,a])=>{const mm=(k.match(/mmsi:(\d+)/)||[])[1];return a.ll&&{id:mm?+mm:k,name:a.name,lat:a.ll[0],lon:a.ll[1],sog:a.sog,cog:a.cog,t:a.t}}).filter(x=>x&&!AIS.ships.has(x.id)):[];
   for(const s of [...AIS.ships.values(),...sk]){if(s.lat==null||skEcho(s.lat,s.lon,s.sog))continue;const c=cpa(s);if(AIS.warned.has(s.id)&&!(c&&c.t>0&&c.t<30&&c.cpa<0.6))AIS.warned.delete(s.id); // разошлись — при новом сближении предупредим снова
-    if(c&&c.t>0&&c.t<15&&c.cpa<0.3&&!AIS.warned.has(s.id)){AIS.warned.add(s.id);toast(`⚠ Сближение: ${s.name||s.id} — ${f1(c.cpa)} мили через ${f0(c.t)} мин`,8000);beep();navigator.vibrate?.([300,150,300])}}}
+    if(c&&c.t>0&&c.t<15&&c.cpa<0.3&&!AIS.warned.has(s.id)){AIS.warned.add(s.id);toast(`⚠ Сближение: ${s.name||s.id} — ${fDn(c.cpa)} через ${f0(c.t)} мин`,8000);beep();navigator.vibrate?.([300,150,300])}}}
 setInterval(()=>{const lim=Date.now()-20*60000;for(const[id,s]of AIS.ships){if(s.t&&s.t<lim){if(s.mk)AIS.layer.removeLayer(s.mk);if(s.vec)AIS.layer.removeLayer(s.vec);AIS.ships.delete(id)}else if(s.mk)s.mk.setIcon(shipIcon(s))}$('#aisCount').textContent=AIS.ships.size;if(openName==='ais')aisList()},30000);
 
 /* ===== лодка и настройки ===== */
-function fillBoat(){const B=S.boat;$('#bName').value=B.name;$('#bType').value=B.type;$('#bSpeed').value=B.speed;$('#bDraft').value=B.draft;$('#bMotor').value=B.motor;$('#bMast').value=B.mast||'';$('#bXd').value=B.xd||'';
-  $('#sWind').value=S.windMax;$('#sGust').value=S.gustMax;$('#sWave').value=S.waveMax;$('#sNight').checked=S.night;$('#sAutoN').checked=S.autoNight;$('#sSaver').checked=S.saver;$('#sYa').value=S.yandexKey}
+function uLabels(){$$('.uSp').forEach(e=>e.textContent=spU());$$('.uW').forEach(e=>e.textContent=wU());const lu=$('#legendU');if(lu)lu.textContent=Math.round(40*uW()[0])+' '+wU();
+  const hs=$('#hSog');if(hs&&hs.nextElementSibling)hs.nextElementSibling.textContent=spU()+', скорость';const cs=$('#cuSog');if(cs&&cs.nextElementSibling)cs.nextElementSibling.textContent=spU();try{nmScale.upd()}catch(_){}}
+function uSet(k,v){S[k]=v;saveS();fillBoat();uLabels();try{if(typeof renderRoute==='function'&&RT.pts.length)renderRoute()}catch(_){}try{if(DSH.on)dashRender()}catch(_){}try{updT()}catch(_){}toast('Единицы изменены',2000)}
+function fillBoat(){const B=S.boat;$('#bName').value=B.name;$('#bType').value=B.type;$('#bSpeed').value=+(B.speed*uS()[0]).toFixed(1);$('#bDraft').value=B.draft;$('#bMotor').value=+(B.motor*uS()[0]).toFixed(1);$('#bMast').value=B.mast||'';$('#bXd').value=B.xd||'';
+  $('#sWind').value=Math.round(S.windMax*uW()[0]);$('#sGust').value=Math.round(S.gustMax*uW()[0]);$('#uSpd').value=S.uSpd||'kn';$('#uWind').value=S.uWind||'kn';$('#uDist').value=S.uDist||'nm';uLabels();$('#sWave').value=S.waveMax;$('#sNight').checked=S.night;$('#sAutoN').checked=S.autoNight;$('#sSaver').checked=S.saver;$('#sYa').value=S.yandexKey}
 $('#sSave').onclick=()=>{const k=$('#sYa').value.trim(),chK=k!==S.yandexKey;S.yandexKey=k;
-  S.boat={name:$('#bName').value.trim(),type:$('#bType').value,speed:Math.max(1,+$('#bSpeed').value||5),draft:+$('#bDraft').value||1.8,motor:Math.max(0,+$('#bMotor').value||0),mast:Math.max(0,+$('#bMast').value||0),xd:Math.min(3,Math.max(0,+$('#bXd').value||0))};
-  S.windMax=+$('#sWind').value||20;S.gustMax=+$('#sGust').value||25;S.waveMax=+$('#sWave').value||1.2;S.night=$('#sNight').checked;S.autoNight=$('#sAutoN').checked;S.saver=$('#sSaver').checked;saveS();
+  S.boat={name:$('#bName').value.trim(),type:$('#bType').value,speed:Math.max(.5,(+$('#bSpeed').value||5*uS()[0])/uS()[0]),draft:+$('#bDraft').value||1.8,motor:Math.max(0,(+$('#bMotor').value||0)/uS()[0]),mast:Math.max(0,+$('#bMast').value||0),xd:Math.min(3,Math.max(0,+$('#bXd').value||0))};
+  S.windMax=+$('#sWind').value?+$('#sWind').value/uW()[0]:20;S.gustMax=+$('#sGust').value?+$('#sGust').value/uW()[0]:25;S.waveMax=+$('#sWave').value||1.2;S.night=$('#sNight').checked;S.autoNight=$('#sAutoN').checked;S.saver=$('#sSaver').checked;saveS();
   document.body.classList.toggle('night',S.night);if(chK&&S.base==='yandex')setBase('yandex');drawField();renderRoute();if(RT.fc)bestWindows();renderEns();
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);gpsStart()}toast('Сохранено')};
 $('#sNight').onchange=e=>{document.body.classList.toggle('night',e.target.checked);$('#sAutoN').checked=false};
@@ -1556,7 +1568,7 @@ $('#sTrkImpX').onclick=()=>{XT.layer.clearLayers();$('#sTrkImpX').hidden=true};
 $('#sTrkImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;e.target.value='';try{const x=new DOMParser().parseFromString(await f.text(),'application/xml');
     const pts=[...x.querySelectorAll('trkpt,rtept')].map(q=>[+q.getAttribute('lat'),+q.getAttribute('lon')]).filter(q=>isFinite(q[0])&&isFinite(q[1])&&Math.abs(q[0])<=90&&Math.abs(q[1])<=180);
     if(pts.length<2)return toast('В файле нет трека');XT.layer.clearLayers();const ln=L.polyline(pts,{color:'#b06bff',weight:3,opacity:.9,dashArray:'2 6',interactive:false}).addTo(XT.layer);
-    let d=0;for(let i=1;i<pts.length;i++)d+=dist(pts[i-1],pts[i]);$('#sTrkImpX').hidden=false;closePanel();G.follow=false;map.fitBounds(ln.getBounds(),{padding:[40,40]});toast(`Трек из файла на карте: ${f1(d/NM)} миль, ${pts.length} точек`,6000)}catch(err){toast('Файл не прочитался: '+err.message)}};
+    let d=0;for(let i=1;i<pts.length;i++)d+=dist(pts[i-1],pts[i]);$('#sTrkImpX').hidden=false;closePanel();G.follow=false;map.fitBounds(ln.getBounds(),{padding:[40,40]});toast(`Трек из файла на карте: ${fDn(d/NM,'миль')}, ${pts.length} точек`,6000)}catch(err){toast('Файл не прочитался: '+err.message)}};
 /* ===== свои метки на карте ===== */
 const MK={list:store.get('marks',[]),layer:L.layerGroup().addTo(map)};
 function mkSave(){store.set('marks',MK.list);mkDraw()}
@@ -1567,7 +1579,7 @@ function mkNew(ll){const pop=L.popup({closeButton:true,autoPan:true,autoPanPaddi
   const el=pop.getElement(),inp=el.querySelector('#mkName'),okf=()=>{MK.list.push({n:inp.value.trim()||'Метка '+(MK.list.length+1),ll:[+ll.lat.toFixed(6),+ll.lng.toFixed(6)]});mkSave();map.closePopup();toast('Метка поставлена. Нажмите на неё, чтобы идти к ней или удалить.')};
   el.querySelector('button[data-a=ok]').onclick=okf;inp.onkeydown=e=>{if(e.key==='Enter')okf()};setTimeout(()=>inp.focus(),80)}
 function mkPop(i){const m=MK.list[i];if(!m)return;const me=G.pos;let info=`<b>${lzE(m.n)}</b><br>${fmtC(m.ll[0],1)} ${fmtC(m.ll[1],0)}`;
-  if(me){const d=dist(me,m.ll);info+=`<br>от лодки: ${f0(brg(me,m.ll))}°, ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}`}
+  if(me){const d=dist(me,m.ll);info+=`<br>от лодки: ${f0(brg(me,m.ll))}°, ${fDm(d)}`}
   const pop=L.popup({closeButton:true,autoPan:true,autoPanPaddingTopLeft:[10,150],autoPanPaddingBottomRight:[10,110]}).setLatLng(m.ll).setContent(`<div style="font-size:13px;line-height:1.4">${info}<div class="lpAct"><button data-a="go" class="pri">Идти к метке</button><button data-a="rt">Добавить в маршрут</button>${me?'<button data-a="ev">Пеленг и кольцо от лодки</button>':''}<button data-a="del">Удалить метку</button></div></div>`).openOn(map);
   pop.getElement().querySelectorAll('button').forEach(b=>b.onclick=()=>{map.closePopup();const a=b.dataset.a;
     if(a==='go')navStart('point',[m.ll.slice()],0,m.n);else if(a==='rt'){RT.pts.push(m.ll.slice());routeChanged();toast(`Точка ${RT.pts.length} добавлена в маршрут`)}
@@ -1584,14 +1596,14 @@ function evDraw(){EV.layer.clearLayers();const o=EV.o==='boat'?G.pos:EV.o;if(!o|
   L.circle(o,{radius:d,color:col,weight:2,fill:false,dashArray:'7 7',interactive:false}).addTo(EV.layer);L.polyline([o,EV.t],{color:col,weight:2.5,interactive:false}).addTo(EV.layer);
   if(EV.o!=='boat')L.circleMarker(o,{radius:5,color:col,weight:2,fillColor:col,fillOpacity:1,interactive:false}).addTo(EV.layer);
   const tm=EV.o==='boat'&&G.sog>.5?` · ${fmtHM(d/NM/G.sog*36e5)}`:'';
-  L.marker(EV.t,{icon:L.divIcon({className:'evL',html:`<b>${String(b).padStart(3,'0')}° · ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}${tm}<u>✕</u></b>`,iconSize:[0,0]})}).addTo(EV.layer).on('click',evOff)}
+  L.marker(EV.t,{icon:L.divIcon({className:'evL',html:`<b>${String(b).padStart(3,'0')}° · ${fDm(d)}${tm}<u>✕</u></b>`,iconSize:[0,0]})}).addTo(EV.layer).on('click',evOff)}
 function evSet(o,t){EV.o=o;EV.t=t;EV.pend=null;evDraw()}
 function evOff(){EV.o=EV.t=EV.pend=null;EV.layer.clearLayers()}
 setInterval(()=>{if(EV.o==='boat'&&EV.t)evDraw()},2000);mkDraw();
 /* ===== долгое нажатие на карту: пеленг/дистанция и действия ===== */
 const LP={t:null,x:0,y:0,suppress:false};
 function lpMenu(ll){const me=G.pos;let info=`<b>${fmtC(ll.lat,1)}<br>${fmtC(ll.lng,0)}</b>`;
-  if(me){const d=dist(me,[ll.lat,ll.lng]);info+=`<br>от лодки: ${f0(brg(me,[ll.lat,ll.lng]))}°, ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}`;if(G.sog>.5)info+=`, ≈${fmtHM(d/NM/G.sog*36e5)} при ${f1(G.sog)} уз`}
+  if(me){const d=dist(me,[ll.lat,ll.lng]);info+=`<br>от лодки: ${f0(brg(me,[ll.lat,ll.lng]))}°, ${fDm(d)}`;if(G.sog>.5)info+=`, ≈${fmtHM(d/NM/G.sog*36e5)} при ${fSp(G.sog)}`}
   const w=WM.g?isWater(ll.lat,ll.lng):null;if(w===false)info+='<br><span style="color:#c00">суша</span>';
   const pop=L.popup({closeButton:true,autoPan:true,autoPanPaddingTopLeft:[10,150],autoPanPaddingBottomRight:[10,110]}).setLatLng(ll).setContent(`<div style="font-size:13px;line-height:1.4">${info}<div class="lpAct lp2"><button data-a="go" class="pri">Идти сюда</button><button data-a="wx">Прогноз здесь</button><button data-a="rt">В маршрут</button><button data-a="mk">Поставить метку</button>${me?'<button data-a="ev">Пеленг от лодки</button>':''}<button data-a="evp">${EV.pend?'Пеленг от отметки':'Мерить отсюда'}</button>${EV.t?'<button data-a="evx">Убрать пеленг</button>':''}</div></div>`).openOn(map);
   const el=pop.getElement();el.querySelectorAll('button').forEach(b=>b.onclick=()=>{map.closePopup();const a=b.dataset.a;
@@ -1637,7 +1649,7 @@ function polarSvg(t){const W=300,H=220,cx=20,cy=110,mx=Math.max(...t.v.flat())*1
   for(let k=2;k<=Math.ceil(mx);k+=2){g+=`<path d="M${cx},${cy-k/mx*R} A${k/mx*R},${k/mx*R} 0 0 1 ${cx},${cy+k/mx*R}" fill="none" stroke="var(--line)"/><text x="${cx+2}" y="${cy-k/mx*R-2}">${k}</text>`}
   for(const a of[45,90,135])g+=`<line x1="${cx}" y1="${cy}" x2="${cx+Math.sin(rad(a))*R}" y2="${cy-Math.cos(rad(a))*R}" stroke="var(--line)"/><text x="${cx+Math.sin(rad(a))*(R+8)}" y="${cy-Math.cos(rad(a))*(R+8)}">${a}°</text>`;
   ws.forEach((w,i)=>{let d='';for(let a=t.twa[0];a<=180;a+=3){const v=pv(t,w,a)/mx*R;d+=(d?'L':'M')+(cx+Math.sin(rad(a))*v).toFixed(1)+','+(cy-Math.cos(rad(a))*v).toFixed(1)}g+=`<path d="${d}" fill="none" stroke="${col[i]}" stroke-width="1.6"/>`});
-  g+=ws.map((w,i)=>`<text x="${170}" y="${20+i*14}" fill="${col[i]}">ветер ${w} уз · лавировка ${beatA(t,w)}°</text>`).join('');return g+'</svg>'}
+  g+=ws.map((w,i)=>`<text x="${170}" y="${20+i*14}" fill="${col[i]}">ветер ${fW(w)} · лавировка ${beatA(t,w)}°</text>`).join('');return g+'</svg>'}
 function polUi(){const t=polT();$('#bPolar').value=S.polar||'simple';$('#bEff').value=S.polEff||90;
   $('#bPolPrev').innerHTML=t?polarSvg(t)+`<p class="muted small">${S.polar==='file'?'Ваш файл: '+store.get('polFileName',''):t.name+' — типовые цифры, приблизительно'}. Скорость умножается на «КПД» (загрузка, обрастание, неидеальные паруса).</p>`:'<p class="muted small">Упрощённо: от вашей крейсерской скорости. Для точного времени и автопрокладки выберите тип лодки или загрузите файл поляр (.pol, .txt, .csv: первая строка — скорости ветра, дальше строки «угол, скорости»).</p>'}
 $('#bPolar').onchange=e=>{if(e.target.value==='file'&&!store.get('polFile',null)){$('#bPolFile').click();return}S.polar=e.target.value;saveS();polUi();renderRoute()};
@@ -1652,7 +1664,7 @@ function segDist(p,a,b){const k=Math.cos(rad(p[0])),m=111320,ax=(a[1]-p[1])*k*m,
 function borderDist(p){if(!BD.lines)return null;let d=1e12;for(const l of BD.lines)for(let i=1;i<l.length;i++)d=Math.min(d,segDist(p,l[i-1],l[i]));return d}
 function borderCheck(){if(!G.pos||!BD.lines)return;const d=borderDist(G.pos);if(d==null||d>3*NM)return chip('border',null);
   let ahead=null;if(G.sog>1&&G.cog!=null){for(let m=5;m<=30;m+=5){const q=moveP(G.pos,G.cog,G.sog*m/60);if(borderDist(q)<120){ahead=m;break}}}
-  const cls=d<.3*NM||(ahead&&ahead<=10)?'bad':'warn';chip('border',`Морская граница: ${d<NM?f0(d)+' м':f1(d/NM)+' мили'}${ahead?` · по курсу через ${ahead} мин`:''}`,cls);
+  const cls=d<.3*NM||(ahead&&ahead<=10)?'bad':'warn';chip('border',`Морская граница: ${d<NM?f0(d)+' м':fDn(d/NM)}${ahead?` · по курсу через ${ahead} мин`:''}`,cls);
   if(cls==='bad'&&Date.now()-BD.t>300000){BD.t=Date.now();beep();navigator.vibrate?.([400,200,400]);toast('⚠ Рядом морская граница! Пересечение без оформления — нарушение. Проверьте курс.',9000)}}
 
 /* ===== давление по прогнозу: тревога быстрого падения ===== */
@@ -1692,7 +1704,7 @@ function obsIcon(o){const kn=o.spd,c=rgb(kn),col=`rgb(${c})`,age=Math.round((Dat
 function obsDraw(){OB.layer.clearLayers();if(!S.obs)return;const now=Date.now()/1000;
   for(const o of OB.list){if(now-o.t>(/SYNOP/.test(o.src||'')?6:3)*3600)continue; // сводки Росгидромета приходят раз в 1–3 ч, а таймер GitHub запаздывает — держим их дольше, но бледными
     const age=Math.round((now-o.t)/60);
-    L.marker([o.lat,o.lon],{icon:obsIcon(o),keyboard:false,zIndexOffset:500}).bindPopup(`<div style="font-size:13px;line-height:1.45"><b>${lzE(o.name)}</b><br>Ветер <b>${f0(o.spd)} уз</b> (${f0(o.spd*.5144)} м/с) ${rumb(o.dir)} (${f0(o.dir)}°)${o.gust!=null?`, порывы ${f0(o.gust)} уз`:''}<br><span style="opacity:.75">измерено ${age<1?'только что':age<60?age+' мин назад':fmtHM(age*6e4)+' назад'} · ${o.src}</span></div>`).addTo(OB.layer)}}
+    L.marker([o.lat,o.lon],{icon:obsIcon(o),keyboard:false,zIndexOffset:500}).bindPopup(`<div style="font-size:13px;line-height:1.45"><b>${lzE(o.name)}</b><br>Ветер <b>${fW(o.spd)}</b> (${f0(o.spd*.5144)} м/с) ${rumb(o.dir)} (${f0(o.dir)}°)${o.gust!=null?`, порывы ${fW(o.gust)}`:''}<br><span style="opacity:.75">измерено ${age<1?'только что':age<60?age+' мин назад':fmtHM(age*6e4)+' назад'} · ${o.src}</span></div>`).addTo(OB.layer)}}
 async function obsFmi(){const st=new Date(Date.now()-50*6e4).toISOString().slice(0,17)+'00Z';
   const r=await fetch(`https://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::observations::weather::multipointcoverage&bbox=24.5,59.4,31.5,62.2&parameters=windspeedms,winddirection,windgust&timestep=10&starttime=${st}`);
   if(!r.ok)throw new Error('FMI '+r.status);const x=new DOMParser().parseFromString(await r.text(),'text/xml');
@@ -1722,7 +1734,7 @@ function spbPlan(D,dir,date){
   const night=D.b.filter(b=>b.kind==='night'),ch=dir==='up'?[...night].reverse():night; // по ходу судна
   const kn=Math.max(1,S.boat.motor>0?S.boat.motor:S.boat.speed),cur=D.current_kn, // под мостами идут под мотором
     v=Math.min(D.speed_kmh_max,(dir==='up'?kn-cur:kn+cur)*1.852); // км/ч относительно берега
-  if(v<=1)return{err:`Против течения ${f1(cur)} уз при ходе ${f1(kn)} уз лодка почти стоит — проход вверх невозможен`};
+  if(v<=1)return{err:`Против течения ${fSp(cur)} при ходе ${fSp(kn)} лодка почти стоит — проход вверх невозможен`};
   const win=b=>b.w.map(([a,c])=>{const A=at(a,1),C=at(c,1)+(c<a?864e5:0);return[A,C]});  // разводка — ночью после даты
   let best=null;
   for(const [A0] of win(ch[0])){let t=A0,wait=0,rows=[],ok=true;
@@ -1741,12 +1753,12 @@ async function spbGo(){const out=$('#spOut');let D;try{D=await spbData()}catch(e
   const P=bad?null:spbPlan(D,dir,date);
   if(P&&P.err)h+=`<div class="badbox">${P.err}</div>`;
   else if(P){const R=P.rows,f=R[0],l=R[R.length-1];
-    if(P.miss)h+=`<div class="badbox">При ходе ${f1(S.boat.motor>0?S.boat.motor:S.boat.speed)} уз не успеваете к окну <b>${lzE(l.b.n)}</b> в ту же ночь — придётся ждать следующей ночи выше/ниже него. Добавьте ход мотором (настройки лодки).</div>`;
-    else h+=`<div class="okbox">Первый мост — <b>${lzE(f.b.n)}</b>: подойти к <b>${mskT(f.t-20*6e4)}</b> (за 20 мин до разводки) и выйти на связь с диспетчером. Последний — ${lzE(l.b.n)}, пройдёте ≈ <b>${mskT(P.end)}</b>. Ждать у мостов всего: ${Math.round(P.wait/6e4)} мин. Ход относительно берега ≈ ${f1(P.v/1.852)} уз.</div>`;
+    if(P.miss)h+=`<div class="badbox">При ходе ${fSp(S.boat.motor>0?S.boat.motor:S.boat.speed)} не успеваете к окну <b>${lzE(l.b.n)}</b> в ту же ночь — придётся ждать следующей ночи выше/ниже него. Добавьте ход мотором (настройки лодки).</div>`;
+    else h+=`<div class="okbox">Первый мост — <b>${lzE(f.b.n)}</b>: подойти к <b>${mskT(f.t-20*6e4)}</b> (за 20 мин до разводки) и выйти на связь с диспетчером. Последний — ${lzE(l.b.n)}, пройдёте ≈ <b>${mskT(P.end)}</b>. Ждать у мостов всего: ${Math.round(P.wait/6e4)} мин. Ход относительно берега ≈ ${fSp(P.v/1.852)}.</div>`;
     h+='<div class="scroll"><table><tr><th>Мост</th><th>Разводка</th><th>Подход</th><th>Ждать</th></tr>'+R.map(r=>`<tr><td>${lzE(r.b.n)}<span class="muted small"> · км ${f1(r.b.km)}</span></td><td>${r.b.w.map(x=>x.join('–')).join(', ')}</td><td>${r.miss?'<b style="color:var(--danger)">не успеть</b>':mskT(r.t)}</td><td>${r.miss?'—':r.wt>60e3?Math.round(r.wt/6e4)+' мин':'—'}</td></tr>`).join('')+'</table></div>';
     // ветер на середине прохода, если прогноз есть
     if(W.g&&!P.miss){const mid=R[Math.floor(R.length/2)],ti=W.g.times.findIndex(x=>x*1000>=mid.t-1800e3);const sm=ti>=0?gridSample(W.g,mid.b.ll[0],mid.b.ll[1],ti):null;
-      if(sm)h+=`<p class="small">Ветер на середине прохода (${lzE(mid.b.n)}, ${mskT(mid.t)}): <b>${f0(sm.spd)} уз</b>, порывы ${f0(sm.gust)} уз, ${rumb(sm.dir)} — ${MODEL_NAME[W.g.model]||''}.</p>`}}
+      if(sm)h+=`<p class="small">Ветер на середине прохода (${lzE(mid.b.n)}, ${mskT(mid.t)}): <b>${fW(sm.spd)}</b>, порывы ${fW(sm.gust)}, ${rumb(sm.dir)} — ${MODEL_NAME[W.g.model]||''}.</p>`}}
   const other=D.b.filter(b=>b.kind!=='night');
   h+=`<h3>Ещё на пути ${dir==='up'?'в Ладогу':'из Ладоги'}</h3><ul class="d small">`+other.map(b=>`<li><b>${lzE(b.n)}</b> (км ${f1(b.km)}): ${lzE(b.note)}${b.clear&&mast?` — мачта ${f1(mast)} м ${mast+0.5<=b.clear?'проходит':'<b style="color:var(--danger)">не проходит</b>'} под наведённым (габарит ≈${f1(b.clear)} м, уточните)`:''}</li>`).join('')+'</ul>';
   h+=`<h3>Правила (приказ Минтранса № 394)</h3><ul class="d small">
@@ -1827,14 +1839,14 @@ function skOwn(){const v=SK.v,p=v['navigation.position'];
   const aws=v['environment.wind.speedApparent'],awa=v['environment.wind.angleApparent'],stw=v['navigation.speedThroughWater'],tws=v['environment.wind.speedTrue'];
   const under=DP.under,shoal=under!=null&&under<.5;
   const parts=[];if(dep!=null||dk!=null)parts.push(`Глубина <b>${f1(dep!=null?dep:dk)} м</b>${dk!=null?` (под килем ${f1(dk)})`:''}`);
-  if(aws!=null)parts.push(`Ветер вымп. <b>${f0(aws*MS2KN)} уз</b>${awa!=null?' '+f0(Math.abs(awa*R2D))+'° '+(awa<0?'лев.':'пр.'):''}`);
-  if(tws!=null)parts.push(`ист. ${f0(tws*MS2KN)} уз`);if(stw!=null)parts.push(`лаг ${f1(stw*MS2KN)} уз`);
+  if(aws!=null)parts.push(`Ветер вымп. <b>${fW(aws*MS2KN)}</b>${awa!=null?' '+f0(Math.abs(awa*R2D))+'° '+(awa<0?'лев.':'пр.'):''}`);
+  if(tws!=null)parts.push(`ист. ${fW(tws*MS2KN)}`);if(stw!=null)parts.push(`лаг ${fSp(stw*MS2KN)}`);
   chip('sk',parts.length?(shoal?'⚠ МЕЛКО! ':'')+parts.join(' · ')+' <button class="cx" data-skoff title="Отключить приборы лодки (Signal K)">✕ отключить</button>':null,shoal?'bad':'');
   if(shoal&&Date.now()-SK.beepT>60e3){SK.beepT=Date.now();beep();toast(`⚠ Под килем ${f1(under)} м — мелко!`,8000)}
   skSt(`Данные с приборов идут · ${new Date().toLocaleTimeString('ru-RU',{timeZone:TZ})}${p?' · позиция с бортового GPS':''}`)}
 function skAis(ctx,path,val){if(!/^vessels\./.test(ctx))return;let a=SK.ais.get(ctx);if(!a){a={};SK.ais.set(ctx,a)}a.t=Date.now();
   if(path==='name')a.name=val;else if(path==='navigation.position'&&val)a.ll=[val.latitude,val.longitude];else if(path==='navigation.speedOverGround')a.sog=val*MS2KN;else if(path==='navigation.courseOverGroundTrue')a.cog=val*R2D;
-  if(!a.ll)return;const mm=(ctx.match(/mmsi:(\d+)/)||[])[1]||'',tip=`${lzE(a.name||'MMSI '+mm)} · ${a.sog!=null?f1(a.sog)+' уз':''} · свой AIS (Signal K)`;
+  if(!a.ll)return;const mm=(ctx.match(/mmsi:(\d+)/)||[])[1]||'',tip=`${lzE(a.name||'MMSI '+mm)} · ${a.sog!=null?fSp(a.sog):''} · свой AIS (Signal K)`;
   const ic=L.divIcon({className:'',iconSize:[18,18],html:`<svg width="18" height="18" viewBox="-9 -9 18 18" style="transform:rotate(${a.cog||0}deg)"><path d="M0,-8 L5,7 L0,4 L-5,7Z" fill="#c78bff" stroke="#fff" stroke-width="1.5"/></svg>`});
   if(!a.m){a.m=L.marker(a.ll,{icon:ic,zIndexOffset:400}).bindTooltip(tip).addTo(SK.lay)}else{a.m.setLatLng(a.ll).setIcon(ic).setTooltipContent(tip)}}
 setInterval(()=>{if(!S.sk&&!SK.usb)return;const now=Date.now();for(const[k,a]of SK.ais)if(now-a.t>10*6e4){if(a.m)SK.lay.removeLayer(a.m);SK.ais.delete(k)}
@@ -1934,8 +1946,8 @@ function skDiag(){const v=SK.v,raw=SK.raw,now=Date.now(),has=k=>v[k]!=null,age=k
     ['Температура воды',['environment.water.temperature'],'Обычно встроена в датчик лага или эхолота.'],
     ['Пройдено (лаг)',['navigation.trip.log','navigation.log'],'Даёт датчик лага.'],
     ['Руль и автопилот',['steering.rudderAngle','steering.autopilot.state'],'Датчик пера руля / автопилот в сети.']];
-  const fmtv=(k)=>{const x=v[k];if(x==null)return'';if(k==='navigation.position')return fmtC(x.latitude,1)+' '+fmtC(x.longitude,0);if(k==='navigation.attitude')return x.roll!=null?'крен '+f0(x.roll*R2D)+'°':'есть';if(k==='environment.wind.angleApparent')return f0((v['environment.wind.speedApparent']||0)*MS2KN)+' уз · '+f0(Math.abs(x*R2D))+'° '+(x<0?'слева':'справа');
-    if(/speed/i.test(k))return f1(x*MS2KN)+' уз';if(/angle|heading|course|direction/i.test(k))return f0(((x*R2D)+360)%360)+'°';if(/depth/.test(k))return f1(x)+' м';if(/pressure/.test(k))return f0(x/100)+' гПа';if(/temperature/.test(k))return f1(x-273.15)+' °C';if(/log/.test(k))return f1(x/NM)+' миль';return typeof x==='number'?f1(x):'есть'};
+  const fmtv=(k)=>{const x=v[k];if(x==null)return'';if(k==='navigation.position')return fmtC(x.latitude,1)+' '+fmtC(x.longitude,0);if(k==='navigation.attitude')return x.roll!=null?'крен '+f0(x.roll*R2D)+'°':'есть';if(k==='environment.wind.angleApparent')return fW((v['environment.wind.speedApparent']||0)*MS2KN)+' · '+f0(Math.abs(x*R2D))+'° '+(x<0?'слева':'справа');
+    if(/speed/i.test(k))return fSp(x*MS2KN);if(/angle|heading|course|direction/i.test(k))return f0(((x*R2D)+360)%360)+'°';if(/depth/.test(k))return f1(x)+' м';if(/pressure/.test(k))return f0(x/100)+' гПа';if(/temperature/.test(k))return f1(x-273.15)+' °C';if(/log/.test(k))return f1(x/NM)+' миль';return typeof x==='number'?f1(x):'есть'};
   const on=!!SK.t&&now-SK.t<15e3;let h=`<p class="small">${on?'Данные идут':'Данных сейчас нет'} · источник: ${SK.usb?'USB-кабель':S.sk?'Signal K':'—'} · всего величин: ${Object.keys(SK.base).length}${SK.varApx?` · склонение ${f1(magVar(SK.base['navigation.position'].latitude,SK.base['navigation.position'].longitude))}° — по мировой модели WMM-2025, приборы его не дают`:''}</p><table class="small" style="width:100%;border-collapse:collapse">`;
   for(const[t,ks,hint]of G2){const k=ks.find(has),a=k?age(k):null;if(!k&&ks[0]==='environment.wind.speedTrue'&&has('environment.wind.angleApparent')){h+=`<tr style="border-top:1px solid var(--line)"><td style="padding:4px 4px 4px 0">✅ <b>${t}</b></td><td style="padding:4px 0"><span class="muted">считаем сами по вымпельному ветру и скорости</span></td></tr>`;continue}h+=`<tr style="border-top:1px solid var(--line)"><td style="padding:4px 4px 4px 0;vertical-align:top">${k?'✅':'—'} <b>${t}</b></td><td style="padding:4px 0;vertical-align:top">${k?`${fmtv(k)} <span class="muted">· ${lzE(src(k))}${a!=null&&a>3?' · '+a+' с назад':''}</span>`:`<span class="muted">${hint}</span>`}</td></tr>`}
   const ex=Object.keys(SK.base).filter(k=>/^(electrical|propulsion|tanks)\./.test(k)).length;h+=`<tr style="border-top:1px solid var(--line)"><td style="padding:4px 0">${ex?'✅':'—'} <b>Аккумуляторы, мотор, баки</b></td><td style="padding:4px 0">${ex?ex+' величин':'<span class="muted">Victron, датчики баков, мотор — через Signal K.</span>'}</td></tr>`;
@@ -2131,8 +2143,8 @@ function cuData(all){const m=CU.map;if(!m||!m.isStyleLoaded())return;const src=k
   const tg=NAV.mode&&NAV.pts[NAV.idx];src('nav').setData(cuFC(tg&&G.pos?[cuLn([G.pos,tg])]:[]));
   src('ais').setData(cuFC(AIS.on?[...AIS.ships.values()].filter(q=>q.lat!=null).map(q=>cuPt([q.lat,q.lon],{r:q.cog!=null?q.cog:0,n:q.name||''})):[]))}
 function cuTick(){if(!CU.on||!CU.map)return;const m=CU.map,me=G.pos;
-  $('#cuSog').textContent=G.sog!=null?f1(G.sog):'—';$('#cuCog').textContent=G.cog!=null?String(Math.round(G.cog)%360).padStart(3,'0')+'°':'—';
-  const tg=NAV.mode&&NAV.pts[NAV.idx];if(tg&&me){const d=dist(me,tg);$('#cuNav').hidden=false;$('#cuNav').textContent=`→ ${NAV.name||'точка'} · ${String(Math.round(brg(me,tg))%360).padStart(3,'0')}° · ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}`}else $('#cuNav').hidden=true;
+  $('#cuSog').textContent=G.sog!=null?uSV(G.sog):'—';$('#cuCog').textContent=G.cog!=null?String(Math.round(G.cog)%360).padStart(3,'0')+'°':'—';
+  const tg=NAV.mode&&NAV.pts[NAV.idx];if(tg&&me){const d=dist(me,tg);$('#cuNav').hidden=false;$('#cuNav').textContent=`→ ${NAV.name||'точка'} · ${String(Math.round(brg(me,tg))%360).padStart(3,'0')}° · ${fDm(d)}`}else $('#cuNav').hidden=true;
   const slow=G.sog==null||G.sog<1||G.cog==null;
   if(!slow)CU.lastCog=G.cog;const tc=slow?CU.lastCog:G.cog;if(CU.mode==='course'&&tc!=null){let d=((tc-CU.brg+540)%360)-180;CU.brg=(CU.brg+d*.6+360)%360}else if(CU.mode==='north')CU.brg=0;
   $('#cuN').style.transform=`rotate(${-CU.brg}deg)`;$('#cuMode').classList.toggle('north',CU.mode==='north');
@@ -2153,6 +2165,7 @@ async function cuOpen(){$('#cu').hidden=false;CU.on=true;try{await cuLoad()}catc
 function cuClose(){CU.on=false;clearInterval(CU.tm);$('#cu').hidden=true;try{CU.wl?.release()}catch(_){}CU.wl=null}
 $('#btnCU').onclick=cuOpen;$('#cuX').onclick=cuClose;
 $('#cuMode').onclick=()=>{CU.mode=CU.mode==='course'?'north':'course';store.set('cuMode',CU.mode);CU.free=0;toast(CU.mode==='course'?'Карта по курсу: нос лодки вверх':'Север вверх',2500);cuTick()};
+$('#uSpd').onchange=e=>uSet('uSpd',e.target.value);$('#uWind').onchange=e=>uSet('uWind',e.target.value);$('#uDist').onchange=e=>uSet('uDist',e.target.value);setTimeout(uLabels,0);
 $('#cuMe').onclick=()=>{CU.free=0;cuTick()};$('#cuZp').onclick=()=>CU.map&&CU.map.zoomIn();$('#cuZm').onclick=()=>CU.map&&CU.map.zoomOut();
 /* ===== «Приборы»: весь ход на одном экране ===== */
 const DSH={on:false,tm:null,big:store.get('dashBig',''),max:0,maxT:0,h:{},s:{},damp:store.get('dashDamp',1)};const DAMP=[[1,'без сглаживания'],[.45,'сглаживание качки'],[.2,'сильное сглаживание']];
@@ -2272,8 +2285,8 @@ function dashRender(){if(!DSH.on)return;const d=dashData(),B=S.boat,now=Date.now
   const hS=hist('sog',d.sog),hD=hist('dep',d.dep);
   const gc=(id,title,svg,src,inst,o={})=>`<div class="gc${DSH.big===id?' big':''}${o.alarm?' alarm':''}" data-g="${id}"><div class="gh"><span class="gt">${title}</span>${src?`<span class="gs"><i class="led ${inst?'on':'am'}"></i>${src}</span>`:''}</div>${svg}${o.leg?`<div class="gl">${o.leg}</div>`:''}${o.spk||''}</div>`;
   const side=x=>x==null?'—':`${f0(Math.abs(x))}° ${x<0?'слева':'справа'}`;
-  let h='<div class="gg">'+gc('sog','Скорость',gDial(d.sog,0,mx,{step:mx>16?4:2,unit:'узлов',marks:[{v:d.tgt,c:'var(--ok)',t:'цель по поляре'},{v:d.max,c:'var(--warn)',t:'наибольшая'}],sub:d.tgt?`цель ${f1(d.tgt)} уз${d.pct?' · '+f0(d.pct)+'%':''}`:d.max?`наибольшая ${f1(d.max)} уз`:'',subc:d.pct>=90?'var(--ok)':''}),d.sog!=null?'GPS':'',d.sog!=null,{spk:spark(hS,false,'10 мин')});
-  h+=gc('wind','Ветер',gWind(d),d.src.wind||'',d.src.wind==='приборы',{leg:d.awa!=null||d.twa!=null?`<span><i style="background:var(--accent)"></i>вымп. ${side(d.awa)}</span><span><i style="border:1.5px solid var(--ok)"></i>ист. ${side(d.twa)}${d.tws!=null?' · '+f0(d.tws)+' уз':''}</span>`:'нет данных о ветре'});
+  let h='<div class="gg">'+gc('sog','Скорость',gDial(d.sog==null?null:d.sog*uS()[0],0,mx*uS()[0],{step:mx*uS()[0]>30?10:mx*uS()[0]>16?4:2,unit:S.uSpd==='kmh'?'км/ч':'узлов',marks:[{v:d.tgt==null?null:d.tgt*uS()[0],c:'var(--ok)',t:'цель по поляре'},{v:d.max==null?null:d.max*uS()[0],c:'var(--warn)',t:'наибольшая'}],sub:d.tgt?`цель ${fSp(d.tgt)}${d.pct?' · '+f0(d.pct)+'%':''}`:d.max?`наибольшая ${fSp(d.max)}`:'',subc:d.pct>=90?'var(--ok)':''}),d.sog!=null?'GPS':'',d.sog!=null,{spk:spark(hS,false,'10 мин')});
+  h+=gc('wind','Ветер',gWind(d),d.src.wind||'',d.src.wind==='приборы',{leg:d.awa!=null||d.twa!=null?`<span><i style="background:var(--accent)"></i>вымп. ${side(d.awa)}</span><span><i style="border:1.5px solid var(--ok)"></i>ист. ${side(d.twa)}${d.tws!=null?' · '+fW(d.tws)+'':''}</span>`:'нет данных о ветре'});
   h+=gc('cmp','Курс',gComp(d.hdg,d.cog,d.btw),d.hdg!=null?'компас':d.cog!=null?'GPS':'',d.hdg!=null,{leg:[d.hdg!=null&&d.cog!=null?`<span><i style="background:var(--needle)"></i>по GPS ${String(Math.round(d.cog)%360).padStart(3,'0')}°</span>`:'',d.btw!=null?`<span><i style="background:var(--btw)"></i>на точку ${String(Math.round(d.btw)%360).padStart(3,'0')}°</span>`:''].join('')||(d.cog!=null?'курс относительно земли':'включите GPS')});
   const dr=B.draft||1.8,need=Math.max(dr*4,(d.dep||0)*1.15),dmx=[10,20,30,50,100,200,500].find(x=>x>=need)||500,dst={10:2,20:5,30:5,50:10,100:20,200:50,500:100}[dmx];
   let tr='';if(hD.length>12&&d.src.dep==='эхолот'){const L=hD.slice(-4),E=hD.slice(-16,-11),av=q=>q.reduce((x,y)=>x+y[1],0)/q.length,dd=av(L)-av(E);if(dd<-.3)tr=' · мелеет ↓';else if(dd>.3)tr=' · глубже ↑'}
@@ -2283,30 +2296,30 @@ function dashRender(){if(!DSH.on)return;const d=dashData(),B=S.boat,now=Date.now
   h+='</div>';
   const sec=x=>x==null?'':x<60?Math.round(x)+' с':Math.floor(x/60)+' мин';
   h+='<h3>Ход и ветер</h3>';
-  h+=dTile('Лаг (по воде)',f1(d.stw),'уз',d.stw!=null&&d.sog!=null?`по GPS ${f1(d.sog)} уз`:'нужен лаг (Signal K)',d.stw==null?'off':'');
-  h+=dTile('Истинный ветер',f0(d.tws),'уз',d.twd!=null?`${rumb(d.twd)} · ${f0(d.twd)}°${d.fgust!=null?` · порывы ${f0(d.fgust)}`:''}`:'нет данных',d.tws==null?'off':d.tws>=S.windMax?'bad':'');
-  h+=dTile('Вымпельный ветер',f0(d.aws),'уз',d.awa!=null?`${f0(Math.abs(d.awa))}° ${d.awa<0?'слева':'справа'}`:'',d.aws==null?'off':'');
-  h+=dTile('Цель по поляре',f1(d.tgt),'уз',d.pct?`идёте на ${f0(d.pct)}% от поляры`:'',d.tgt==null?'off':d.pct>=90?'ok':d.pct<70?'warn':'');
-  h+=dTile('Скорость к ветру',f1(d.vmgW),'уз',d.twa!=null?(Math.abs(d.twa)<90?'выигрыш на ветер':'выигрыш по ветру'):'',d.vmgW==null?'off':'');
+  h+=dTile('Лаг (по воде)',uSV(d.stw),spU(),d.stw!=null&&d.sog!=null?`по GPS ${fSp(d.sog)}`:'нужен лаг (Signal K)',d.stw==null?'off':'');
+  h+=dTile('Истинный ветер',uWV(d.tws),wU(),d.twd!=null?`${rumb(d.twd)} · ${f0(d.twd)}°${d.fgust!=null?` · порывы ${f0(d.fgust)}`:''}`:'нет данных',d.tws==null?'off':d.tws>=S.windMax?'bad':'');
+  h+=dTile('Вымпельный ветер',uWV(d.aws),wU(),d.awa!=null?`${f0(Math.abs(d.awa))}° ${d.awa<0?'слева':'справа'}`:'',d.aws==null?'off':'');
+  h+=dTile('Цель по поляре',uSV(d.tgt),spU(),d.pct?`идёте на ${f0(d.pct)}% от поляры`:'',d.tgt==null?'off':d.pct>=90?'ok':d.pct<70?'warn':'');
+  h+=dTile('Скорость к ветру',uSV(d.vmgW),spU(),d.twa!=null?(Math.abs(d.twa)<90?'выигрыш на ветер':'выигрыш по ветру'):'',d.vmgW==null?'off':'');
   h+=dTile('Курс по GPS',d.cog!=null?f0(d.cog)+'°':'—','',d.hdg!=null&&d.cog!=null?`снос ${f0(Math.abs(sgn(d.cog-d.hdg)))}°`:'',d.cog==null?'off':'');
-  h+=dTile('Течение',f1(d.drift),'уз',d.set!=null?`несёт на ${rumb(d.set)} · ${d.src.cur}`:'нужны лаг и компас',d.drift==null?'off':'');
+  h+=dTile('Течение',uSV(d.drift),spU(),d.set!=null?`несёт на ${rumb(d.set)} · ${d.src.cur}`:'нужны лаг и компас',d.drift==null?'off':'');
   if(d.rud!=null)h+=dTile('Перо руля',f0(Math.abs(d.rud))+'°','',d.rud<0?'влево':'вправо');
   if(d.ap)h+=dTile('Автопилот',lzE(String(d.ap)),'','');
   h+='<h3>Переход</h3>';
-  h+=dTile(d.wpName?'До точки':'Ведение',d.dtw!=null?(d.dtw<1?f0(d.dtw*NM):f1(d.dtw)):'—',d.dtw!=null?(d.dtw<1?'м':'миль'):'',d.btw!=null?`пеленг ${f0(d.btw)}° · ${d.wpName}`:'выберите точку или маршрут',d.dtw==null?'off':NAV.mode==='mob'?'bad':'');
-  h+=dTile('Прибытие',d.eta?mskT(d.eta):'—','',d.eta?`через ${fmtHM(d.eta-now)}${d.dEnd!=null?` · до конца ${f1(d.dEnd)} миль`:''}`:d.vmg!=null?'к точке не приближаетесь':'',d.eta?'':'off');
-  h+=dTile('Скорость к точке',f1(d.vmg),'уз','',d.vmg==null?'off':d.vmg<0?'warn':'');
+  h+=dTile(d.wpName?'До точки':'Ведение',d.dtw!=null?(d.dtw<1?f0(d.dtw*NM):uDV(d.dtw)):'—',d.dtw!=null?(d.dtw<1?'м':dU('миль')):'',d.btw!=null?`пеленг ${f0(d.btw)}° · ${d.wpName}`:'выберите точку или маршрут',d.dtw==null?'off':NAV.mode==='mob'?'bad':'');
+  h+=dTile('Прибытие',d.eta?mskT(d.eta):'—','',d.eta?`через ${fmtHM(d.eta-now)}${d.dEnd!=null?` · до конца ${fDn(d.dEnd,'миль')}`:''}`:d.vmg!=null?'к точке не приближаетесь':'',d.eta?'':'off');
+  h+=dTile('Скорость к точке',uSV(d.vmg),spU(),'',d.vmg==null?'off':d.vmg<0?'warn':'');
   h+=dTile('Уход с линии',d.xte!=null?f0(Math.abs(d.xte)):'—',d.xte!=null?'м':'',d.xte!=null?(d.xte>0?'вы правее линии':'вы левее линии'):'',d.xte==null?'off':Math.abs(d.xte)>NAV.xteNm*NM?'bad':'');
-  h+=dTile('Пройдено',f1(d.trip??d.run),'миль',d.trip!=null?`лаг лодки за рейс${d.runT?` · в пути ${fmtHM(d.runT*1000)}`:''}`:d.runT?`в пути ${fmtHM(d.runT*1000)}${d.avg?` · средняя ${f1(d.avg)} уз`:''}`:'включите GPS',d.run==null&&d.trip==null?'off':'');
-  if(d.log!=null)h+=dTile('Общий лаг',f0(d.log),'миль','');
-  h+=dTile('Наибольшая скорость',f1(d.max),'уз',DSH.maxT?mskT(DSH.maxT):'',d.max?'':'off');
+  h+=dTile('Пройдено',uDV(d.trip??d.run),dU('миль'),d.trip!=null?`лаг лодки за рейс${d.runT?` · в пути ${fmtHM(d.runT*1000)}`:''}`:d.runT?`в пути ${fmtHM(d.runT*1000)}${d.avg?` · средняя ${fSp(d.avg)}`:''}`:'включите GPS',d.run==null&&d.trip==null?'off':'');
+  if(d.log!=null)h+=dTile('Общий лаг',uKm()?f0(d.log*1.852):f0(d.log),dU('миль'),'');
+  h+=dTile('Наибольшая скорость',uSV(d.max),spU(),DSH.maxT?mskT(DSH.maxT):'',d.max?'':'off');
   h+='<h3>Безопасность</h3>';
-  const sh=d.ship;h+=dTile('Ближайшее судно',sh?f1(sh.d):'—',sh?'миль':'',sh?`${sh.c&&sh.c.t>0&&sh.c.t<60?`сблизимся до ${f1(sh.c.cpa)} мили через ${f0(sh.c.t)} мин · `:''}${lzE(sh.n)}`:d.nShips?'':'AIS выключен или судов нет',!sh?'off':sh.risk<.5?'bad':sh.risk<1?'warn':'');
+  const sh=d.ship;h+=dTile('Ближайшее судно',sh?uDV(sh.d):'—',sh?dU('миль'):'',sh?`${sh.c&&sh.c.t>0&&sh.c.t<60?`сблизимся до ${fDn(sh.c.cpa)} через ${f0(sh.c.t)} мин · `:''}${lzE(sh.n)}`:d.nShips?'':'AIS выключен или судов нет',!sh?'off':sh.risk<.5?'bad':sh.risk<1?'warn':'');
   h+=dTile('Под килем',f1(d.under),'м',d.src.dep?`${d.src.dep} · осадка ${f1(dr)} м${d.depRaw?' · глубина от датчика: впишите его заглубление в «Лодке»':''}`:'',d.under==null?'off':d.under<.5?'bad':d.under<2?'warn':'ok');
   if(d.anc!=null)h+=dTile('До якоря',f0(d.anc),'м',`круг ${d.ancR} м`,d.anc>d.ancR?'bad':'ok');
   h+=dTile('Волна',d.wave?f1(d.wave.h):'—','м',d.wave?`оценка по ветру и разгону · период ${f0(d.wave.t)} с`:'',d.wave?d.wave.h>=S.waveMax?'bad':'':'off');
   h+=dTile('Давление',f0(d.pres),'гПа',d.pd3!=null?`за 3 ч ${d.pd3>0?'+':''}${f1(d.pd3)} · ${d.src.pres}`:d.src.pres||'',d.pres==null?'off':d.pd3<=-3?'bad':'');
-  h+=dTile('Прогноз здесь',f0(d.fws),'уз',d.fws!=null?`${rumb(d.fwd)} · порывы ${f0(d.fgust)} · ${lzE(d.fmodel||'')}`:'прогноз не загружен',d.fws==null?'off':d.fgust>=S.gustMax?'bad':'');
+  h+=dTile('Прогноз здесь',uWV(d.fws),wU(),d.fws!=null?`${rumb(d.fwd)} · порывы ${f0(d.fgust)} · ${lzE(d.fmodel||'')}`:'прогноз не загружен',d.fws==null?'off':d.fgust>=S.gustMax?'bad':'');
   h+=dTile(d.sun?(d.sun.set?'Закат':'Рассвет'):'Солнце',d.sun?mskT(d.sun.t):'—','',d.sun?`через ${fmtHM(d.sun.t-now)}`:'полярный день или ночь');
   if(d.tw!=null||d.ta!=null||d.bat?.length||d.eng?.length||d.tank?.length){h+='<h3>Лодка</h3>';
     if(d.tw!=null)h+=dTile('Вода',f1(d.tw),'°C','');if(d.ta!=null)h+=dTile('Воздух',f1(d.ta),'°C',d.hum!=null?`влажность ${f0(d.hum*100)}%`:'');
