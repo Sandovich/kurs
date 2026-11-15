@@ -23,6 +23,7 @@ body.night .leaflet-popup-content-wrapper,body.night .leaflet-popup-tip{backgrou
 html,body{margin:0;height:100%;width:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--text);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
 #map{position:fixed;inset:0;background:#0d2236}
 button,select,input{font:inherit;color:inherit}
+html{color-scheme:dark}select option,select optgroup{background:#15293d;color:#e6eef5}body.night select option,body.night select optgroup{background:#1d0000;color:#ff5a4a}
 button{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px;cursor:pointer;white-space:nowrap}
 #top nav button{flex:1 1 0;min-width:0;padding:6px 4px;font-size:14px;min-height:42px;overflow:hidden;text-overflow:ellipsis}
 #top nav button .ic{display:none;width:20px;height:20px;flex:none}#btnMore{flex:0 0 46px!important;display:inline-flex;align-items:center;justify-content:center;padding:0!important}#top nav #btnMore .ic{display:block}#top nav #btnMore span{display:none}
@@ -585,7 +586,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.40';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.41';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
