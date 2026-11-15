@@ -241,6 +241,26 @@ body.night #aiV::before{background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.9) 
 #aiV .avS{width:46px;height:46px;min-height:0;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);color:var(--text);font-size:17px}
 #aiVH{background:none;border:0;min-height:22px;padding:0;color:var(--muted);font-size:14px;text-align:center;white-space:normal;cursor:default}[data-off] #aiVH{color:var(--warn);text-decoration:underline;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.orb,.orb i,#aiV{animation:none!important}}
+#aiV .avIn{gap:12px}
+#aiVQ{align-self:flex-end;max-width:86%;margin:0;padding:8px 14px;border-radius:18px 18px 5px 18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.1);color:var(--text);font-size:15px;line-height:1.3;text-align:left}
+#aiVA{font-size:22px;line-height:1.3;font-weight:600;letter-spacing:-.012em;padding:2px 2px 10px;-webkit-mask-image:linear-gradient(#000 calc(100% - 18px),transparent);mask-image:linear-gradient(#000 calc(100% - 18px),transparent);scrollbar-width:none}#aiVA::-webkit-scrollbar{display:none}
+#aiVA.long{font-size:17px;line-height:1.46;font-weight:450;letter-spacing:0}#aiVA.in{animation:avIn .35s ease-out}@keyframes avIn{from{opacity:0;transform:translateY(8px)}}
+#aiVA .avL{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 13px;border-radius:999px;background:rgba(63,182,255,.14);border:1px solid rgba(63,182,255,.35);color:var(--accent);font-size:14px;font-weight:600;letter-spacing:0;text-decoration:none}
+#aiVC{display:flex;gap:8px;overflow-x:auto;padding:2px 16px;margin:0 -16px;scrollbar-width:none}#aiVC::-webkit-scrollbar{display:none}
+#aiVC button{flex:none;min-height:38px;padding:0 15px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:var(--text);font-size:14.5px;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+#aiV:not([data-st=idle]) #aiVC,#aiV[data-off] #aiVC,#aiAsk:not([hidden])~#aiVC{display:none}
+#aiVT{display:flex;align-items:center;gap:6px;padding:5px 5px 5px 18px;border-radius:28px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);transition:border-color .2s,box-shadow .2s}#aiVT[hidden]{display:none}
+#aiVT:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px rgba(63,182,255,.16)}
+#aiTxt{flex:1;min-width:0;min-height:40px;padding:0;background:none;border:0;outline:0;font-size:17px;color:var(--text)}#aiTxt::placeholder{color:var(--muted)}
+#aiSend{flex:none;width:40px;height:40px;min-height:0;padding:0;border:0;border-radius:50%;background:var(--accent);color:#001321;display:inline-flex;align-items:center;justify-content:center;transition:opacity .2s,transform .2s}#aiTxt:placeholder-shown+#aiSend{opacity:.3;transform:scale(.9)}
+#aiAsk{background:rgba(255,255,255,.07);border:1px solid rgba(255,176,32,.5);border-radius:24px;padding:16px 16px 14px;-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);box-shadow:0 14px 44px rgba(0,0,0,.4);animation:avIn .3s ease-out}
+#aiAsk .akL{display:block;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--warn);margin-bottom:6px}#aiAskT{font-size:19px;font-weight:650;line-height:1.25;letter-spacing:-.01em;margin:0 0 4px}#aiAskD:empty{display:none}
+#aiAsk .akB{display:flex;gap:10px;margin-top:14px}#aiAsk .akB button{flex:1;min-height:50px;border-radius:999px;font-size:16px;font-weight:650}#aiNo{background:rgba(255,255,255,.1);border-color:transparent}
+#aiV .avS{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.12);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+#aiVH{font-size:13.5px;letter-spacing:.01em}
+body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,body.night #aiNo{background:rgba(255,40,20,.1);border-color:#4a0a0a}body.night #aiAsk{background:#140000;border-color:#7a0000}body.night #aiVA .avL{background:#2a0000;border-color:#5a0000}body.night #aiVT:focus-within{box-shadow:0 0 0 4px rgba(255,40,20,.18)}body.night #aiSend{color:#000}
+#aiLog{display:flex;flex-direction:column;gap:6px;padding:4px 0}#aiLog>div{border:0!important;padding:8px 12px!important;border-radius:16px 16px 16px 5px;background:var(--panel2);max-width:88%;align-self:flex-start}#aiLog>div.me{align-self:flex-end;border-radius:16px 16px 5px 16px;background:rgba(63,182,255,.16);color:var(--text)}#aiLog b{display:none}#aiLog:empty{display:none}
+@media (prefers-reduced-motion:reduce){#aiVA.in,#aiAsk{animation:none!important}}
 .chip .cx{pointer-events:auto;margin-left:8px;background:rgba(255,255,255,.14);border:0;color:inherit;border-radius:999px;padding:3px 9px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer}.chip .cx:active{background:rgba(255,255,255,.28)}
 .chip{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-color:rgba(255,255,255,.1);font-weight:550}
 @media (max-width:819px){#legend{width:56px}}
@@ -512,10 +532,11 @@ body.night #aiV::before{background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.9) 
     <p id="aiVQ"></p>
     <div id="aiVA" aria-live="polite"></div>
     <div id="aiAsk" hidden role="alertdialog">
-      <p id="aiAskT"></p><p id="aiAskD" class="small muted"></p>
-      <div class="row"><button id="aiYes" class="primary" style="flex:1">Да, выполнить</button><button id="aiNo" style="flex:1">Нет</button></div>
+      <span class="akL">Нужно ваше «Да»</span><p id="aiAskT"></p><p id="aiAskD" class="small muted"></p>
+      <div class="akB"><button id="aiYes" class="primary" style="flex:1">Да, выполнить</button><button id="aiNo" style="flex:1">Нет</button></div>
     </div>
-    <div class="row" id="aiVT" hidden><input id="aiTxt" placeholder="Спросите текстом…" style="flex:1;min-width:0" enterkeyhint="send"><button id="aiSend" class="primary" aria-label="Отправить">→</button></div>
+    <div id="aiVC"><button>Где мы?</button><button>Какой ветер?</button><button>Глубина под килем</button><button>Мосты сегодня</button></div>
+    <div id="aiVT" hidden><input id="aiTxt" placeholder="Спросите помощника…" enterkeyhint="send" autocomplete="off"><button id="aiSend" aria-label="Отправить"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg></button></div>
     <div class="avB">
       <button id="aiVKb" class="avS" aria-label="Спросить текстом" title="Спросить текстом"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M7.5 14.5h9"/></svg></button>
       <button id="aiOrb" class="orb" aria-label="Нажмите и говорите"><i></i><i></i></button>
@@ -550,7 +571,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.33';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.34';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1888,14 +1909,17 @@ function kaStart(){kaStop();const u=kaURL();if(!u){kaSt('Впишите адре
   ws.onopen=()=>{KA.retry=0;ws.send(JSON.stringify({type:'hello',proto:'kurs-assist/1',app:'Курс',ver:VER,tools:Object.keys(KA_T),confirm:Object.keys(KA_CONFIRM),caps:{audio:!!window.MediaRecorder,tts:'speechSynthesis' in window}}));kaSt('Помощник на связи.');kaState('idle')};
   ws.onmessage=async e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
     if(m.type==='tool_call'){const r=await kaCall(m.name,m.args||{});if(ws.readyState===1)ws.send(JSON.stringify({type:'tool_result',id:m.id,name:m.name,...r}))}
-    else if(m.type==='say'){kaLog('ai',m.text||'');if(m.text){$('#aiVA').textContent=m.text;$('#aiVA').scrollTop=0}kaOpen();kaSpeak(m)}else if(m.type==='status'){kaSt(lzE(m.text||''));if(KV.st==='think'&&m.text)$('#aiVH').textContent=m.text}};
+    else if(m.type==='say'){kaLog('ai',m.text||'');if(m.text)kaAns(m.text);kaOpen();kaSpeak(m)}else if(m.type==='status'){kaSt(lzE(m.text||''));if(KV.st==='think'&&m.text)$('#aiVH').textContent=m.text}};
   ws.onclose=()=>{KA.ws=null;kaMic(false,true);kaState('idle');if(!S.ai)return;const d=Math.min(60,5*2**KA.retry++);kaSt(`Нет связи с помощником — пробую снова через ${d} с.`);KA.tm=setTimeout(()=>{if(S.ai)kaStart()},d*1000)}}
 async function kaCall(name,args){const f=KA_T[name];if(!f)return{ok:false,error:'Нет такого действия: '+name};
   const need=KA_CONFIRM[name]&&!(name==='boat_settings'&&(args.action||'get')==='get');
   if(need&&!(await kaAsk(KA_CONFIRM[name],args)))return{ok:false,error:'declined',say:'Капитан не подтвердил'};
   try{const res=await f(args);return{ok:!(res&&res.error),result:res}}catch(e){logE('ai '+name+' '+e.message);return{ok:false,error:String(e.message)}}}
-function kaAsk(what,args){return new Promise(res=>{kaOpen();clearTimeout(KV.tH);const d=$('#aiAsk');$('#aiAskT').textContent='Помощник просит: '+what+'. Выполнить?';const a=Object.entries(args||{}).filter(([k,v])=>v!=null&&v!=='').map(([k,v])=>k+': '+v).join(' · ');$('#aiAskD').textContent=a;d.hidden=false;try{navigator.vibrate?.(200)}catch(_){}
+function kaAsk(what,args){return new Promise(res=>{kaOpen();clearTimeout(KV.tH);const d=$('#aiAsk');$('#aiAskT').textContent=what.charAt(0).toUpperCase()+what.slice(1)+'?';const a=Object.entries(args||{}).filter(([k,v])=>v!=null&&v!=='').map(([k,v])=>k+': '+v).join(' · ');$('#aiAskD').textContent=a;d.hidden=false;try{navigator.vibrate?.(200)}catch(_){}
   const done=v=>{clearTimeout(t);d.hidden=true;kaIdleHide();res(v)},t=setTimeout(()=>done(false),30000);$('#aiYes').onclick=()=>done(true);$('#aiNo').onclick=()=>done(false)})}
+function kaAns(t){const a=$('#aiVA');let u='';t=String(t||'').replace(/\s*Ссылка на официальный текст:\s*(https?:\/\/\S+)\s*$/,(_,x)=>{u=x;return''});
+  a.innerHTML=lzE(t).replace(/https?:\/\/[^\s<]+/g,x=>`<a class="avL" href="${x}" target="_blank" rel="noopener">ссылка ↗</a>`)+(u?`<br><a class="avL" href="${lzE(u)}" target="_blank" rel="noopener">Официальный текст ↗</a>`:'');
+  a.classList.toggle('long',t.length>170);a.classList.remove('in');void a.offsetWidth;a.classList.add('in');a.scrollTop=0}
 const kaOn=()=>!!(KA.ws&&KA.ws.readyState===1);
 function kaState(st,hint){KV.st=st;const v=$('#aiV'),f=$('#aiFab'),on=kaOn();v.dataset.st=st;f.dataset.st=on?st:'off';on?v.removeAttribute('data-off'):v.setAttribute('data-off','');
   $('#aiVH').textContent=hint||(!on?'Помощник не подключён — настроить':{idle:'Нажмите на шар и говорите',listen:'Слушаю…',think:'Думаю…',speak:'Нажмите на шар, чтобы перебить'}[st]);
@@ -1908,7 +1932,7 @@ function kaSpeak(m){kaQuiet();const k=KV.sp,end=()=>{if(KV.sp===k&&KV.st==='spea
   if(m.audio){try{const a=new Audio('data:'+(m.mime||'audio/wav')+';base64,'+m.audio);KV.au=a;a.onended=a.onerror=end;kaState('speak');a.play().catch(end);return}catch(_){}}
   if(m.text&&S.aiVoice&&'speechSynthesis' in window){try{const u=new SpeechSynthesisUtterance(m.text.replace(/https?:\/\/\S+/g,'').replace(/Ссылка на официальный текст:\s*$/,''));u.lang='ru-RU';u.onend=u.onerror=end;kaState('speak');speechSynthesis.speak(u);return}catch(_){}}
   kaState('idle')}
-function kaSend(){const t=$('#aiTxt').value.trim();if(!t)return;if(!kaOn()){kaSt('Помощник не подключён.');kaState('idle');return}kaQuiet();KA.ws.send(JSON.stringify({type:'user_text',id:'u'+Date.now(),text:t}));kaLog('me',t);$('#aiTxt').value='';$('#aiVQ').textContent=t;$('#aiVA').textContent='';kaState('think')}
+function kaSend(){const t=$('#aiTxt').value.trim();if(!t)return;if(!kaOn()){kaSt('Помощник не подключён.');kaState('idle');return}kaQuiet();KA.ws.send(JSON.stringify({type:'user_text',id:'u'+Date.now(),text:t}));kaLog('me',t);$('#aiTxt').value='';$('#aiTxt').blur();$('#aiVQ').textContent=t;$('#aiVA').textContent='';kaState('think')}
 /* уровень голоса качает шар; тишина после речи — вопрос окончен */
 function kaLv(st){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ac=new AC(),an=ac.createAnalyser();an.fftSize=512;ac.createMediaStreamSource(st).connect(an);KV.ac=ac;
     const buf=new Uint8Array(an.fftSize),t0=performance.now();let heard=0,last=t0,lv=0;const orb=$('#aiOrb');
@@ -1932,7 +1956,7 @@ function kaInit(){if(S.aiVoice==null)S.aiVoice=true;$('#chkAi').checked=!!S.ai;$
   $('#chkAiVoice').onchange=e=>{S.aiVoice=e.target.checked;saveS();if(!S.aiVoice)kaQuiet()};
   $('#aiSend').onclick=kaSend;$('#aiTxt').onkeydown=e=>{if(e.key==='Enter')kaSend()};
   $('#aiFab').onclick=()=>kaOpen(true);$('#aiOrb').onclick=kaTap;$('#aiVX').onclick=kaClose;$('#aiVH').onclick=()=>{if(!kaOn()){kaClose();openPanel('ai')}};
-  $('#aiVKb').onclick=()=>{const r=$('#aiVT');r.hidden=!r.hidden;if(!r.hidden){kaMic(false,true);$('#aiTxt').focus()}};
+  $$('#aiVC button').forEach(b=>b.onclick=()=>{$('#aiTxt').value=b.textContent;kaSend()});$('#aiVKb').onclick=()=>{const r=$('#aiVT');r.hidden=!r.hidden;if(!r.hidden){kaMic(false,true);$('#aiTxt').focus()}};
   $('#aiOpenBtn').onclick=()=>{closePanel();kaOpen(false)}}
 /* ===== «Приборы»: весь ход на одном экране ===== */
 const DSH={on:false,tm:null,big:store.get('dashBig',''),max:0,maxT:0,h:{},s:{},damp:store.get('dashDamp',1)};const DAMP=[[1,'без сглаживания'],[.45,'сглаживание качки'],[.2,'сильное сглаживание']];
