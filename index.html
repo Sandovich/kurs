@@ -181,6 +181,7 @@ tr.bad td{background:rgba(255,77,79,.13)}
 body.night .mk i{background:#ff3b30;border-color:#5a0000}body.night .mk span{color:#ff6a5a;text-shadow:0 0 3px #000,0 0 3px #000}
 .evL{position:relative}.evL b{position:absolute;left:0;top:-44px;transform:translateX(-50%);white-space:nowrap;display:inline-flex;align-items:center;gap:8px;background:rgba(16,34,51,.95);color:#ffd23f;border:1px solid #ffd23f;border-radius:999px;padding:5px 6px 5px 12px;font-size:14px;font-weight:700;box-shadow:0 3px 12px rgba(0,0,0,.45)}.evL b u{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:12px}
 body.night .evL b{background:#140000;color:#ff6a5a;border-color:#7a0000}
+.lpAct.lp2{grid-template-columns:1fr 1fr;min-width:250px}.lpAct.lp2 .pri{grid-column:1/-1}.lpAct.lp2 button{padding:0 8px;font-size:13.5px}
 .lpAct input{background:#fff;color:#10202f;border:1px solid #c5d0db;border-radius:10px;min-height:40px;padding:0 10px;font-size:15px;width:100%}body.night .lpAct input{background:#2a0000;color:#ff6a5a;border-color:#5a0000}
 #rPtsD{margin:8px 0}#rPtsD summary{cursor:pointer;padding:8px 0;color:var(--accent)}#rPts table{width:100%}#rPts td{padding:3px 2px;vertical-align:middle}#rPts input{width:100%;min-width:150px;min-height:38px;font-size:14px;padding:4px 8px}#rPts button{min-height:38px;min-width:38px;padding:0 8px}#rPts input.bad{border-color:var(--danger)}
 .wp{background:var(--accent);color:#001321;border:2px solid #fff;border-radius:50%;display:flex!important;align-items:center;justify-content:center;font-size:11px;font-weight:700}
@@ -583,7 +584,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.38';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.39';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1542,10 +1543,10 @@ const LP={t:null,x:0,y:0,suppress:false};
 function lpMenu(ll){const me=G.pos;let info=`<b>${fmtC(ll.lat,1)}<br>${fmtC(ll.lng,0)}</b>`;
   if(me){const d=dist(me,[ll.lat,ll.lng]);info+=`<br>от лодки: ${f0(brg(me,[ll.lat,ll.lng]))}°, ${d<1000?f0(d)+' м':f1(d/NM)+' мили'}`;if(G.sog>.5)info+=`, ≈${fmtHM(d/NM/G.sog*36e5)} при ${f1(G.sog)} уз`}
   const w=WM.g?isWater(ll.lat,ll.lng):null;if(w===false)info+='<br><span style="color:#c00">суша</span>';
-  const pop=L.popup({closeButton:true,autoPan:true,autoPanPaddingTopLeft:[10,150],autoPanPaddingBottomRight:[10,110]}).setLatLng(ll).setContent(`<div style="font-size:13px;line-height:1.4">${info}<div class="lpAct"><button data-a="go" class="pri">Идти сюда</button><button data-a="wx">Прогноз здесь</button><button data-a="rt">Добавить в маршрут</button><button data-a="mk">Поставить метку</button>${me?'<button data-a="ev">Пеленг и кольцо от лодки</button>':''}<button data-a="evp">${EV.pend?'Пеленг и кольцо от отмеченной точки':'Мерить отсюда до другой точки'}</button>${EV.t?'<button data-a="evx">Убрать пеленг и кольцо</button>':''}</div></div>`).openOn(map);
+  const pop=L.popup({closeButton:true,autoPan:true,autoPanPaddingTopLeft:[10,150],autoPanPaddingBottomRight:[10,110]}).setLatLng(ll).setContent(`<div style="font-size:13px;line-height:1.4">${info}<div class="lpAct lp2"><button data-a="go" class="pri">Идти сюда</button><button data-a="wx">Прогноз здесь</button><button data-a="rt">В маршрут</button><button data-a="mk">Поставить метку</button>${me?'<button data-a="ev">Пеленг от лодки</button>':''}<button data-a="evp">${EV.pend?'Пеленг от отметки':'Мерить отсюда'}</button>${EV.t?'<button data-a="evx">Убрать пеленг</button>':''}</div></div>`).openOn(map);
   const el=pop.getElement();el.querySelectorAll('button').forEach(b=>b.onclick=()=>{map.closePopup();const a=b.dataset.a;
     if(a==='go')navStart('point',[[ll.lat,ll.lng]],0,'Точка '+fmtC(ll.lat,1));else if(a==='wx')showPoint(ll);else if(a==='mk')mkNew(ll);else if(a==='ev')evSet('boat',[ll.lat,ll.lng]);else if(a==='evx')evOff();
-    else if(a==='evp'){if(EV.pend)evSet(EV.pend,[ll.lat,ll.lng]);else{EV.pend=[ll.lat,ll.lng];toast('Начало отмечено. Теперь долгим нажатием укажите вторую точку и выберите «Пеленг и кольцо от отмеченной точки».',7000)}}
+    else if(a==='evp'){if(EV.pend)evSet(EV.pend,[ll.lat,ll.lng]);else{EV.pend=[ll.lat,ll.lng];toast('Начало отмечено. Теперь долгим нажатием укажите вторую точку и выберите «Пеленг от отметки».',7000)}}
     else{RT.pts.push([ll.lat,ll.lng]);routeChanged();toast(`Точка ${RT.pts.length} добавлена в маршрут`)}})}
 const mc=map.getContainer();
 mc.addEventListener('touchstart',e=>{if(e.touches.length!==1)return clearTimeout(LP.t);const t=e.touches[0];LP.x=t.clientX;LP.y=t.clientY;clearTimeout(LP.t);
