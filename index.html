@@ -182,6 +182,7 @@ body.night .mk i{background:#ff3b30;border-color:#5a0000}body.night .mk span{col
 .evL{position:relative}.evL b{position:absolute;left:0;top:-44px;transform:translateX(-50%);white-space:nowrap;display:inline-flex;align-items:center;gap:8px;background:rgba(16,34,51,.95);color:#ffd23f;border:1px solid #ffd23f;border-radius:999px;padding:5px 6px 5px 12px;font-size:14px;font-weight:700;box-shadow:0 3px 12px rgba(0,0,0,.45)}.evL b u{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:12px}
 body.night .evL b{background:#140000;color:#ff6a5a;border-color:#7a0000}
 .lpAct input{background:#fff;color:#10202f;border:1px solid #c5d0db;border-radius:10px;min-height:40px;padding:0 10px;font-size:15px;width:100%}body.night .lpAct input{background:#2a0000;color:#ff6a5a;border-color:#5a0000}
+#rPtsD{margin:8px 0}#rPtsD summary{cursor:pointer;padding:8px 0;color:var(--accent)}#rPts table{width:100%}#rPts td{padding:3px 2px;vertical-align:middle}#rPts input{width:100%;min-width:150px;min-height:38px;font-size:14px;padding:4px 8px}#rPts button{min-height:38px;min-width:38px;padding:0 8px}#rPts input.bad{border-color:var(--danger)}
 .wp{background:var(--accent);color:#001321;border:2px solid #fff;border-radius:50%;display:flex!important;align-items:center;justify-content:center;font-size:11px;font-weight:700}
 .chart{width:100%;height:auto;display:block;margin:6px 0}
 .boat.stale::after{content:'?';position:absolute;right:-10px;top:-12px;background:#ff4d4f;color:#fff;border-radius:50%;width:18px;height:18px;font:700 13px/18px system-ui;text-align:center}
@@ -412,6 +413,8 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
   <div id="rBrief"></div>
   <div id="rWin" class="windows"></div>
   <div id="rLegs" class="scroll"></div>
+  <details id="rPtsD"><summary>Точки маршрута таблицей: править, менять порядок, удалять</summary><div id="rPts" class="scroll"></div>
+    <p class="muted small">Координаты можно вписать как «59 59.4 N 29 46.2 E» или «59.990 29.770». Нажмите Enter, чтобы применить.</p></details>
 </section>
 
 <section class="panel" id="p-anchor" hidden>
@@ -465,7 +468,7 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
   <details><summary>Ключи сервисов</summary>
     <label class="small" style="display:block">Яндекс Tiles API<br><input id="sYa" style="width:100%" placeholder="developer.tech.yandex.ru → Подключить API → Tiles API"></label>
   </details>
-  <div class="row"><button class="primary" id="sSave">Сохранить</button><button id="sTrkGpx">Трек в GPX</button><button id="sTrack">Стереть трек</button><button id="sLog">Журнал ошибок</button></div>
+  <div class="row"><button class="primary" id="sSave">Сохранить</button><button id="sTrkGpx">Трек в GPX</button><input type="file" id="sTrkImp" accept=".gpx" hidden><button id="sTrkImpBtn" type="button">Показать трек из файла</button><button id="sTrkImpX" hidden>Убрать чужой трек</button><button id="sTrack">Стереть трек</button><button id="sLog">Журнал ошибок</button></div>
   <p class="muted small">Всё хранится только на этом устройстве, без регистрации. Настройки не сбрасываются.</p>
 </section>
 
@@ -580,7 +583,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.36';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.37';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -906,7 +909,7 @@ function evalRoute(dep){const fc=RT.fc,L2=legs();if(!fc)return null;
     t+=dt}
   rows.forEach(r=>r.boat=r.d/NM/(r.time/3600000));rows.arrive=t;return rows}
 function conf(s){return s<4?'<span class="conf hi">уверенно</span>':s<8?'<span class="conf mid">средне</span>':'<span class="conf lo">модели спорят</span>'}
-function renderRoute(){const L2=legs(),total=L2.reduce((s,l)=>s+l.d,0),dep=depTs();
+function renderRoute(){rPtsDraw();const L2=legs(),total=L2.reduce((s,l)=>s+l.d,0),dep=depTs();
   const rows=RT.fc?evalRoute(dep):null;
   drawRoute(rows?rows.map(r=>r.spd!=null?css(r.spd):null):null);
   if(!L2.length){$('#rSum').innerHTML='<p class="muted">Нажмите «＋ Ставить точки» и ставьте точки на карте. Точки можно двигать пальцем. Или откройте свой GPX.</p>';$('#rLegs').innerHTML='';return}
@@ -1486,6 +1489,24 @@ function autoNight(){if(!S.autoNight)return;const c=G.pos||[map.getCenter().lat,
   if(night!==S.night){S.night=night;saveS();document.body.classList.toggle('night',night);$('#sNight').checked=night;if(S.base==='kurs')setBase('kurs');toast(night?'Стемнело: включил ночной режим':'Рассвело: дневной режим')}}
 setInterval(autoNight,300000);setTimeout(autoNight,1500);
 
+/* ===== маршрут таблицей ===== */
+function parseLL(t){t=String(t).trim().toUpperCase().replace(/,(\d)/g,'.$1').replace(/[°′'’`″"]/g,' ');const hs=t.match(/[NSEWСЮВЗ]/g)||[],nums=(t.match(/-?\d+(?:\.\d+)?/g)||[]).map(Number);let la,lo;
+  if(nums.length===2){la=nums[0];lo=nums[1]}else if(nums.length===4){la=Math.abs(nums[0])+nums[1]/60;lo=Math.abs(nums[2])+nums[3]/60;if(nums[0]<0)la=-la;if(nums[2]<0)lo=-lo}
+  else if(nums.length===6){la=Math.abs(nums[0])+nums[1]/60+nums[2]/3600;lo=Math.abs(nums[3])+nums[4]/60+nums[5]/3600}else return null;
+  if(hs[0]==='S'||hs[0]==='Ю')la=-Math.abs(la);if(hs[1]==='W'||hs[1]==='З')lo=-Math.abs(lo);
+  return isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180?[la,lo]:null}
+function rPtsDraw(){const o=$('#rPts');if(!o)return;if(!RT.pts.length){o.innerHTML='<p class="muted small">Точек пока нет.</p>';return}
+  o.innerHTML='<table>'+RT.pts.map((q,i)=>`<tr><td><b>${i+1}</b></td><td><input data-i="${i}" value="${fmtC(q[0],1)} ${fmtC(q[1],0)}" aria-label="Координаты точки ${i+1}"></td><td style="white-space:nowrap"><button data-a="up" data-i="${i}" ${i?'':'disabled'} aria-label="Выше">▲</button> <button data-a="dn" data-i="${i}" ${i<RT.pts.length-1?'':'disabled'} aria-label="Ниже">▼</button> <button data-a="del" data-i="${i}" aria-label="Удалить точку ${i+1}">✕</button></td></tr>`).join('')+'</table>';
+  o.querySelectorAll('input').forEach(inp=>inp.onchange=()=>setTimeout(()=>{if(!inp.isConnected)return;const ll=parseLL(inp.value);if(!ll){inp.classList.add('bad');toast('Не понял координаты. Пример: 59 59.4 N 29 46.2 E');return}RT.pts[+inp.dataset.i]=ll;routeChanged()}));
+  o.querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,a=b.dataset.a;if(a==='del')RT.pts.splice(i,1);else{const j=a==='up'?i-1:i+1;[RT.pts[i],RT.pts[j]]=[RT.pts[j],RT.pts[i]]}routeChanged()})}
+/* ===== чужой трек из файла: просто линия на карте ===== */
+const XT={layer:L.layerGroup().addTo(map)};
+$('#sTrkImpBtn').onclick=()=>$('#sTrkImp').click();
+$('#sTrkImpX').onclick=()=>{XT.layer.clearLayers();$('#sTrkImpX').hidden=true};
+$('#sTrkImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;e.target.value='';try{const x=new DOMParser().parseFromString(await f.text(),'application/xml');
+    const pts=[...x.querySelectorAll('trkpt,rtept')].map(q=>[+q.getAttribute('lat'),+q.getAttribute('lon')]).filter(q=>isFinite(q[0])&&isFinite(q[1])&&Math.abs(q[0])<=90&&Math.abs(q[1])<=180);
+    if(pts.length<2)return toast('В файле нет трека');XT.layer.clearLayers();const ln=L.polyline(pts,{color:'#b06bff',weight:3,opacity:.9,dashArray:'2 6',interactive:false}).addTo(XT.layer);
+    let d=0;for(let i=1;i<pts.length;i++)d+=dist(pts[i-1],pts[i]);$('#sTrkImpX').hidden=false;closePanel();G.follow=false;map.fitBounds(ln.getBounds(),{padding:[40,40]});toast(`Трек из файла на карте: ${f1(d/NM)} миль, ${pts.length} точек`,6000)}catch(err){toast('Файл не прочитался: '+err.message)}};
 /* ===== свои метки на карте ===== */
 const MK={list:store.get('marks',[]),layer:L.layerGroup().addTo(map)};
 function mkSave(){store.set('marks',MK.list);mkDraw()}
