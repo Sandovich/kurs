@@ -407,6 +407,7 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
     <label class="small" style="margin:0"><input type="file" id="rImp" accept=".gpx" hidden><button id="rImpBtn" type="button">Открыть GPX</button></label>
   </div>
   <div class="row" style="align-items:center"><span class="small muted" id="mkN" style="flex:1;white-space:normal"></span><button id="mkExp">Сохранить метки</button><input type="file" id="mkImp" accept=".gpx" hidden><button id="mkImpBtn" type="button">Открыть метки</button></div>
+  <div id="mkL"></div>
   <div class="row"><button id="rEns" style="flex:1">📅 Календарь выхода на 7 суток (51 вариант прогноза)</button></div>
   <div id="rIsoOut"></div>
   <div id="rEnsOut"></div>
@@ -584,7 +585,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.39';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.40';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1323,9 +1324,31 @@ function lzBrief(){const L=[],regs=lzRouteRegions();if(!regs.size)return L;const
   return L}
 const lzE=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function lzHi(t,q){let h=lzE(t);lzTok(q).filter(w=>w.length>=3).forEach(w=>{h=h.replace(new RegExp('(^|[^а-яa-z0-9])('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'[а-яa-z0-9]*)','gi'),'$1<mark>$2</mark>')});return h}
+/* ===== где это на карте: точные координаты записи, место по названию (примерно) или район ===== */
+const LZ_PL=[[/Шлиссельбург|Петрокрепост/,59.944,31.033,'Шлиссельбург'],[/Свириц/,60.48,32.895,'Свирица'],[/Вытегр/,61.006,36.449,'Вытегра'],[/Вознесень/,61.012,35.48,'Вознесенье'],[/Приозерск/,61.036,30.123,'Приозерск'],
+ [/Подпорожь/,60.912,34.167,'Подпорожье'],[/Нов(?:ая|ой|ую|ую) Ладог/,60.105,32.314,'Новая Ладога'],[/Валаам/,61.385,30.948,'Валаам'],[/Черепов[ец]/,59.127,37.907,'Череповец'],[/Петрозаводск/,61.787,34.384,'Петрозаводск'],
+ [/Кронштадт|Котлин/,59.987,29.775,'Кронштадт'],[/Новгород/,58.521,31.275,'Великий Новгород'],[/Лодейно(?:е|го|м) Пол/,60.727,33.553,'Лодейное Поле'],[/Сортавал/,61.705,30.69,'Сортавала'],[/Гогланд/,60.07,26.98,'остров Гогланд'],
+ [/Сескар/,60.03,28.38,'остров Сескар'],[/Кижи/,62.067,35.224,'Кижи'],[/Приморск(?!ий|ого|ом)/,60.365,28.615,'Приморск'],[/Мощн(?:ый|ого|ом)/,60.0,27.83,'остров Мощный'],[/Медвежьегорск/,62.913,34.457,'Медвежьегорск'],
+ [/Осинов(?:ец|ца|це|ецк)/,60.124,31.067,'Осиновец'],[/Выборг(?!ск)/,60.71,28.745,'Выборг'],[/Питкярант/,61.573,31.478,'Питкяранта'],[/Верхни[ех] Мандрог/,60.898,33.82,'Верхние Мандроги'],[/Белозерск/,60.031,37.79,'Белозерск'],
+ [/Конев(?:ец|ца|це)/,60.86,30.6,'остров Коневец'],[/Кириш/,59.449,32.02,'Кириши'],[/Лахт/,59.99,30.18,'Лахта'],[/Ломоносов/,59.915,29.77,'Ломоносов'],[/Нижнесвирск/,60.797,33.713,'Нижнесвирский шлюз'],[/Верхнесвирск/,60.917,34.19,'Верхнесвирский шлюз'],
+ [/Ивановски[ех] порог/,59.79,30.75,'Ивановские пороги'],[/Кошкинск/,59.975,31.06,'Кошкинский фарватер'],[/Берёзовы[ех] остров/,60.3,28.55,'Берёзовые острова'],[/Толбухин/,60.042,29.542,'маяк Толбухин'],[/Шепел[её]вск/,59.985,29.125,'Шепелёвский маяк'],
+ [/Сясьстро/,60.14,32.56,'Сясьстрой'],[/Кобон/,60.02,31.55,'Кобона'],[/Повен[ец]/,62.85,34.83,'Повенец'],[/Кондопог/,62.2,34.27,'Кондопога'],[/Свирск(?:ая|ой|ую) губ|Загубь/,60.5,32.85,'Свирская губа'],[/Лис(?:ий|ьего|ьем) Нос/,60.01,30.0,'Лисий Нос'],
+ [/Усть-Луг/,59.68,28.31,'Усть-Луга'],[/Высоцк/,60.627,28.57,'Высоцк'],[/Зеленогорск/,60.195,29.7,'Зеленогорск'],[/Сестрорецк/,60.098,29.948,'Сестрорецк'],[/Петергоф/,59.885,29.905,'Петергоф'],[/Стрельн/,59.855,30.04,'Стрельна'],
+ [/Литейн\S* мост/,59.95352,30.34988,'Литейный мост'],[/Троицк\S* мост/,59.94888,30.32738,'Троицкий мост'],[/Дворцов\S* мост/,59.94119,30.30808,'Дворцовый мост'],[/Благовещенск\S* мост/,59.93478,30.2896,'Благовещенский мост'],
+ [/Большеохтинск\S* мост/,59.9426,30.4029,'Большеохтинский мост'],[/Александра Невского/,59.9254,30.3935,'мост Александра Невского'],[/Володарск\S* мост/,59.87768,30.453,'Володарский мост'],[/Финляндск\S* (?:ж\/д |железнодорожн\S* )?мост/,59.91549,30.40966,'Финляндский мост'],
+ [/Обуховск\S* мост/,59.8549,30.5024,'Большой Обуховский мост'],[/Ладожск\S* мост/,59.90784,30.98787,'Ладожский мост'],[/Кузьминск\S* (?:ж\/д |железнодорожн\S* )?мост/,59.81194,30.85667,'Кузьминский мост'],
+ [/Тучков\S* мост/,59.9487,30.2853,'Тучков мост'],[/Биржев\S* мост/,59.9463,30.3034,'Биржевой мост'],[/Сампсониевск\S* мост/,59.95796,30.33738,'Сампсониевский мост'],[/Гренадерск\S* мост/,59.96797,30.3346,'Гренадерский мост'],
+ [/Кантемировск\S* мост/,59.9785,30.32182,'Кантемировский мост'],[/Ушаковск\S* мост/,59.98258,30.30021,'Ушаковский мост'],[/Каменноостровск\S* мост/,59.97751,30.30139,'Каменноостровский мост']];
+const LZ_RB={fin:[[59.4,26.6],[60.75,30.15]],spb:[[59.86,30.17],[60.01,30.52]],neva:[[59.72,30.42],[59.99,31.08]],lad:[[59.9,30.0],[61.8,33.0]],volh:[[58.45,31.2],[60.15,32.45]],svir:[[60.42,32.8],[61.08,35.6]],oneg:[[60.9,34.3],[63.0,36.6]]};
+function lzWhere(x){if(x.ll)return{ll:x.ll,z:13,exact:true};let best=null;for(const q of LZ_PL){const m=q[0].exec(x.t);if(m&&(!best||m.index<best.i))best={i:m.index,q}}
+  if(best)return{ll:[best.q[1],best.q[2]],z:12,name:best.q[3]};const r=(x.r||[]).find(k=>LZ_RB[k]);return r&&(x.r||[]).length===1?{box:LZ_RB[r],name:LZ_R[r]}:null}
+function lzShowOnMap(x){const w=lzWhere(x);if(!w)return;closePanel();G.follow=false;
+  if(w.box){map.fitBounds(w.box);toast('Район: '+w.name+'. У этой записи нет точного места.',5000);return}
+  map.flyTo(w.ll,Math.max(map.getZoom(),w.z));const pop=L.popup({closeButton:true,autoPan:true,autoPanPaddingTopLeft:[10,150],autoPanPaddingBottomRight:[10,110]}).setLatLng(w.ll).setContent(`<div style="font-size:13px;line-height:1.4">${w.exact?'':`<b style="color:#b45f00">≈ место примерное: ${lzE(w.name)}</b><br>`}${lzE(x.t)}<div class="lpAct"><button data-a="go" class="pri">Идти сюда</button></div></div>`).openOn(map);
+  pop.getElement().querySelector('button').onclick=()=>{map.closePopup();navStart('point',[w.ll.slice()],0,w.name||'Точка лоции')}}
 function lzRender(list,q,head,keep){const o=$('#lzOut');if(!keep)setTimeout(()=>o.scrollIntoView({block:'start',behavior:'smooth'}),50);if(!list.length){o.innerHTML=(head||'')+'<p class="muted small">В лоции ничего не нашёл. Попробуйте другими словами: название места, «канал», «мост», «мель», «стоянка».</p>';return}
-  o.innerHTML=(head||'')+list.map((x,i)=>`<div class="lzI"><div class="lzT">${lzTag(x.k)}${lzHi(x.t,q||'')}</div><div class="lzM"><span>${(x.r||[]).map(r=>LZ_R[r]).join(' · ')||'все районы'}${x.chk?' · <span style="color:var(--warn)">проверить на месте</span>':''}</span>${x.ll?`<button data-lzi="${i}">На карте</button>`:''}</div></div>`).join('');
-  o.querySelectorAll('[data-lzi]').forEach(a=>a.onclick=e=>{e.preventDefault();const x=list[+a.dataset.lzi];closePanel();map.flyTo(x.ll,13);L.popup().setLatLng(x.ll).setContent(`<div class="small">${lzE(x.t)}</div>`).openOn(map)})}
+  o.innerHTML=(head||'')+list.map((x,i)=>`<div class="lzI"><div class="lzT">${lzTag(x.k)}${lzHi(x.t,q||'')}</div><div class="lzM"><span>${(x.r||[]).map(r=>LZ_R[r]).join(' · ')||'все районы'}${x.chk?' · <span style="color:var(--warn)">проверить на месте</span>':''}</span>${(w=>w?`<button data-lzi="${i}" title="${w.exact?'Точное место':w.box?'Район: '+w.name:'Примерно: '+w.name}">${w.box?'Показать район':'Показать на карте'}</button>`:'')(lzWhere(x))}</div></div>`).join('');
+  o.querySelectorAll('[data-lzi]').forEach(a=>a.onclick=e=>{e.preventDefault();lzShowOnMap(list[+a.dataset.lzi])})}
 function lzAsk(q){q=(q||'').trim();if(!LZ.f)return;if(!q||q==='@home')return lzHome();if(!q.startsWith('@'))$$('#p-lotsia [data-lq]').forEach(x=>x.classList.remove('on'));
   if(q==='@near'){const p=G.pos||[map.getCenter().lat,map.getCenter().lng],reg=new Set([lzRegion(p)]);const near=LZ.f.filter(x=>x.ll&&dist(p,x.ll)<40000).sort((a,b)=>dist(p,a.ll)-dist(p,b.ll)).slice(0,8);
     const more=['#hazard','#berth','#vhf'].flatMap(k=>lzSearch(k,{reg,n:200}).filter(x=>(x.r||[]).includes([...reg][0])).slice(0,6));
@@ -1512,6 +1535,7 @@ $('#sTrkImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;e.target
 const MK={list:store.get('marks',[]),layer:L.layerGroup().addTo(map)};
 function mkSave(){store.set('marks',MK.list);mkDraw()}
 function mkDraw(){MK.layer.clearLayers();MK.list.forEach((m,i)=>L.marker(m.ll,{icon:L.divIcon({className:'mk',html:`<i></i><span>${lzE(m.n)}</span>`,iconSize:[0,0]})}).addTo(MK.layer).on('click',()=>mkPop(i)));
+  $('#mkL').innerHTML=MK.list.map((m,i)=>`<div class="lzM" style="font-size:14px;color:var(--text)"><span>${lzE(m.n)}</span><button data-mki="${i}">Показать на карте</button></div>`).join('');$('#mkL').querySelectorAll('button').forEach(b=>b.onclick=()=>{const m=MK.list[+b.dataset.mki];closePanel();G.follow=false;map.flyTo(m.ll,Math.max(map.getZoom(),13));setTimeout(()=>mkPop(+b.dataset.mki),700)});
   $('#mkN').textContent=MK.list.length?`Моих меток на карте: ${MK.list.length}`:'Своих меток пока нет: долгое нажатие на карту → «Поставить метку».'}
 function mkNew(ll){const pop=L.popup({closeButton:true,autoPan:true,autoPanPaddingTopLeft:[10,150],autoPanPaddingBottomRight:[10,110]}).setLatLng(ll).setContent(`<div style="font-size:13px;line-height:1.4"><b>Новая метка</b><div class="lpAct"><input id="mkName" maxlength="40" placeholder="Название, например «Стоянка у острова»"><button data-a="ok" class="pri">Сохранить метку</button></div></div>`).openOn(map);
   const el=pop.getElement(),inp=el.querySelector('#mkName'),okf=()=>{MK.list.push({n:inp.value.trim()||'Метка '+(MK.list.length+1),ll:[+ll.lat.toFixed(6),+ll.lng.toFixed(6)]});mkSave();map.closePopup();toast('Метка поставлена. Нажмите на неё, чтобы идти к ней или удалить.')};
