@@ -693,7 +693,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.44';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.45';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -985,7 +985,9 @@ $('#rImpBtn').onclick=()=>$('#rImp').click();
 $('#rImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;const x=new DOMParser().parseFromString(await f.text(),'application/xml');
   const pts=[...x.querySelectorAll('rtept,wpt')];const use=pts.length?pts:[...x.querySelectorAll('trkpt')].filter((p,i,a)=>i%Math.max(1,Math.floor(a.length/50))===0);
   RT.pts=use.map(p=>[+p.getAttribute('lat'),+p.getAttribute('lon')]).filter(p=>!isNaN(p[0]));routeChanged();if(RT.pts.length)map.fitBounds(RT.pts,{padding:[40,40]});toast(`Загружено точек: ${RT.pts.length}`);e.target.value=''};
-function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+function download(name,text,type){/* в приложении Android файл пишет само приложение: встроенный браузер файлы не сохраняет */
+  if(window.KURS_APP==='android'&&window.Capacitor?.nativePromise){Capacitor.nativePromise('KursFiles','save',{name,text,type}).then(r=>{if(r?.where==='downloads')toast(`Файл ${name} сохранён в папку «Загрузки» телефона`,6000)},e=>toast('Не удалось сохранить файл: '+(e?.message||e),8000));return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 function addBarUpd(){const n=RT.pts.length;$('#addTxt').textContent=n?`Точек: ${n}${n>1?' · '+fDn(legs().reduce((a,l)=>a+l.d,0)/NM,'миль'):''}`:'Нажимайте на карту'}
 function routeChanged(){if(RT.adding)setTimeout(addBarUpd);store.set('route',RT.pts);RT.fc=null;store.set('routefc',null);RT.ens=null;store.set('routeens',null);$('#rWin').innerHTML='';$('#rEnsOut').innerHTML='';renderRoute()}
 function ptaTs(){const v=S.pta;return v?Date.parse(v.slice(0,16)+':00+03:00'):null}
