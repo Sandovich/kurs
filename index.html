@@ -367,6 +367,7 @@ body.night .lpAct button{box-shadow:0 2px 0 #000}
 .panel summary::before{content:'';flex:none;width:7px;height:7px;margin:0 4px 0 2px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .22s var(--ease)}
 .panel details[open]>summary::before{transform:rotate(45deg)}
 body.night .chip{background:rgba(20,0,0,.92);color:var(--text);border-color:var(--line)}
+@media(max-width:520px){#addBar{max-width:calc(100vw - 16px);flex-wrap:wrap;justify-content:center;padding:8px}#addTxt{flex:1 1 100%;text-align:center}#addBar button{flex:1 1 auto}}
 </style>
 </head>
 <body>
@@ -419,7 +420,7 @@ body.night .chip{background:rgba(20,0,0,.92);color:var(--text);border-color:var(
   <div class="row" id="nMob" hidden style="margin:6px 0 0"><button id="nMay" class="primary" style="flex:1">📢 Текст для MAYDAY по рации</button></div>
 </div>
 <button id="mob" hidden aria-label="Человек за бортом">MOB</button>
-<div id="addBar" hidden><span id="addTxt">Нажимайте на карту</span><button id="addUndo">↶</button><button id="addDone" class="primary">✓ Готово</button></div>
+<div id="addBar" hidden><span id="addTxt">Нажимайте на карту</span><button id="addUndo">↶</button><button id="addIso" hidden title="Проложить под ветер через все точки">🧭 По ветру</button><button id="addDone" class="primary">✓ Готово</button></div>
 
 <footer id="timebar">
   <select id="model" aria-label="Модель прогноза">
@@ -507,7 +508,8 @@ body.night .chip{background:rgba(20,0,0,.92);color:var(--text);border-color:var(
     <button class="primary" id="rWx">Погода по маршруту</button>
     <button id="rGo">▶ Вести по маршруту</button>
   </div>
-  <div class="row"><button id="rIso" style="flex:1;border-color:#2ee59d;color:#2ee59d">🧭 Проложить под ветер (самый быстрый путь)</button></div>
+  <div class="row"><button id="rIso" style="flex:1;border-color:#2ee59d;color:#2ee59d">🧭 Проложить под ветер через все точки</button></div>
+  <div id="rIsoOut"></div>
   <div class="row">
     <button id="rGpx">Сохранить GPX</button>
     <label class="small" style="margin:0"><input type="file" id="rImp" accept=".gpx" hidden><button id="rImpBtn" type="button">Открыть GPX</button></label>
@@ -515,7 +517,6 @@ body.night .chip{background:rgba(20,0,0,.92);color:var(--text);border-color:var(
   <div class="row" style="align-items:center"><span class="small muted" id="mkN" style="flex:1;white-space:normal"></span><button id="mkExp">Сохранить метки</button><input type="file" id="mkImp" accept=".gpx" hidden><button id="mkImpBtn" type="button">Открыть метки</button></div>
   <div id="mkL"></div>
   <div class="row"><button id="rEns" style="flex:1">📅 Календарь выхода на 7 суток (51 вариант прогноза)</button></div>
-  <div id="rIsoOut"></div>
   <div id="rEnsOut"></div>
   <div id="rSum"></div>
   <div id="rBrief"></div>
@@ -693,7 +694,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.45';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.46';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -988,7 +989,7 @@ $('#rImp').onchange=async e=>{const f=e.target.files[0];if(!f)return;const x=new
 function download(name,text,type){/* в приложении Android файл пишет само приложение: встроенный браузер файлы не сохраняет */
   if(window.KURS_APP==='android'&&window.Capacitor?.nativePromise){Capacitor.nativePromise('KursFiles','save',{name,text,type}).then(r=>{if(r?.where==='downloads')toast(`Файл ${name} сохранён в папку «Загрузки» телефона`,6000)},e=>toast('Не удалось сохранить файл: '+(e?.message||e),8000));return}
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
-function addBarUpd(){const n=RT.pts.length;$('#addTxt').textContent=n?`Точек: ${n}${n>1?' · '+fDn(legs().reduce((a,l)=>a+l.d,0)/NM,'миль'):''}`:'Нажимайте на карту'}
+function addBarUpd(){const n=RT.pts.length;$('#addIso').hidden=n<2;$('#addTxt').textContent=n?`Точек: ${n}${n>1?' · '+fDn(legs().reduce((a,l)=>a+l.d,0)/NM,'миль'):''}`:'Нажимайте на карту'}
 function routeChanged(){if(RT.adding)setTimeout(addBarUpd);store.set('route',RT.pts);RT.fc=null;store.set('routefc',null);RT.ens=null;store.set('routeens',null);$('#rWin').innerHTML='';$('#rEnsOut').innerHTML='';renderRoute()}
 function ptaTs(){const v=S.pta;return v?Date.parse(v.slice(0,16)+':00+03:00'):null}
 const fmtHm=ts=>new Date(ts).toLocaleString('ru-RU',{timeZone:TZ,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+TZN;
@@ -1040,6 +1041,8 @@ function renderRoute(){rPtsDraw();const L2=legs(),total=L2.reduce((s,l)=>s+l.d,0
     sum=`<div class="${bad?'badbox':'okbox'}"><b>${bad?'⚠ Выше ваших пределов':'✓ В пределах'}</b> · ${fDn(total/NM,'миль')} · в пути <b>${fmtHM(dur)}</b> · приход <b>${fmtT(rows.arrive/1000)}</b><br>
       <span class="small">порывы до ${fW(mg)}${mw?` · волна до ${f1(mw)} м`:''}${head?` · ${head} уч. в лоб`:''} · прогноз ${conf(ms)}</span></div>
       <p class="muted small">Прогноз ${MODEL_NAME[RT.fc.model]} получен ${ago(RT.fc.fetched)}, сохранён для работы без сети.</p>`}
+  const dx=L2.map((l,i)=>damX(l.a,l.b)&&!DAM.gates.some(g=>dist(l.a,g.c)<1300&&dist(l.b,g.c)<1300)?(i+1)+'→'+(i+2):null).filter(Boolean);
+  if(dx.length)sum=`<div class="badbox small">⚠ Участок ${dx.join(', ')} пересекает дамбу. Пройти её можно только через ворота С-1 (южные) или С-2 (северные). Нажмите «Проложить под ветер» — путь пойдёт через ворота.</div>`+sum;
   $('#rSum').innerHTML=sum;
   {const pt=ptaTs(),o=$('#rPtaOut');if(!pt)o.innerHTML='';else{const h=(pt-dep)/36e5;
     if(h<=0)o.innerHTML='<p class="warnbox">Время прихода раньше выхода — поправьте одно из двух.</p>';
@@ -1069,7 +1072,7 @@ function gridSample(g,lat,lon,t){const Nx=g.Nx||g.N,Ny=g.Ny||g.N,fx=(lon-g.w)/(g
   const x0=Math.min(Math.floor(fx),Nx-2),y0=Math.min(Math.floor(fy),Ny-2),ax=fx-x0,ay=fy-y0,N=Nx;
   const bl=a=>a[y0*N+x0]*(1-ax)*(1-ay)+a[y0*N+x0+1]*ax*(1-ay)+a[(y0+1)*N+x0]*(1-ax)*ay+a[(y0+1)*N+x0+1]*ax*ay;
   const u=bl(g.U[t]),v=bl(g.V[t]);if(isNaN(u)||isNaN(v))return null;return{spd:Math.hypot(u,v),dir:(deg(Math.atan2(-u,-v))+360)%360,gust:bl(g.G[t])}}
-async function routeGrid(a,b){const pad=.35,s=Math.min(a[0],b[0])-pad,n=Math.max(a[0],b[0])+pad,w=Math.min(a[1],b[1])-pad*2,e=Math.max(a[1],b[1])+pad*2,N=9,la=[],lo=[];
+async function routeGrid(P){const pad=.35,s=Math.min(...P.map(q=>q[0]))-pad,n=Math.max(...P.map(q=>q[0]))+pad,w=Math.min(...P.map(q=>q[1]))-pad*2,e=Math.max(...P.map(q=>q[1]))+pad*2,N=9,la=[],lo=[];
   for(let i=0;i<N;i++)for(let j=0;j<N;j++){la.push((s+(n-s)*i/(N-1)).toFixed(3));lo.push((w+(e-w)*j/(N-1)).toFixed(3))}
   let js,md=S.model;try{js=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${S.model}`,40000)}
   catch(er){logE('isoroute open-meteo '+er.message+' → запасной');const g0=W.g;if(g0&&g0.reg&&Date.now()-g0.fetched<24*3600e3&&s>=g0.s&&n<=g0.n&&w>=g0.w&&e<=g0.e)return g0;js=await fmiGrid(la,lo);md='fmi_harmonie'}
@@ -1077,40 +1080,71 @@ async function routeGrid(a,b){const pad=.35,s=Math.min(a[0],b[0])-pad,n=Math.max
 function moveP(p,h,nm){const k=Math.cos(rad(p[0]));return[p[0]+Math.cos(rad(h))*nm/60,p[1]+Math.sin(rad(h))*nm/60/k]}
 function seaOk(p){const w=isWater(p[0],p[1]);if(w===undefined||w===null)return true;if(!w)return false;           // вне карты воды — считаем морем
   for(const h of[0,90,180,270]){const q=moveP(p,h,.16);if(isWater(q[0],q[1])===false)return false}return true}      // держимся ≥300 м от берега
-function segOk(a,b){const d=dist(a,b)/1000,n=Math.max(1,Math.ceil(d/.2));for(let i=1;i<=n;i++){const q=lerpPt(a,b,i/n);if(isWater(q[0],q[1])===false)return false}return seaOk(b)}
-async function isoRoute(A,B,dep,onProg){const g=await routeGrid(A,B),total=dist(A,B)/NM;
-  const dtH=Math.min(1,Math.max(.25,total/S.boat.speed/14)),stepMs=dtH*36e5;let front=[{p:A,par:null,t:dep,h:null}],all=[front[0]],best=null;
+/* дамба у Кронштадта: сплошная преграда, проход только через ворота С-1 (юг, 200 м) и С-2 (север, 110 м) */
+const DAM={lines:[
+ [[59.9079,29.6595],[59.9118,29.6595],[59.9158,29.661],[59.9199,29.6641],[59.9242,29.6664],[59.9288,29.6683],[59.9326,29.6697],[59.9371,29.6716],[59.9404,29.6728],[59.9494,29.6764],[59.9602,29.6807],[59.9645,29.6824],[59.9715,29.6852],[59.9783,29.6879],[59.9821,29.6898],[59.9854,29.6919],[59.9902,29.6952]],
+ [[59.9923,29.6966],[59.9957,29.6989],[59.9997,29.7018],[60.0039,29.7064],[60.0102,29.7144]],
+ [[60.0208,29.7441],[60.0212,29.7629],[60.0215,29.7809],[60.0222,29.7946],[60.0245,29.8189],[60.0258,29.8323]],
+ [[60.026,29.8347],[60.0273,29.8487],[60.0289,29.8664],[60.0307,29.8859],[60.0326,29.9052],[60.034,29.9211],[60.0364,29.9469],[60.0373,29.9558],[60.0388,29.9749],[60.0388,29.9864],[60.0388,29.9941]]],
+ gates:[{n:'С-1',c:[59.9912,29.6959],ax:109},{n:'С-2',c:[60.0259,29.8335],ax:170}]};
+function segX(a,b,c,d){const o=(p,q,r)=>(q[1]-p[1])*(r[0]-p[0])-(q[0]-p[0])*(r[1]-p[1]);return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0}
+function damX(a,b){for(const l of DAM.lines)for(let i=1;i<l.length;i++)if(segX(a,b,l[i-1],l[i]))return true;return false}
+function damVia(a,b){if(!damX(a,b))return null;                                                  // прямая a→b режет дамбу: ведём через ближайшие ворота
+  let best=null;for(const g of DAM.gates){const p1=moveP(g.c,g.ax,.35),p2=moveP(g.c,g.ax+180,.35),inn=damX(a,p1)&&!damX(a,p2)?[p2,p1]:!damX(a,p1)?[p1,p2]:dist(a,p1)<dist(a,p2)?[p1,p2]:[p2,p1];
+    const d=dist(a,inn[0])+dist(inn[1],b);if(!best||d<best.d)best={d,g,inn}}return best}
+const ISO_CLR={on:true};
+function nearWater(p){if(isWater(p[0],p[1])!==false)return p;                                         // точка на «суше» грубой карты воды (причал, гавань, берег): ищем ближайшую воду
+  for(let r=.12;r<=2.01;r+=.12)for(let h=0;h<360;h+=15){const q=moveP(p,h,r);if(isWater(q[0],q[1])===true)return q}return null}
+function segOk(a,b,fin){if(damX(a,b))return false;const d=dist(a,b)/1000,n=Math.max(1,Math.ceil(d/.2));for(let i=1;i<=n;i++){const q=lerpPt(a,b,i/n);if(isWater(q[0],q[1])===false)return false}return fin||!ISO_CLR.on||seaOk(b)}
+async function isoLeg(A,B,dep,onProg,g){const total=dist(A,B)/NM;if(total<.03)return{path:[{p:A,par:null,t:dep,h:null},{p:B,t:dep,h:null,v:S.boat.speed}],t:dep};
+  const dtH=Math.min(1,Math.max(.1,total/S.boat.speed/14)),stepMs=dtH*36e5;let front=[{p:A,par:null,t:dep,h:null}],best=null,seen=false;
   const tIdx=t=>{const s=t/1000;let i=g.times.findIndex(x=>x>=s-1800);return i};
   for(let step=0;step<Math.ceil(120/dtH);step++){const next=[];
-    for(const nd of front){const ti=tIdx(nd.t);if(ti<0)continue;const w=gridSample(g,nd.p[0],nd.p[1],ti);if(!w)continue;const toB=brg(nd.p,B),dB=dist(nd.p,B)/NM;
+    for(const nd of front){const ti=tIdx(nd.t);if(ti<0)continue;const w=gridSample(g,nd.p[0],nd.p[1],ti);if(!w)continue;seen=true;const toB=brg(nd.p,B),dB=dist(nd.p,B)/NM;
       for(let dh=-110;dh<=110;dh+=6){const h=(toB+dh+360)%360,v=polarSpeed(w.spd,offBow(w.dir,h));if(v<=.3)continue;const run=v*dtH;
-        if(run>=dB&&Math.abs(dh)<=6){const q=B;if(segOk(nd.p,q)){const tt=nd.t+dB/v*36e5;if(!best||tt<best.t)best={p:B,par:nd,t:tt,h,v,w}}continue}
+        if(run>=dB&&Math.abs(dh)<=6){const q=B;if(segOk(nd.p,q,true)){const tt=nd.t+dB/v*36e5;if(!best||tt<best.t)best={p:B,par:nd,t:tt,h,v,w}}continue}
         const q=moveP(nd.p,h,run);if(!segOk(nd.p,q))continue;next.push({p:q,par:nd,t:nd.t+stepMs,h,v,w})}}
     if(best&&(!next.length||best.t<=front[0].t+stepMs))break;
     // прореживание: по секторам 3° от старта оставляем ближайшую к цели
     const sec=new Map();for(const q of next){const k=Math.round(brg(A,q.p)/3);const d=dist(q.p,B);const o=sec.get(k);if(!o||d<o.d)sec.set(k,{...q,d})}
-    front=[...sec.values()];if(!front.length)break;all.push(...front);onProg?.(step,front);
+    front=[...sec.values()];if(!front.length)break;onProg?.(step,front,A);
     if(best&&front.every(q=>q.t+q.d/NM/Math.max(q.v,.5)*36e5>best.t))break;
     if(step%3===0)await new Promise(r=>setTimeout(r,0))}
-  if(!best)return null;const path=[];for(let x=best;x;x=x.par)path.unshift(x);return{path,t:best.t,dep,g}}
+  if(!best)return{err:seen?'path':'time'};const path=[];for(let x=best;x;x=x.par)path.unshift(x);return{path,t:best.t}}
+/* маршрут через ВСЕ точки по порядку: каждый участок считается под ветер на своё время, время прихода в точку — выход на следующий участок */
+async function isoRoute(P0,dep,onProg){const g=await routeGrid(P0),hop=(a,b)=>dist(a,b)/NM/Math.max(S.boat.speed,1)*36e5;let t=dep,path=[],relaxed=false;const eta=[dep],gates=[];
+  const P=[{p:P0[0],u:1}];for(let i=1;i<P0.length;i++){const v=damVia(P0[i-1],P0[i]);if(v){P.push({p:v.inn[0]},{p:v.inn[1],direct:1});if(!gates.includes(v.g.n))gates.push(v.g.n)}P.push({p:P0[i],u:1})}
+  let un=1;
+  for(let i=0;i<P.length-1;i++){const A=P[i].p,B=P[i+1].p;let lp;
+    if(P[i+1].direct){const t1=t+hop(A,B);lp=[{p:A,t,h:null},{p:B,t:t1,h:brg(A,B),v:S.boat.speed,w:path[path.length-1]?.w}];t=t1}      // сами ворота — прямо по оси
+    else{const a0=nearWater(A),b0=nearWater(B);if(!a0)return{err:'land',pt:un};if(!b0)return{err:'land',pt:un+1};
+      if(a0!==A)t+=hop(A,a0);
+      ISO_CLR.on=true;let r=await isoLeg(a0,b0,t,onProg,g);
+      if(r.err==='path'){ISO_CLR.on=false;r=await isoLeg(a0,b0,t,onProg,g);ISO_CLR.on=true;if(!r.err)relaxed=true}      // узкое место: пробуем без запаса 300 м от берега
+      if(r.err)return{err:r.err,leg:un};
+      lp=r.path.map(q=>({...q}));
+      if(a0!==A)lp.unshift({p:A,t:t-hop(A,a0),h:null});
+      t=r.t;if(b0!==B){t+=hop(b0,B);lp.push({p:B,t,h:brg(b0,B),v:S.boat.speed,w:lp[lp.length-1].w})}}
+    lp[0].via=true;lp[lp.length-1].via=true;if(P[i+1].u){eta.push(t);un++}path.push(...(i?lp.slice(1):lp))}
+  return{path,t,dep,g,eta,relaxed,gates,n:P0.length,nv:P.length}}
 const ISO={layer:L.layerGroup().addTo(map),res:null};
-function simplifyPath(path){const out=[path[0].p];for(let i=1;i<path.length-1;i++){const a=path[i-1],b=path[i],c=path[i+1];if(Math.abs(((c.h-b.h)%360+540)%360-180)>15)out.push(b.p)}out.push(path[path.length-1].p);return out}
-$('#rIso').onclick=async()=>{const A=G.pos&&RT.pts.length<2?G.pos:RT.pts[0],B=RT.pts[RT.pts.length-1];
-  if(!A||!B||RT.pts.length<2)return toast('Поставьте старт и финиш (минимум две точки маршрута)');
+function simplifyPath(path){const out=[path[0].p];for(let i=1;i<path.length-1;i++){const a=path[i-1],b=path[i],c=path[i+1];if(b.via||Math.abs(((c.h-b.h)%360+540)%360-180)>15)out.push(b.p)}out.push(path[path.length-1].p);return out}
+$('#rIso').onclick=async()=>{const P=RT.pts.length===1&&G.pos?[[G.pos[0],G.pos[1]],RT.pts[0]]:RT.pts.slice();
+  if(P.length<2)return toast('Поставьте хотя бы две точки маршрута (или одну, если включён GPS: старт — от лодки)');
   const out=$('#rIsoOut');out.innerHTML='<p class="muted small">Считаю: тысячи вариантов курса по часам прогноза, с обходом берега…</p>';ISO.layer.clearLayers();
   try{const dep=depTs(),t0=performance.now();
-    const r=await isoRoute(A,B,dep,(st,fr)=>{if(st%2===0)L.polyline(fr.map(q=>q.p).sort((a,b)=>brg(A,a)-brg(A,b)),{color:'#9fb4c7',weight:1,opacity:.35,interactive:false}).addTo(ISO.layer)});
-    if(!r){out.innerHTML='<div class="badbox small">Путь не найден: возможно, финиш на суше, мешает берег (карта воды есть только для Невы, Ладоги и залива) или ветра нет в прогнозе на это время.</div>';return}
+    const r=await isoRoute(P,dep,(st,fr,A)=>{if(st%2===0)L.polyline(fr.map(q=>q.p).sort((a,b)=>brg(A,a)-brg(A,b)),{color:'#9fb4c7',weight:1,opacity:.35,interactive:false}).addTo(ISO.layer)});
+    if(r.err){ISO.layer.clearLayers();const lg=r.leg?`На участке ${r.leg}→${r.leg+1} `:'';out.innerHTML='<div class="badbox small">'+(r.err==='land'?`Точка ${r.pt} стоит далеко на суше: до воды больше 2 миль. Передвиньте её ближе к воде.`:r.err==='time'?`${lg}нет ветра в прогнозе на это время: прогноз покрывает 5 суток. Поставьте выход раньше или сократите маршрут.`:`${lg}путь по воде не найден: мешает берег, или стоит штиль, а скорость под мотором в настройках лодки равна нулю.`)+'</div>';return}
     ISO.res=r;const pts=simplifyPath(r.path),dur=r.t-dep;
     L.polyline(r.path.map(q=>q.p),{color:'#2ee59d',weight:5,opacity:.95}).addTo(ISO.layer);
-    r.path.forEach((q,i)=>{if(i&&i%Math.max(1,Math.round(r.path.length/8))===0)L.marker(q.p,{icon:L.divIcon({className:'',html:`<div style="background:#0b1724;color:#2ee59d;border:1px solid #2ee59d;border-radius:6px;padding:1px 4px;font:600 11px system-ui;white-space:nowrap">${mskT(q.t)}</div>`,iconAnchor:[-6,8]}),interactive:false}).addTo(ISO.layer)});
+    r.path.forEach((q,i)=>{if(i&&i%Math.max(1,Math.round(r.path.length/8))===0)L.marker(q.p,{icon:L.divIcon({className:'',html:`<div style="background:#0b1724;color:#2ee59d;border:1px solid #2ee59d;border-radius:6px;padding:1px 4px;font:600 11px system-ui;white-space:nowrap;display:inline-block">${mskT(q.t)}</div>`,iconAnchor:[-6,8]}),interactive:false}).addTo(ISO.layer)});
     const direct=RT.fc?evalRoute(dep):null,dd=direct?direct.arrive-dep:null;
-    const tacks=pts.length-2,mg=Math.max(...r.path.slice(1).map(q=>q.w?.gust||0));
+    const tacks=pts.length-r.nv,mg=Math.max(...r.path.slice(1).map(q=>q.w?.gust||0));
     const offMap=!WM.g||r.path.some(q=>isWater(q.p[0],q.p[1])===undefined);
-    out.innerHTML=(offMap?'<div class="badbox small">⚠ Часть пути лежит вне карты воды «Курса» (она есть для Невы, Ладоги и востока Финского залива). Там берег, острова и мели в расчёте не учтены: путь может идти через сушу. Проверьте его по карте.</div>':'')+`<div class="okbox small"><b>🧭 Путь под ветер найден</b> за ${f1((performance.now()-t0)/1000)} с<br>${fDn(r.path.reduce((a,q,i)=>i?a+dist(r.path[i-1].p,q.p):0,0)/NM,'миль')} · в пути <b>${fmtHM(dur)}</b> · приход <b>${fmtT(r.t/1000)}</b>${dd?`<br>${dd>dur?`быстрее прямого маршрута на <b>${fmtHM(dd-dur)}</b>`:`прямой маршрут не медленнее (${fmtHM(dd)})`}`:''}<br>поворотов: ${tacks} · порывы на пути до ${fW(mg)}</div>
+    out.innerHTML=(offMap?'<div class="badbox small">⚠ Часть пути лежит вне карты воды «Курса» (она есть для Невы, Ладоги и востока Финского залива). Там берег, острова и мели в расчёте не учтены: путь может идти через сушу. Проверьте его по карте.</div>':'')+`<div class="okbox small"><b>🧭 Путь под ветер найден${r.n>2?` через все ${r.n} ${r.n<5?'точки':'точек'}`:''}</b> за ${f1((performance.now()-t0)/1000)} с<br>${fDn(r.path.reduce((a,q,i)=>i?a+dist(r.path[i-1].p,q.p):0,0)/NM,'миль')} · в пути <b>${fmtHM(dur)}</b> · приход <b>${fmtT(r.t/1000)}</b>${dd?`<br>${dd>dur?`быстрее прямого маршрута на <b>${fmtHM(dd-dur)}</b>`:`прямой маршрут не медленнее (${fmtHM(dd)})`}`:''}<br>поворотов между точками: ${tacks} · порывы на пути до ${fW(mg)}${r.n>2?'<br>приход в точки: '+r.eta.slice(1).map((t,i)=>`${i+2} — ${mskT(t)}`).join(', '):''}</div>${r.gates.length?`<div class="warnbox small">Прямой путь упирается в дамбу, поэтому он проведён через судопропускные ворота ${r.gates.join(' и ')}. Порядок прохода ворот смотрите в лоции.</div>`:''}${r.relaxed?'<div class="warnbox small">В узком месте путь идёт ближе 300 м к берегу. Проверьте это место по карте с глубинами.</div>':''}
       <div class="row"><button class="primary" id="isoUse">Взять как маршрут</button><button id="isoClr">Убрать</button></div>
       <p class="note">Глубин в расчёте нет: путь держится не ближе ~300 м от берега по карте воды, но мели и камни он не видит. Проверьте по карте с глубинами. Скорость — по упрощённым полярам; с полярами вашей лодки будет точнее.</p>`;
-    $('#isoUse').onclick=()=>{RT.pts=pts;routeChanged();ISO.layer.clearLayers();$('#rIsoOut').innerHTML='';toast(`Маршрут заменён: ${pts.length} точек. Нажмите «Погода по маршруту»`)};
+    $('#isoUse').onclick=()=>{RT.pts=pts;routeChanged();ISO.layer.clearLayers();$('#rIsoOut').innerHTML='';toast(`Маршрут заменён: точек — ${pts.length}. Нажмите «Погода по маршруту»`)};
     $('#isoClr').onclick=()=>{ISO.layer.clearLayers();$('#rIsoOut').innerHTML=''};
     map.fitBounds(L.latLngBounds(r.path.map(q=>q.p)),{padding:[30,30]});
   }catch(err){logE('iso '+err.message);out.innerHTML=`<p class="badbox">Ошибка: ${err.message}</p>`}};
@@ -1773,6 +1807,7 @@ wtLabel();wtArm();
 polUi();
 $('#addDone').onclick=()=>{setAdding(false);if(RT.pts.length>1){openPanel('route')}};
 $('#addUndo').onclick=()=>{RT.pts.pop();routeChanged()};
+$('#addIso').onclick=()=>{setAdding(false);openPanel('route');$('#rIso').click();setTimeout(()=>$('#rIsoOut').scrollIntoView({block:'nearest',behavior:'smooth'}),300)};
 /* ===== клик по карте ===== */
 map.on('click',e=>{if(LP.suppress)return;if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}if(dpHit(e))return;showPoint(e.latlng)});
 
