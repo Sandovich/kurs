@@ -288,9 +288,89 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
 .chip .cx{pointer-events:auto;margin-left:8px;background:rgba(255,255,255,.14);border:0;color:inherit;border-radius:999px;padding:3px 9px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer}.chip .cx:active{background:rgba(255,255,255,.28)}
 .chip{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-color:rgba(255,255,255,.1);font-weight:550}
 @media (max-width:819px){#legend{width:56px}}
+
+/* ===== v0.9.44 — единый вид: значки, кнопки, окна, переходы ===== */
+:root{--r:14px;--edge:#06101a;--accEdge:#1b78b3;--ease:cubic-bezier(.32,.72,0,1);--spring:cubic-bezier(.34,1.4,.64,1)}
+body.night{--edge:#000;--accEdge:#6a0000}
+svg.i{width:1.2em;height:1.2em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.22em}
+:not(button)>svg.i{margin-right:.35em}
+.ic,.mi{stroke-width:2}
+.okbox svg.i{color:var(--ok)}.badbox svg.i{color:var(--danger)}.warnbox svg.i{color:var(--warn)}
+/* кнопки в окнах и плашках: одна высота, скругление, «нажим» как у физической кнопки */
+.panel button,#addBar button,#navd button,#alarm button{border-radius:var(--r);min-height:48px;font-weight:600;letter-spacing:.005em;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center;box-shadow:0 3px 0 var(--edge);transition:transform .14s var(--ease),box-shadow .14s var(--ease),background-color .2s,border-color .2s,color .2s}
+.panel button:active,#addBar button:active,#navd button:active,#alarm button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
+.panel button.primary,.panel button.on,#addBar button.primary,#navd button.primary{box-shadow:0 3px 0 var(--accEdge)}
+.panel button.primary:active,.panel button.on:active,#addBar button.primary:active,#navd button.primary:active{box-shadow:0 1px 0 var(--accEdge)}
+.panel button:disabled{opacity:.4;box-shadow:none;transform:none}
+.panel button[hidden],#addBar button[hidden],#navd button[hidden],#alarm button[hidden]{display:none!important}
+.panel button[data-go],.panel button:has(>.mi){justify-content:flex-start;text-align:left}
+.panel .row>button{flex:1 1 auto}
+.panel button.io,#addBar button.io,#navd button.io{flex:0 0 48px;width:48px;min-width:48px;padding:0}
+.panel button.io svg.i,#addBar button.io svg.i,#navd button.io svg.i{width:22px;height:22px}
+.panel td button,.panel .lzBtn,.panel .cx{min-height:36px;box-shadow:none;border-radius:10px;font-weight:550}
+.panel td button.io{flex:none;width:36px;min-width:36px}
+.panel .close,.panel h2 .back{box-shadow:none;min-height:40px;border-radius:12px}
+.panel .close{border-radius:50%;background:rgba(255,255,255,.06);border-color:transparent}
+.panel .close:active,.panel h2 .back:active{transform:scale(.92)}
+.panel .close svg.i{width:20px;height:20px}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#top nav button{transition:transform .14s var(--ease),background-color .2s}#top nav button:active{transform:scale(.93)}
+/* поля ввода */
+.panel input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),.panel select{border-radius:12px;min-height:46px;padding:10px 12px;transition:border-color .2s,box-shadow .2s}
+.panel input:focus,.panel select:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent);outline:none}
+/* варианты выбора — карточки; галочки — переключатели */
+.panel label:has(>input[type=radio]),.panel label:has(>input[type=checkbox]){display:block;position:relative;margin:8px 0;padding:13px 14px 13px 50px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);box-shadow:0 2px 0 var(--edge);line-height:1.35;cursor:pointer;transition:border-color .2s,background-color .2s,transform .14s var(--ease)}
+.panel label:has(>input[type=checkbox]){padding-left:68px}
+.panel label:has(>input[type=radio]):active,.panel label:has(>input[type=checkbox]):active{transform:translateY(1px)}
+.panel label:has(>input:checked){border-color:color-mix(in srgb,var(--accent) 70%,transparent);background:color-mix(in srgb,var(--accent) 10%,var(--panel2))}
+.panel label>input[type=radio],.panel label>input[type=checkbox]{position:absolute;left:14px;top:13px;margin:0}
+.panel input[type=radio]{appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--muted);background:transparent;transition:border-color .2s,box-shadow .2s;cursor:pointer}
+.panel input[type=radio]:checked{border-color:var(--accent);box-shadow:inset 0 0 0 4px var(--panel2),inset 0 0 0 11px var(--accent)}
+.panel input[type=checkbox]{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:12px;background:var(--line);position:relative;flex:none;cursor:pointer;transition:background-color .22s}
+.panel input[type=checkbox]::before{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.45);transition:transform .26s var(--spring)}
+.panel input[type=checkbox]:checked{background:var(--accent)}
+.panel input[type=checkbox]:checked::before{transform:translateX(18px)}
+body.night .panel input[type=checkbox]::before{background:#ff8a7a}
+/* окна: плавный выезд, тень, «ручка» для жеста вниз */
+@keyframes kIn{from{transform:translateY(28px);opacity:0}to{transform:none;opacity:1}}
+@keyframes kPop{from{transform:translate(-50%,10px) scale(.96);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+.panel:not([hidden]){animation:kIn .36s var(--ease)}
+.panel{box-shadow:0 -12px 40px rgba(0,0,0,.4)}
+.panel h2{font-weight:700;letter-spacing:-.01em}
+@media (max-width:819px){.panel{border-radius:22px 22px 0 0}.panel h2{padding-top:16px;padding-bottom:16px;touch-action:none}.panel h2::before{content:'';position:absolute;left:50%;top:6px;width:38px;height:5px;border-radius:3px;background:var(--line);transform:translateX(-50%)}}
+.panel.drag{animation:none;transition:none}
+.panel.back2{transition:transform .3s var(--ease)}
+.okbox,.badbox,.warnbox{border-radius:12px}
+#toast{border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.4);transition:opacity .25s,transform .4s var(--spring)}
+.leaflet-popup-content-wrapper{border-radius:16px}
+.lpAct button{border-radius:12px;min-height:44px;box-shadow:0 2px 0 #c3ccd6;transition:transform .12s var(--ease),box-shadow .12s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.lpAct button:active{transform:translateY(2px);box-shadow:0 0 0 #c3ccd6}
+.lpAct .pri{box-shadow:0 2px 0 #0d5aa3}
+body.night .lpAct button{box-shadow:0 2px 0 #000}
+@media (prefers-reduced-motion:reduce){.panel:not([hidden]){animation:none}.panel button,.panel label,#toast,.panel input::before{transition:none!important}}
+
+/* полоса GPS на телефоне: «Приборы» — отдельной широкой кнопкой снизу, ничего не вылезает за край */
+#hud span{white-space:nowrap}
+#hud button{border-radius:12px;transition:transform .14s var(--ease)}#hud button:active{transform:scale(.93)}
+#hud #btnFollow svg.i{width:20px;height:20px}
+@media (max-width:520px){#hud{right:10px;max-width:none;flex-wrap:wrap;row-gap:8px}#hud>.small{flex:1 1 auto;min-width:0}#hud #btnDash{order:9;flex:1 1 100%;justify-content:center;min-height:42px;font-size:14px}}
+.panel h2 .back{border-color:transparent;background:rgba(255,255,255,.06)}
+.panel select{padding-right:36px}
+
+/* файлы и метки: надпись — отдельной строкой, кнопки ровно в ряд */
+#mkN{flex:1 1 100%!important}
+.panel .row>label:has(>button){flex:1 1 auto;display:flex;margin:0;font-size:inherit}.panel .row>label>button{flex:1;font-size:15px}
+
+/* раскрывающиеся разделы — своя стрелка; ночью плашки тоже красные */
+.panel summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:44px;font-weight:600;cursor:pointer}
+.panel summary::-webkit-details-marker{display:none}
+.panel summary::before{content:'';flex:none;width:7px;height:7px;margin:0 4px 0 2px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .22s var(--ease)}
+.panel details[open]>summary::before{transform:rotate(45deg)}
+body.night .chip{background:rgba(20,0,0,.92);color:var(--text);border-color:var(--line)}
 </style>
 </head>
 <body>
+<svg id="icoSprite" width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol><symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol><symbol id="i-swap" viewBox="0 0 24 24"><path d="m21 16-4 4-4-4M17 20V4M3 8l4-4 4 4M7 4v16"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5Z" fill="currentColor" stroke="none"/></symbol><symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4.5" width="4" height="15" rx="1.2" fill="currentColor" stroke="none"/><rect x="14" y="4.5" width="4" height="15" rx="1.2" fill="currentColor" stroke="none"/></symbol><symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></symbol><symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2.1 6.3-6.3 2.1 2.1-6.3z"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol><symbol id="i-megaphone" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol><symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></symbol><symbol id="i-anchor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><path d="M12 22V8M5 12H2a10 10 0 0 0 20 0h-3"/></symbol><symbol id="i-timer" viewBox="0 0 24 24"><path d="M10 2h4M12 14l3-3"/><circle cx="12" cy="14" r="8"/></symbol><symbol id="i-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></symbol><symbol id="i-radio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.5M7.8 16.2a6 6 0 0 1 0-8.5M19.1 4.9a10 10 0 0 1 0 14.2M4.9 19.1a10 10 0 0 1 0-14.2"/></symbol><symbol id="i-bridge" viewBox="0 0 24 24"><path d="M2 18h20M5 18v-5M19 18v-5M12 18v-7M2 13c3-5 17-5 20 0"/></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 3v18M4 15h16"/></symbol><symbol id="i-fuel" viewBox="0 0 24 24"><path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.8a2 2 0 0 0-.6-1.4L18 5"/></symbol><symbol id="i-wind" viewBox="0 0 24 24"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2M9.6 4.6A2 2 0 1 1 11 8H2M12.6 19.4A2 2 0 1 0 14 16H2"/></symbol><symbol id="i-light" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M15.1 14c.2-1 .7-1.7 1.4-2.5A4.9 4.9 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.2 1.5 1.4 2.5"/></symbol><symbol id="i-clip" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></symbol><symbol id="i-waves" viewBox="0 0 24 24"><path d="M2 7c.6.5 1.2 1 2.5 1C7 8 7 6 9.5 6s2.4 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1M2 13c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s2.4 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1M2 19c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2s2.4 2 5 2 2.5-2 5-2c1.3 0 1.9.5 2.5 1"/></symbol><symbol id="i-okc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol><symbol id="i-noc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol><symbol id="i-locate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/></symbol><symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/></symbol></defs></svg>
 <div id="map"></div>
 
 <header id="top">
@@ -305,7 +385,7 @@ body.night #aiVQ,body.night #aiVC button,body.night #aiVT,body.night #aiV .avS,b
 </header>
 
 <div id="hud" hidden>
-  <div><b id="hSog">—</b><span>уз, скорость</span></div>
+  <div><b id="hSog">—</b><span>скорость</span></div>
   <div><b id="hCog">—</b><span>курс</span></div>
   <div class="small"><div id="hPos">—</div><span id="hAcc"></span></div>
   <button id="btnFollow" title="Держать лодку в центре">⊙</button>
@@ -613,7 +693,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.43';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.44';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1313,7 +1393,7 @@ const LZ_STOP=new Set('и в во на по с со к ко у о об от до
 const LZ_SYN={'укв':['канал','позыв','радио','диспе','связь'],'связь':['укв','канал','позыв'],'мачта':['габар','высот','мост','лэп'],'мачт':['габар','высот','мост','лэп'],'пройд':['габар','высот'],
  'укрыт':['стоян','бухта','якор','марин','гавань','причал','убежи'],'стоян':['марин','причал','бухта','якор','гавань','яхт'],'ночев':['стоян','марин','причал','бухта'],'заправ':['топли','азс','пзс'],'топли':['заправ','азс','пзс'],
  'мель':['банка','глуби','мелко','опасн','камни'],'опасн':['мель','банка','камни','затон','сети','запре'],'глуби':['осадк','изоба','гаран'],'шлюз':['камер','шлюз'],'разво':['мост','развод'],'погран':['пропу','погранз','фсб']};
-const LZ_K={vhf:'📻',bridge:'🌉',lock:'🚪',hazard:'⚠',berth:'⚓',fuel:'⛽',depth:'〰',wx:'🌬',light:'💡',rule:'📋',info:'·'};
+const LZ_K={vhf:'<svg class="i"><use href="#i-radio"/></svg>',bridge:'<svg class="i"><use href="#i-bridge"/></svg>',lock:'<svg class="i"><use href="#i-lock"/></svg>',hazard:'<svg class="i"><use href="#i-alert"/></svg>',berth:'<svg class="i"><use href="#i-anchor"/></svg>',fuel:'<svg class="i"><use href="#i-fuel"/></svg>',depth:'<svg class="i"><use href="#i-waves"/></svg>',wx:'<svg class="i"><use href="#i-wind"/></svg>',light:'<svg class="i"><use href="#i-light"/></svg>',rule:'<svg class="i"><use href="#i-clip"/></svg>',info:''};
 // разделы лоции: название, короткая метка, цвет метки
 const LZ_C={hazard:['Опасности и запреты','опасно','#e5484d'],bridge:['Мосты, ЛЭП, разводка','мост','#c78bff'],lock:['Шлюзы','шлюз','#3fb6ff'],vhf:['Связь: УКВ и диспетчеры','связь','#2ee59d'],
   berth:['Стоянки и укрытия','стоянка','#ffb020'],fuel:['Топливо и снабжение','топливо','#ff7a45'],depth:['Глубины и фарватер','глубина','#4cc3ff'],light:['Маяки и огни','огни','#ffd84d'],
@@ -2358,6 +2438,28 @@ if(store.get('aisOn',false))aisStart();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(e=>logE('sw '+e.message));
 if(location.protocol==='file:')setTimeout(()=>toast('Откройте программу через адрес http://…, а не файлом: иначе карта OSM блокируется и не работает офлайн',9000),500);
 else if(!store.get('seenIntro2',false)){store.set('seenIntro2',true);setTimeout(()=>openPanel('help'),600)}
+
+/* v0.9.44: единый набор значков. Символы в начале надписей (✕ ✓ ▶ ⚠ …) заменяются на значки из #icoSprite —
+   и в разметке, и в том, что программа дописывает потом (наблюдатель). Текст надписей не меняется. */
+const ICO_G=[['❚❚','pause'],['✕','x'],['✓','check'],['＋','plus'],['↶','undo'],['⇅','swap'],['▶','play'],['■','stop'],['➜','arrow'],['🧭','compass'],['📅','calendar'],['📢','megaphone'],['⚠️','alert'],['⚠','alert'],['⚓','anchor'],['⏱','timer'],['▲','up'],['▼','down'],['🎙','mic'],['✅','okc'],['✗','noc'],['⊙','locate']];
+const icoSvg=k=>{const v=document.createElementNS('http://www.w3.org/2000/svg','svg');v.setAttribute('class','i');v.setAttribute('aria-hidden','true');const u=document.createElementNS('http://www.w3.org/2000/svg','use');u.setAttribute('href','#i-'+k);v.appendChild(u);return v};
+function icoText(t){const p=t.parentNode;if(!p||p.nodeType!==1||p.closest('svg,script,style,textarea,.leaflet-marker-pane,.leaflet-overlay-pane,.leaflet-tile-pane,#nXte'))return;
+  const raw=t.nodeValue,s=raw.replace(/^\s+/,'');if(!s)return;const g=ICO_G.find(x=>s.startsWith(x[0]));if(!g)return;
+  const rest=s.slice(g[0].length).replace(/^\s+/,'');p.insertBefore(icoSvg(g[1]),t);
+  if(rest)t.nodeValue=(p.tagName==='BUTTON'?'':'')+rest;else t.remove();
+  if(p.tagName==='BUTTON'){const only=![...p.childNodes].some(n=>n.nodeType===3&&n.nodeValue.trim()||n.nodeType===1&&n.tagName.toLowerCase()!=='svg');p.classList.toggle('io',only);
+    if(only&&!p.getAttribute('aria-label'))p.setAttribute('aria-label',p.title||({x:'Закрыть',play:'Проиграть',pause:'Пауза',undo:'Отменить',swap:'Обратный маршрут',up:'Выше',down:'Ниже'}[g[1]]||''))}}
+function icoScan(root){if(!root)return;if(root.nodeType===3){icoText(root);return}if(root.nodeType!==1||root.closest?.('.leaflet-marker-pane,.leaflet-overlay-pane,.leaflet-tile-pane'))return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),L=[];while(w.nextNode())L.push(w.currentNode);L.forEach(icoText)}
+icoScan(document.body);
+new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')icoText(m.target);else m.addedNodes.forEach(icoScan)}}).observe(document.body,{childList:true,subtree:true,characterData:true});
+/* закрыть окно жестом вниз за заголовок (на телефоне) */
+$$('.panel').forEach(pn=>{const h=pn.querySelector('h2');if(!h)return;let y0=null,dy=0;
+  h.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||innerWidth>=820||e.target.closest('button'))return;y0=e.clientY;dy=0;pn.classList.add('drag');try{h.setPointerCapture(e.pointerId)}catch(_){}});
+  h.addEventListener('pointermove',e=>{if(y0==null)return;dy=Math.max(0,e.clientY-y0);pn.style.transform=dy?`translateY(${dy}px)`:''});
+  const end=()=>{if(y0==null)return;y0=null;pn.classList.remove('drag');
+    if(dy>90){pn.style.transform='';closePanel()}else{pn.classList.add('back2');pn.style.transform='';setTimeout(()=>pn.classList.remove('back2'),320)}};
+  h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end)});
 </script>
 </body>
 </html>
