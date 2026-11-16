@@ -368,6 +368,7 @@ body.night .lpAct button{box-shadow:0 2px 0 #000}
 .panel details[open]>summary::before{transform:rotate(45deg)}
 body.night .chip{background:rgba(20,0,0,.92);color:var(--text);border-color:var(--line)}
 @media(max-width:520px){#addBar{max-width:calc(100vw - 16px);flex-wrap:wrap;justify-content:center;padding:8px}#addTxt{flex:1 1 100%;text-align:center}#addBar button{flex:1 1 auto}}
+.chip.skc{display:flex;align-items:center;gap:10px;border-radius:16px;padding:6px 6px 6px 12px;max-width:100%}.skL{display:flex;flex-wrap:wrap;gap:2px 14px;flex:1;min-width:0}.skL>span{white-space:nowrap}.chip.skc .cx{flex:0 0 32px;width:32px;height:32px;min-height:32px;padding:0;margin-left:auto;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
@@ -694,7 +695,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.47';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.48';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1956,9 +1957,9 @@ function skOwn(){const v=SK.v,p=v['navigation.position'];
   const aws=v['environment.wind.speedApparent'],awa=v['environment.wind.angleApparent'],stw=v['navigation.speedThroughWater'],tws=v['environment.wind.speedTrue'];
   const under=DP.under,shoal=under!=null&&under<.5;
   const parts=[];if(dep!=null||dk!=null)parts.push(`Глубина <b>${f1(dep!=null?dep:dk)} м</b>${dk!=null?` (под килем ${f1(dk)})`:''}`);
-  if(aws!=null)parts.push(`Ветер вымп. <b>${fW(aws*MS2KN)}</b>${awa!=null?' '+f0(Math.abs(awa*R2D))+'° '+(awa<0?'лев.':'пр.'):''}`);
-  if(tws!=null)parts.push(`ист. ${fW(tws*MS2KN)}`);if(stw!=null)parts.push(`лаг ${fSp(stw*MS2KN)}`);
-  chip('sk',parts.length?(shoal?'⚠ МЕЛКО! ':'')+parts.join(' · ')+' <button class="cx" data-skoff title="Отключить приборы лодки (Signal K)">✕ отключить</button>':null,shoal?'bad':'');
+  if(aws!=null)parts.push(`Вымп. ветер <b>${fW(aws*MS2KN)}</b>${awa!=null?' '+f0(Math.abs(awa*R2D))+'° '+(awa<0?'лев.':'пр.'):''}`);
+  if(tws!=null)parts.push(`Ист. ветер <b>${fW(tws*MS2KN)}</b>`);if(stw!=null)parts.push(`Лаг <b>${fSp(stw*MS2KN)}</b>`);
+  chip('sk',parts.length?'<span class="skL">'+(shoal?'<span><b>⚠ МЕЛКО!</b></span>':'')+parts.map(p=>`<span>${p}</span>`).join('')+'</span><button class="cx" data-skoff title="Отключить приборы лодки (Signal K)" aria-label="Отключить приборы лодки">✕</button>':null,'skc'+(shoal?' bad':''));
   if(shoal&&Date.now()-SK.beepT>60e3){SK.beepT=Date.now();beep();toast(`⚠ Под килем ${f1(under)} м — мелко!`,8000)}
   skSt(`Данные с приборов идут · ${new Date().toLocaleTimeString('ru-RU',{timeZone:TZ})}${p?' · позиция с бортового GPS':''}`)}
 function skAis(ctx,path,val){if(!/^vessels\./.test(ctx))return;let a=SK.ais.get(ctx);if(!a){a={};SK.ais.set(ctx,a)}a.t=Date.now();
