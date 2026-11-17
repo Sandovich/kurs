@@ -433,6 +433,23 @@ body.rail.tbMin #timebar{transform:translateY(calc(100% - 20px))}
 #tbCap span{font-size:11px;color:var(--muted);white-space:nowrap}
 body.rail #mob{left:calc(var(--safe-area-inset-left,env(safe-area-inset-left)) + 84px)!important}
 @media (max-height:440px){body.rail #top{gap:6px!important}body.rail #top nav{width:56px;padding:3px!important;gap:2px!important}body.rail #top nav button,body.rail #top nav #btnMore{flex-basis:38px!important;width:48px;height:38px;min-height:38px!important}html body.rail .brand{width:44px;height:44px;flex-basis:44px!important;border-radius:13px!important}html body.rail .brand .bm{width:28px!important;height:28px!important}body.rail #tbCap b{font-size:18px}body.rail #timebar{padding-top:14px!important;gap:8px!important}}
+
+/* справочник капитана */
+.capT{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;margin:0 -2px;scrollbar-width:none}.capT::-webkit-scrollbar{display:none}
+.panel .capT button{flex:0 0 auto;min-height:40px;padding:0 14px;border-radius:999px;font-size:14px;box-shadow:none;white-space:nowrap}
+.panel .capT button.on{background:var(--accent);color:#001321;border-color:var(--accent)}
+.capS{margin:12px 0 6px;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.capChk label{display:flex!important;align-items:flex-start;gap:12px;padding:10px 12px;margin:0 0 6px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);cursor:pointer;font-size:15px;line-height:1.35}
+.capChk label:has(input:checked){opacity:.6}.capChk label:has(input:checked) span{text-decoration:line-through}
+.capChk input{width:22px;height:22px;flex:none;margin:0;accent-color:var(--ok)}
+.capBar{height:8px;border-radius:4px;background:var(--panel2);overflow:hidden;margin:4px 0 8px}.capBar i{display:block;height:100%;background:var(--ok);transition:width .3s var(--ease)}
+.capTbl{width:100%;border-collapse:collapse;font-size:14.5px}.capTbl td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}.capTbl td:first-child{white-space:nowrap;font-weight:700}
+.mor{font:700 17px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;color:var(--accent)}
+.capGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}.capGrid div{border:1px solid var(--line);border-radius:10px;padding:6px 4px;text-align:center;background:var(--panel2)}.capGrid b{display:block;font-size:17px}
+.buoy{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.buoy svg{width:46px;height:74px;flex:none}.buoy div{font-size:14.5px;line-height:1.4}
+.knot{padding:10px 12px;margin:0 0 8px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}.knot b{font-size:16px}.knot ol{margin:6px 0 0 18px;padding:0;font-size:14.5px;line-height:1.45}
+.sosBig{display:flex;gap:8px;margin:4px 0 10px}.sosBig a,.sosBig div{flex:1;text-align:center;padding:12px 8px;border-radius:14px;background:#c81e1e;color:#fff;text-decoration:none;font-weight:800;font-size:22px;line-height:1.1}.sosBig small{display:block;font-size:12px;font-weight:600;opacity:.9}
+body.night .sosBig a,body.night .sosBig div{background:#5a0000;color:#ff5a4a}
 </style>
 </head>
 <body>
@@ -661,10 +678,21 @@ body.rail #mob{left:calc(var(--safe-area-inset-left,env(safe-area-inset-left)) +
     <button id="mDash" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16a7.5 7.5 0 1115 0"/><path d="M12 16l4-5"/><circle cx="12" cy="16" r="1.3" fill="currentColor"/><path d="M6.5 11.5l1 .7M17.5 11.5l-1 .7M12 8.5V10"/></svg><span>Приборы: скорость, ветер, компас, глубина — всё на одном экране</span></button>
     <button data-go="spb" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16c3-5 6-7 9-7s6 2 9 7"/><path d="M3 16h18M7 16v3M17 16v3M12 9V5M10 6l2-2 2 2"/></svg><span>Проход через Петербург: разводка мостов</span></button>
     <button data-go="ai" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21M9 21h6"/></svg><span>ИИ-помощник: спросить голосом или текстом (проба)</span></button>
+    <button data-go="cap" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l1 3H8z"/><rect x="5" y="7" width="14" height="13" rx="2"/><path d="M8.5 12l2 2 4-4M8.5 17h7"/></svg><span>Капитану: чек-лист, экстренная связь, сигналы, знаки, узлы</span></button>
     <button data-go="lotsia" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2 2 0 016 4h5v15H6a2 2 0 00-2 1.5z"/><path d="M20 5.5A2 2 0 0018 4h-5v15h5a2 2 0 012 1.5z"/></svg><span>Лоция и штурман</span></button>
     <button data-go="diag" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12a7 7 0 0114 0M8 12a4 4 0 018 0"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><path d="M12 13v7"/></svg><span>Проверка связи</span></button>
   </div>
   <p class="small muted" id="moreVer" style="text-align:center;margin:14px 0 2px;letter-spacing:.06em"></p>
+</section>
+
+<section class="panel" id="p-cap" hidden>
+  <button class="close">✕</button>
+  <h2>Капитану</h2>
+  <div class="capT" role="tablist">
+    <button data-ct="chk" class="on">Перед выходом</button><button data-ct="sos">Экстренно</button><button data-ct="snd">Звуки</button><button data-ct="mor">Морзе и флаги</button><button data-ct="buoy">Знаки</button><button data-ct="knot">Узлы</button>
+  </div>
+  <div id="capB"></div>
+  <p class="note">Справочник напоминает, но не заменяет правила плавания (МППСС-72, Правила плавания по ВВП РФ), местные правила и обучение.</p>
 </section>
 
 <section class="panel" id="p-spb" hidden>
@@ -760,7 +788,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.51';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.52';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -2658,6 +2686,59 @@ $$('.panel').forEach(pn=>{const h=pn.querySelector('h2');if(!h)return;let y0=nul
     let w='—';try{const p=G.pos||[map.getCenter().lat,map.getCenter().lng];if(W.g){const sm=gridSample(W.g,p[0],p[1],nowIdx());if(sm)w=fW(sm.spd)+' '+rumb(sm.dir)}}catch(e){}$('#cWind').textContent=w};
   setInterval(()=>{if(document.body.classList.contains('rail'))cap()},2000);
 })();
+
+/* ===== справочник капитана ===== */
+const CAP={
+ chk:[['Погода и план',['Прогноз по маршруту проверен («Переход» → «Погода по маршруту»), ветер и волна в пределах лодки','Есть запасная гавань или укрытие на пути','План перехода и время возвращения сообщены на берег','Маршрут и опасности по лоции просмотрены']],
+  ['Лодка',['Топлива с запасом не меньше трети сверх расчёта','Двигатель заводится, охлаждение идёт, ремни целы','Трюм сухой, помпа работает','Аккумуляторы заряжены, ходовые огни горят','Такелаж и паруса осмотрены, рифы готовы','Якорь готов к отдаче, якорный канат закреплён']],
+  ['Безопасность',['Спасательный жилет на каждого, по размеру','Спасательный круг или подкова со светом и линем','Огнетушитель, срок в норме','Аптечка','Сигнальные средства (фальшфейеры, ракеты), срок в норме','Фонарь, нож, ведро, черпак','Рация проверена, дежурство на 16 канале','Телефон заряжен, «Курс» с загруженными картами']],
+  ['Документы',['Судовой билет и удостоверение на право управления','Страховка','Уведомление о выходе в погранзону (Финский залив, часть Ладоги) — если нужно']],
+  ['Экипаж',['Инструктаж: где жилеты, круг, огнетушитель, как заводить мотор','Отработано «Человек за бортом» (кнопка MOB в «Курсе»)','Назначен второй, кто умеет управлять и вызвать помощь']]],
+ snd:[['Один короткий','Изменяю курс вправо'],['Два коротких','Изменяю курс влево'],['Три коротких','Мои движители работают на задний ход'],['Пять и более коротких','Не понимаю ваших намерений, сомневаюсь, что вы принимаете меры (сигнал сомнения)'],['Один продолжительный','Подхожу к изгибу или к месту, где не видно других судов'],['Два продолжительных и один короткий','Намерен обогнать вас по вашему правому борту (в узкости)'],['Два продолжительных и два коротких','Намерен обогнать вас по вашему левому борту (в узкости)'],['Продолжительный, короткий, продолжительный, короткий','Согласен на обгон'],
+  ['В тумане: один продолжительный раз в 2 минуты','Судно с двигателем на ходу и имеет ход'],['В тумане: два продолжительных раз в 2 минуты','Судно с двигателем на ходу, но остановилось'],['В тумане: продолжительный и два коротких раз в 2 минуты','Парусное судно, судно, ограниченное в манёвре, рыбак, буксир'],['В тумане: колокол 5 секунд раз в минуту','Судно на якоре (длиной менее 100 м)']],
+ mor:{A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',1:'.----',2:'..---',3:'...--',4:'....-',5:'.....',6:'-....',7:'--...',8:'---..',9:'----.',0:'-----'},
+ morRu:{А:'.-',Б:'-...',В:'.--',Г:'--.',Д:'-..',Е:'.',Ж:'...-',З:'--..',И:'..',Й:'.---',К:'-.-',Л:'.-..',М:'--',Н:'-.',О:'---',П:'.--.',Р:'.-.',С:'...',Т:'-',У:'..-',Ф:'..-.',Х:'....',Ц:'-.-.',Ч:'---.',Ш:'----',Щ:'--.-',Ъ:'--.--',Ы:'-.--',Ь:'-..-',Э:'..-..',Ю:'..--',Я:'.-.-'},
+ flag:[['A','У меня спущен водолаз; держитесь в стороне и идите малым ходом'],['B','Гружу, выгружаю или везу опасный груз'],['C','Да (утвердительно)'],['D','Держитесь в стороне от меня: я управляюсь с трудом'],['E','Изменяю курс вправо'],['F','Я не могу управляться; держите связь со мной'],['G','Мне нужен лоцман'],['H','У меня на борту лоцман'],['I','Изменяю курс влево'],['J','У меня пожар и опасный груз на борту; держитесь в стороне'],['K','Я хочу установить с вами связь'],['L','Остановите ваше судно немедленно'],['M','Моё судно остановлено и не имеет хода'],['N','Нет (отрицательно)'],['O','Человек за бортом'],['P','В порту: всем вернуться на борт, судно уходит в море'],['Q','Моё судно не заражено, прошу свободной практики'],['S','Мои движители работают на задний ход'],['T','Держитесь в стороне от меня: я веду парный трал'],['U','Вы идёте к опасности'],['V','Мне нужна помощь'],['W','Мне нужна медицинская помощь'],['X','Прекратите выполнять ваши намерения и следите за моими сигналами'],['Y','Меня дрейфует на якоре'],['Z','Мне нужен буксир']],
+ knot:[['Восьмёрка','Стопор на конце шкота или фала, чтобы конец не выскочил из блока.',['Сделайте петлю, ходовой конец положите поверх коренного.','Обведите ходовой конец вокруг коренного сзади.','Проденьте его в петлю спереди и затяните — получится «восьмёрка».']],
+  ['Булинь (беседочный)','Незатягивающаяся петля: швартов на кнехт или палер, обвязка человека. Легко развязать после нагрузки.',['На коренном конце сделайте маленькую петлю («озерцо»), ходовой конец сверху.','Проденьте ходовой конец в озерцо снизу вверх.','Обведите его вокруг коренного конца сзади.','Верните в озерцо сверху вниз и затяните, держа петлю и коренной конец.']],
+  ['Выбленочный','Быстро привязать кранец к леерному лееру или конец к стойке.',['Обнесите конец вокруг опоры.','Перехлестните через коренной и обнесите вокруг опоры второй раз.','Проденьте ходовой конец под последний шлаг и затяните. Для надёжности добавьте полуштык.']],
+  ['Шлаг с двумя полуштыками','Крепление швартова к рыму, кольцу, свае; держит под нагрузкой и развязывается.',['Обнесите конец вокруг опоры полный оборот (шлаг).','Сделайте полуштык вокруг коренного конца.','Сделайте второй полуштык в ту же сторону и затяните.']],
+  ['Крепление на утке','Швартов или шкот на утку: держит и отдаётся одним движением.',['Заведите конец на дальний рог утки, обнесите полный оборот вокруг основания.','Положите 1–2 «восьмёрки» крест-накрест через рога.','Закончите обратным шлагом (петлёй, вывернутой так, чтобы конец лёг вдоль восьмёрки).']],
+  ['Рифовый (прямой)','Связать концы риф-сезней. Для связывания двух тросов под нагрузкой не годится.',['Положите левый конец на правый и обвейте.','Затем правый на левый и обвейте ещё раз.','Концы должны выйти рядом, с одной стороны.']],
+  ['Шкотовый','Связать два троса, в том числе разной толщины.',['Из толстого троса сделайте петлю (шлаг).','Проденьте тонкий конец в петлю снизу, обнесите вокруг петли сзади.','Проденьте тонкий конец под самого себя, не через петлю, и затяните. Для тросов сильно разной толщины обнесите дважды.']]],
+ sos:null};
+// знаки ограждения МАМС, регион А (море, Финский залив, Ладога и Онега по морским картам)
+function capBuoy(kind){const B={red:'#d8232a',grn:'#1f9d48',yel:'#f2c400',blk:'#111',wht:'#fff'};const body=(cols)=>{const h=40/cols.length;return cols.map((c,i)=>`<rect x="11" y="${30+i*h}" width="24" height="${h+.3}" fill="${B[c]}"/>`).join('')+'<rect x="11" y="30" width="24" height="40" fill="none" stroke="#555" stroke-width="1"/>'};
+  const cone=(up,y)=>up?`<path d="M23 ${y}l-7 11h14z" fill="#111"/>`:`<path d="M23 ${y+11}l-7-11h14z" fill="#111"/>`;
+  const S={port:`<rect x="11" y="18" width="24" height="52" fill="${B.red}" stroke="#555"/><rect x="14" y="6" width="18" height="10" fill="${B.red}"/>`,
+   stb:`<path d="M23 16l13 54H10z" fill="${B.grn}" stroke="#555"/><path d="M23 2l-8 12h16z" fill="${B.grn}"/>`,
+   N:body(['blk','yel'])+cone(1,4)+cone(1,16),E:body(['blk','yel','blk'])+cone(1,4)+cone(0,16),S:body(['yel','blk'])+cone(0,4)+cone(0,16),W:body(['yel','blk','yel'])+cone(0,4)+cone(1,16),
+   iso:body(['blk','red','blk'])+'<circle cx="23" cy="7" r="5" fill="#111"/><circle cx="23" cy="19" r="5" fill="#111"/>',
+   safe:'<rect x="11" y="30" width="24" height="40" fill="#fff" stroke="#555"/>'+[0,1,2].map(i=>`<rect x="${13+i*8}" y="30" width="4" height="40" fill="${B.red}"/>`).join('')+'<circle cx="23" cy="20" r="6" fill="'+B.red+'"/>',
+   spec:`<rect x="11" y="30" width="24" height="40" fill="${B.yel}" stroke="#555"/><path d="M17 12l12 12M29 12L17 24" stroke="${B.yel}" stroke-width="4"/>`};
+  return`<svg viewBox="0 0 46 74" aria-hidden="true">${S[kind]}</svg>`}
+const CAP_BUOY=[['port','Левая сторона хода','Красный, цилиндр (или веха с цилиндром). Оставлять слева, когда идёте с моря в порт или по направлению ограждения. Огонь красный.'],['stb','Правая сторона хода','Зелёный, конус вершиной вверх. Оставлять справа при входе с моря. Огонь зелёный.'],
+ ['N','Северный кардинальный','Опасность к югу от знака — проходите севернее. Два конуса вершинами вверх, чёрный сверху, жёлтый снизу. Огонь: частые или очень частые проблески без перерыва.'],['E','Восточный кардинальный','Проходите восточнее. Конусы основаниями врозь, чёрный — жёлтый — чёрный. Огонь: 3 проблеска.'],['S','Южный кардинальный','Проходите южнее. Конусы вершинами вниз, жёлтый сверху, чёрный снизу. Огонь: 6 проблесков и длинный.'],['W','Западный кардинальный','Проходите западнее. Конусы вершинами друг к другу, жёлтый — чёрный — жёлтый. Огонь: 9 проблесков.'],
+ ['iso','Отдельная опасность','Над небольшой опасностью, вокруг — чистая вода. Чёрный с красным поясом, два чёрных шара. Огонь белый, группы по 2 проблеска.'],['safe','Чистая вода','Середина фарватера или подход: вокруг безопасно. Красно-белые вертикальные полосы, красный шар. Огонь белый: изофазный, затмевающийся или длинная вспышка.'],['spec','Специальный знак','Отмечает особый район: кабель, полигон, место для купания, свалка грунта. Жёлтый, жёлтый косой крест. Огонь жёлтый.']];
+function capRender(t){const b=$('#capB');let h='';
+  if(t==='chk'){let st={};try{st=JSON.parse(localStorage.getItem('kurs.capChk')||'{}')}catch(e){}let n=0,k=0;
+    h=CAP.chk.map(([g,items],gi)=>`<div class="capS">${g}</div><div class="capChk">`+items.map((x,ii)=>{const id=gi+'_'+ii;n++;if(st[id])k++;return`<label><input type="checkbox" data-ck="${id}"${st[id]?' checked':''}><span>${x}</span></label>`}).join('')+'</div>').join('');
+    h=`<div class="small muted" id="capCnt">Отмечено ${k} из ${n}</div><div class="capBar"><i style="width:${Math.round(k/n*100)}%"></i></div>`+h+`<div class="row"><button id="capRst" style="flex:1">Снять все отметки</button></div>`}
+  else if(t==='sos'){h=`<div class="sosBig"><a href="tel:112">112<small>единый номер, работает без сим-карты</small></a><div>УКВ 16<small>канал бедствия и вызова</small></div></div>
+    <div class="capS">Что говорить по рации при бедствии</div><p class="small">«MAYDAY, MAYDAY, MAYDAY. Это яхта … (три раза). MAYDAY, яхта …. Позиция … Что случилось … Сколько людей на борту … Какая помощь нужна … Приём». Готовый текст с вашими координатами — кнопка «Текст для MAYDAY» в ведении по маршруту после нажатия MOB.</p>
+    <p class="small">Срочно, но не бедствие (поломка, нужен буксир): «PAN-PAN» три раза, дальше так же. Предупреждение о безопасности: «SECURITE» три раза.</p>
+    <div id="capSosMore" class="small muted">Телефоны спасательных служб, ГИМС и диспетчеров по районам добавляются после проверки по официальным источникам.</div>`}
+  else if(t==='snd'){h='<div class="capS">Звуковые сигналы (МППСС-72): короткий — около 1 с, продолжительный — 4–6 с</div><table class="capTbl">'+CAP.snd.map(([a,b])=>`<tr><td style="white-space:normal">${a}</td><td>${b}</td></tr>`).join('')+'</table><p class="small muted">На внутренних водных путях действуют Правила плавания по ВВП РФ, сигналы там частично другие — см. «Лоция и штурман».</p>'}
+  else if(t==='mor'){h='<div class="capS">SOS</div><p><span class="mor">··· ––– ···</span> — без пауз между буквами. Светом или звуком.</p><div class="capS">Латиница и цифры</div><div class="capGrid">'+Object.entries(CAP.mor).map(([k,v])=>`<div><b>${k}</b><span class="mor">${v.replace(/\./g,'·').replace(/-/g,'–')}</span></div>`).join('')+'</div><div class="capS">Русские буквы</div><div class="capGrid">'+Object.entries(CAP.morRu).map(([k,v])=>`<div><b>${k}</b><span class="mor">${v.replace(/\./g,'·').replace(/-/g,'–')}</span></div>`).join('')+'</div><div class="capS">Однобуквенные сигналы (флагом, светом, звуком)</div><table class="capTbl">'+CAP.flag.map(([a,b])=>`<tr><td>${a} <span class="mor" style="font-size:13px">${CAP.mor[a].replace(/\./g,'·').replace(/-/g,'–')}</span></td><td>${b}</td></tr>`).join('')+'</table>'}
+  else if(t==='buoy'){h='<div class="capS">Морские знаки, система МАМС, регион А</div>'+CAP_BUOY.map(([k,n,d])=>`<div class="buoy">${capBuoy(k)}<div><b>${n}</b><br>${d}</div></div>`).join('')+'<p class="small muted">На реках и каналах (Нева, Свирь, Волхов) действует речная обстановка по Правилам плавания по ВВП РФ — её цвета смотрите в «Лоция и штурман».</p>'}
+  else if(t==='knot'){h=CAP.knot.map(([n,u,st])=>`<div class="knot"><b>${n}</b><div class="small muted">${u}</div><ol>${st.map(x=>`<li>${x}</li>`).join('')}</ol></div>`).join('')}
+  b.innerHTML=h;
+  if(t==='chk'){b.querySelectorAll('[data-ck]').forEach(c=>c.onchange=()=>{let st={};try{st=JSON.parse(localStorage.getItem('kurs.capChk')||'{}')}catch(e){}if(c.checked)st[c.dataset.ck]=1;else delete st[c.dataset.ck];try{localStorage.setItem('kurs.capChk',JSON.stringify(st))}catch(e){}
+      const all=b.querySelectorAll('[data-ck]').length,k=Object.keys(st).length;$('#capCnt').textContent=`Отмечено ${k} из ${all}`;b.querySelector('.capBar i').style.width=Math.round(k/all*100)+'%'});
+    $('#capRst').onclick=()=>{try{localStorage.removeItem('kurs.capChk')}catch(e){}capRender('chk')}}
+  if(t==='sos'&&window.CAP_SOS)$('#capSosMore').outerHTML=window.CAP_SOS}
+$$('#p-cap [data-ct]').forEach(x=>x.onclick=()=>{$$('#p-cap [data-ct]').forEach(y=>y.classList.toggle('on',y===x));capRender(x.dataset.ct);$('#p-cap').scrollTop=0});
+capRender('chk');
 </script>
 </body>
 </html>
