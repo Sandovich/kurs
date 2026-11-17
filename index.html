@@ -608,6 +608,71 @@ html body .panel.wMin{left:84px!important;max-width:calc(100vw - 96px)!important
 #nRules .rc.bad{background:var(--danger,#e01e1e);color:#fff}
 #nRules .rc.ok{background:rgba(48,209,88,.18);color:#4cd964}
 #nRules .rn{flex-basis:100%;font-size:11.5px;color:var(--muted);margin-top:1px}
+
+/* ===== полосы раскрываются из значков ===== */
+html body #top nav{transform-origin:left center;transition:transform .42s cubic-bezier(.3,1.25,.5,1),opacity .25s}
+html body.topMin #top nav{transform:translateX(-46%) scale(.12)!important;opacity:0;pointer-events:none}
+html body.rail #top nav{transform-origin:center top}
+html body.rail.topMin #top nav{transform:translateY(-46%) scale(.12)!important}
+html body #timebar{transform-origin:36px 100%;transition:transform .42s cubic-bezier(.3,1.25,.5,1),opacity .25s}
+html body.tbMin #timebar{transform:scale(.06)!important;opacity:0;pointer-events:none}
+html body.tbMin #timebar>*{opacity:0}
+/* облачко — слева внизу, под логотипом по одной линии */
+html body #tbBtn{left:calc(var(--safe-area-inset-left,env(safe-area-inset-left)) + 8px);margin-left:0}
+html body.tbMin .leaflet-bottom.leaflet-left{margin-bottom:74px}
+/* покачивание до первого нажатия */
+@keyframes nudge{0%,100%{transform:none}8%{transform:rotate(-9deg) scale(1.06)}16%{transform:rotate(8deg) scale(1.06)}24%{transform:rotate(-5deg)}32%{transform:rotate(3deg)}40%{transform:none}}
+#top .brand.nudge,#tbBtn.nudge{animation:nudge 3.6s 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){#top .brand.nudge,#tbBtn.nudge{animation:none}}
+
+/* ===== крестики ===== */
+html body .panel h2>.close,html body .panel>.close{flex:0 0 34px!important;margin-left:6px!important}
+html body button.xbtn{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;flex:0 0 34px!important;padding:0!important;border-radius:50%!important;border:0!important;outline:0;background:rgba(127,127,127,.16)!important;box-shadow:none!important;color:var(--text);display:inline-flex;align-items:center;justify-content:center}
+html body button.xbtn svg{width:14px;height:14px;display:block}
+html body button.xbtn:active{background:rgba(127,127,127,.3)!important;transform:scale(.92)!important}
+html body button.xbtn:focus-visible{box-shadow:0 0 0 2px var(--accent)!important}
+/* ===== ярлычок свёрнутого окна двигается ===== */
+html body .panel.wMin,html body.rail .panel.wMin{left:var(--mx,84px)!important;top:var(--my,auto)!important;bottom:var(--mb,calc(var(--tbUp,110px) + 12px))!important;touch-action:none}
+/* ===== карточки-списки в окнах ===== */
+html body .panel .grp{background:var(--panel2);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:10px 0}
+html body .panel .grp .row{display:block;margin:0}
+html body .panel .grp label{display:flex;align-items:center;gap:10px;margin:0;padding:10px 14px;min-height:52px;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;font-size:15px!important;line-height:1.3;font-weight:400;color:var(--text)}
+html body .panel .grp label[hidden]{display:none!important}
+html body .panel .grp>label:first-child,html body .panel .grp>.row:first-child>label:first-child{border-top:0}
+html body .panel .grp.sw label>input{order:2;margin:0 0 0 auto;flex:none}
+html body .panel .grp.fm label>:is(input,select){margin-left:auto;flex:none;max-width:62%}
+html body .panel .grp.fm label>input[type=number]{text-align:right}
+html body .panel .grp.fm label>br{display:none}
+html body .panel>h3,html body .panel details>h3{font-size:12px!important;font-weight:600!important;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:20px 6px 6px!important}
+html body .panel>hr{border:0;height:0;margin:8px 0}
+html body .panel>p.small,html body .panel>p.note,html body .panel>p.muted{padding-left:6px;padding-right:6px}
+html body .panel details{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:0 14px;margin:10px 0}
+html body .panel details>summary{min-height:52px;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;cursor:pointer;list-style:none}
+html body .panel details>summary::-webkit-details-marker{display:none}
+html body .panel details>summary::after{content:'';margin-left:auto;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);opacity:.6;flex:none;transition:transform .2s}
+html body .panel details[open]>summary::after{transform:rotate(-135deg)}
+html body .panel details[open]{padding-bottom:12px}
+html body .panel details .grp{background:transparent}
+
+html body .panel .grp.sw label{display:block!important;position:relative;padding:15px 74px 15px 14px!important;min-height:52px;margin:0!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important}
+html body .panel .grp.sw>label:first-child{border-top:0!important}
+html body .panel .grp.sw label>input{position:absolute!important;left:auto!important;right:14px!important;top:50%!important;transform:translateY(-50%);margin:0!important}
+html body .panel .grp.sw label:has(>input[type=radio]){padding-right:54px!important}
+
+/* ===== движения ===== */
+@keyframes kFull{from{transform:translateY(28px) scale(.985);opacity:0}to{transform:none;opacity:1}}
+@keyframes kFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+html body .panel.wFull:not([hidden]){animation:kFull .36s cubic-bezier(.2,.9,.25,1)}
+html body :is(#bBody,#capB,#fList,#lzOut,#bList)>*{animation:kFade .28s cubic-bezier(.2,.8,.3,1) both}
+html body :is(#bBody,#capB,#fList,#lzOut,#bList)>*:nth-child(2){animation-delay:.03s}
+html body :is(#bBody,#capB,#fList,#lzOut,#bList)>*:nth-child(3){animation-delay:.06s}
+html body :is(#bBody,#capB,#fList,#lzOut,#bList)>*:nth-child(n+4){animation-delay:.09s}
+html body .panel :is(.capT,.lzChips,#fCat,#bTabs) button{transition:background-color .22s,color .22s,border-color .22s,transform .14s}
+html body .panel .grp label,html body #p-more .mgrp>button{transition:background-color .18s}
+html body .panel .grp.sw label:active{background:rgba(127,127,127,.1)!important}
+#navd:not([hidden]){animation:kFade .3s cubic-bezier(.2,.8,.3,1)}
+#nRules .rc{animation:kFade .25s both}
+@media (prefers-reduced-motion:reduce){html body .panel,html body .panel *,#navd,#nRules .rc,#tbBtn{animation:none!important}}
 </style>
 </head>
 <body>
@@ -969,10 +1034,10 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.65';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.66';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
-const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
+const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:false,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
   boat:{name:'',type:'sail',speed:5.5,motor:5,draft:1.8}},store.get('settings',{}));
 const saveS=()=>store.set('settings',S);
 function toast(m,ms=4000){if(typeof kaEvent==='function')kaEvent('toast',m);const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),ms)}
@@ -2865,7 +2930,7 @@ $$('.panel').forEach(pn=>{const h=pn.querySelector('h2');if(!h)return;let y0=nul
   if(brand){brand.setAttribute('role','button');brand.setAttribute('tabindex','0');brand.setAttribute('aria-label','Курс — скрыть или показать меню');brand.title='Скрыть / показать меню';
     const tog=()=>{const on=!document.body.classList.contains('topMin');document.body.classList.toggle('topMin',on);try{store.set('topMin',on)}catch(e){}};
     brand.addEventListener('click',tog);brand.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog()}})}
-  try{if(store.get('topMin',false))document.body.classList.add('topMin');if(store.get('tbMin',false))document.body.classList.add('tbMin')}catch(e){}
+  try{if(store.get('topMin',true))document.body.classList.add('topMin');if(store.get('tbMin',true))document.body.classList.add('tbMin')}catch(e){}
   // нижняя полоса: ручка — нажатие или жест вверх/вниз
   const tb=$('#timebar'),grip=$('#tbGrip');
   const setMin=on=>{document.body.classList.toggle('tbMin',on);try{store.set('tbMin',on)}catch(e){}};
@@ -3267,8 +3332,8 @@ function wmStash(p,e){const r=p.getBoundingClientRect(),W=innerWidth,H=innerHeig
   const cl=(v,a,b)=>Math.min(Math.max(v,a),b);
   if(e==='l'||e==='r')t.style.top=cl(r.top+r.height/2-39,70,H-tb-90)+'px';else{t.style.left=cl(r.left+r.width/2-39,8,W-86)+'px';if(e==='t')t.style.top='64px';else t.style.bottom=(tb+2)+'px'}
   let d=null;t.onpointerdown=ev=>{d={x:ev.clientX,y:ev.clientY};try{t.setPointerCapture(ev.pointerId)}catch(_){}};
-  t.onpointermove=ev=>{if(!d)return;if(Math.hypot(ev.clientX-d.x,ev.clientY-d.y)>16){d=null;wmUnstash(p)}};
-  t.onpointerup=()=>{if(d){d=null;wmUnstash(p)}}}
+  t.onpointermove=ev=>{if(!d)return;if(d.pull){ev.preventDefault();d.pull(ev);return}if(Math.hypot(ev.clientX-d.x,ev.clientY-d.y)>16)d.pull=wmPull(p,t,ev)};
+  t.onpointerup=t.onpointercancel=()=>{if(!d)return;const pl=d.pull;d=null;if(pl){pl(null)}else wmUnstash(p)}}
 function wmUnstash(p){const n=wmName(p),t=document.getElementById('stash-'+n);if(t)t.remove();if(p.hidden){openPanel(n);}if(p._pre){p.style.setProperty('--wx',p._pre.x+'px');p.style.setProperty('--wy',p._pre.y+'px')}p.classList.remove('wStash');requestAnimationFrame(()=>wmClamp(p))}
 {const _ws=wmSet;wmSet=function(p,m,keep){const q=typeof p==='string'?$('#p-'+p):p;if(q&&q.classList.contains('wStash')){q.classList.remove('wStash');const t=document.getElementById('stash-'+wmName(q));if(t)t.remove()}return _ws(p,m,keep)}}
 {const _cp=closePanel;closePanel=function(){$$('.stashTab').forEach(t=>t.remove());$$('.panel.wStash').forEach(p=>p.classList.remove('wStash'));return _cp.apply(this,arguments)}}
@@ -3325,6 +3390,43 @@ async function navRules(){const el=$('#nRules');if(!el)return;if(!NAV.mode||!G.p
   el.innerHTML=out.join('')}
 {const _nu=navUpdate;navUpdate=function(){const r=_nu.apply(this,arguments);navRules();return r}}
 setInterval(()=>{if(NAV.mode)navRules()},5000);
+
+/* покачивание значков до первого нажатия */
+(function(){const set=(el,k)=>{if(!el)return;let done=false;try{done=store.get(k,false)}catch(e){}if(done)return;el.classList.add('nudge');
+  const stop=()=>{el.classList.remove('nudge');try{store.set(k,true)}catch(e){}el.removeEventListener('pointerdown',stop);el.removeEventListener('click',stop)};el.addEventListener('pointerdown',stop);el.addEventListener('click',stop)};
+ set(document.querySelector('#top .brand'),'tapBrand');set($('#tbBtn'),'tapTb');
+ // ночной режим: один раз выключить тем, у кого он включился сам
+ try{if(!store.get('nightMig1',false)){store.set('nightMig1',true);if(S.autoNight){S.autoNight=false;S.night=false;saveS();document.body.classList.remove('night');const c=$('#sAutoN');if(c)c.checked=false;const n=$('#sNight');if(n)n.checked=false;if(S.base==='kurs')setBase('kurs')}}}catch(e){}})();
+
+/* ===== вытянуть спрятанное окно за ползунок — встаёт туда, куда потянули ===== */
+function wmPull(p,t,ev){p._pre=null;t.style.opacity='0';const w=p.offsetWidth,put=e=>{p.style.setProperty('--wx',(e.clientX-w/2)+'px');p.style.setProperty('--wy',(e.clientY-24)+'px')};
+  put(ev);p.classList.add('wDrag');p.classList.remove('wStash');
+  return e=>{if(e){put(e);return}t.remove();p.classList.remove('wDrag');wmClamp(p);const r=p.getBoundingClientRect();try{store.set('wpos_'+wmName(p),{x:r.left,y:r.top,w:r.width,h:r.height})}catch(_){}}}
+/* ===== ярлычок свёрнутого окна: перетаскивание ===== */
+function wmMinPos(p){let m=null;try{m=store.get('mpos_'+wmName(p),null)}catch(e){}if(!m){['--mx','--my','--mb'].forEach(k=>p.style.removeProperty(k));return}
+  const r=p.getBoundingClientRect(),x=Math.min(Math.max(4,m.x),Math.max(4,innerWidth-r.width-4)),y=Math.min(Math.max(64,m.y),Math.max(64,innerHeight-r.height-4));
+  p.style.setProperty('--mx',x+'px');p.style.setProperty('--my',y+'px');p.style.setProperty('--mb','auto')}
+$$('.panel').forEach(p=>{p.addEventListener('pointerdown',e=>{if(!p.classList.contains('wMin')||e.target.closest('button'))return;e.stopPropagation();
+  const r=p.getBoundingClientRect(),d={x:e.clientX,y:e.clientY,l:r.left,t:r.top,m:0};
+  const mv=ev=>{const dx=ev.clientX-d.x,dy=ev.clientY-d.y;if(!d.m&&Math.hypot(dx,dy)<6)return;d.m=1;ev.preventDefault();p.style.setProperty('--mx',(d.l+dx)+'px');p.style.setProperty('--my',(d.t+dy)+'px');p.style.setProperty('--mb','auto')};
+  const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);
+    if(!d.m){wmSet(p,'win');return}const q=p.getBoundingClientRect();try{store.set('mpos_'+wmName(p),{x:q.left,y:q.top})}catch(_){}wmMinPos(p)};
+  addEventListener('pointermove',mv,{passive:false});addEventListener('pointerup',up);addEventListener('pointercancel',up)},true)});
+{const _ws2=wmSet;wmSet=function(p,m,keep){const r=_ws2(p,m,keep);const q=typeof p==='string'?$('#p-'+p):p;if(q&&m==='min')requestAnimationFrame(()=>wmMinPos(q));return r}}
+addEventListener('resize',()=>$$('.panel.wMin').forEach(wmMinPos));
+/* ===== крестики одним значком ===== */
+(function(){const X='<svg viewBox="0 0 14 14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>';
+ const fix=b=>{if(b.classList.contains('xbtn'))return;const t=b.textContent.trim();if(t!=='✕'&&t!=='×'&&t!=='✖')return;if(!b.getAttribute('aria-label'))b.setAttribute('aria-label',b.title||'Закрыть');b.classList.add('xbtn');b.innerHTML=X};
+ $$('button').forEach(fix);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType!==1)return;if(n.tagName==='BUTTON')fix(n);n.querySelectorAll&&n.querySelectorAll('button').forEach(fix)}))).observe(document.body,{childList:true,subtree:true})})();
+/* ===== переключатели и поля — в карточки-списки ===== */
+(function(){const chk=l=>l.tagName==='LABEL'&&!!l.querySelector('input[type=checkbox],input[type=radio]');
+ const frm=el=>{if(el.tagName==='LABEL')return !chk(el)&&!!el.querySelector('input,select');if(!el.classList||!el.classList.contains('row'))return false;
+   const ch=[...el.children];return ch.length>0&&ch.every(c=>c.tagName==='LABEL'&&!chk(c)&&!!c.querySelector('input,select'))};
+ const pass=root=>{let run=null,kind=null;[...root.children].forEach(el=>{const k=chk(el)?'sw':frm(el)?'fm':null;
+   if(!k){run=null;kind=null;return}if(k!==kind||!run){run=document.createElement('div');run.className='grp '+k;root.insertBefore(run,el);kind=k}run.appendChild(el)})};
+ $$('.panel').forEach(p=>{if(['p-more','p-berth','p-find','p-ai','p-point'].includes(p.id))return;pass(p);p.querySelectorAll('details').forEach(pass)})})();
+
+$$('.panel .close').forEach(b=>b.classList.add('xbtn'));
 </script>
 </body>
 </html>
