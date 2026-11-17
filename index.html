@@ -455,6 +455,18 @@ body.night .sosBig a,body.night .sosBig div{background:#5a0000;color:#ff5a4a}
 #fList .fi .fx{flex:1;min-width:0}#fList .fi b{display:block;font-size:15.5px}#fList .fi .fm{font-size:13px;color:var(--muted)}
 #fList .fi .fb{display:flex;flex-direction:column;gap:6px;flex:none}#fList .fi .fb button{min-height:38px;padding:0 12px;font-size:13.5px;box-shadow:none}
 .tour{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 10px;background:var(--panel2)}.tour h3{margin:0 0 4px;font-size:16.5px}.tour p{margin:4px 0;font-size:14.5px;line-height:1.45}.tour ol{margin:6px 0 8px 18px;padding:0;font-size:14px;line-height:1.45}
+
+#helm{position:fixed;z-index:1050;top:0;right:0;bottom:0;width:min(360px,42vw);background:var(--bar,#0f2131);border-left:1px solid var(--barLine,rgba(255,255,255,.1));padding:calc(var(--safe-area-inset-top,env(safe-area-inset-top)) + 10px) calc(var(--safe-area-inset-right,env(safe-area-inset-right)) + 12px) calc(var(--safe-area-inset-bottom,env(safe-area-inset-bottom)) + 10px) 12px;overflow-y:auto;animation:kInR .4s var(--ease)}
+@keyframes kInR{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
+#helm .hh{display:flex;align-items:center;gap:10px;margin-bottom:10px}#helm .hh b{font-size:17px;flex:1}#helm .hh span{font:700 20px system-ui;color:var(--muted)}
+#helm .hh button{width:44px;height:44px;min-height:44px;border-radius:50%;padding:0}
+#helmG{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#helmG .ht{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--panel2)}#helmG .ht.w{grid-column:1/3}
+#helmG .ht span{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}#helmG .ht b{display:block;font:800 34px/1.1 system-ui;color:var(--text);white-space:nowrap}#helmG .ht i{font-style:normal;font-size:13px;color:var(--muted)}
+#helmG .ht.bad{border-color:var(--danger)}#helmG .ht.bad b{color:var(--danger)}
+#helmG .fc{display:flex;gap:6px}#helmG .fc div{flex:1;text-align:center;border-radius:10px;padding:6px 2px;background:rgba(255,255,255,.04)}#helmG .fc b{font-size:20px}
+body.helmOn #timebar{right:calc(min(360px,42vw) + 8px)!important}body.helmOn .leaflet-right{right:min(360px,42vw)}body.helmOn #status{right:calc(min(360px,42vw) + 8px)}
+@media (max-width:700px){#helm{width:100%;top:auto;height:55vh;border-left:0;border-top:1px solid var(--line)}body.helmOn #timebar{display:none}body.helmOn .leaflet-right{right:0}}
 </style>
 </head>
 <body>
@@ -489,6 +501,7 @@ body.night .sosBig a,body.night .sosBig div{background:#5a0000;color:#ff5a4a}
   <div class="dg" id="dGrid"></div>
 </div>
 <div id="status"></div>
+<aside id="helm" hidden aria-label="Экран у штурвала"><div class="hh"><b>У штурвала</b><span id="hClock"></span><button id="helmX" aria-label="Закрыть экран у штурвала">✕</button></div><div id="helmG"></div></aside>
 <div id="cu" hidden role="dialog" aria-label="Карта по курсу">
   <div id="cuMap"></div>
   <div class="cuTop"><button id="cuX" aria-label="Закрыть карту по курсу">✕</button>
@@ -682,6 +695,7 @@ body.night .sosBig a,body.night .sosBig div{background:#5a0000;color:#ff5a4a}
     <button id="mNight"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg><span>Ночной режим</span></button>
     <button data-go="help"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 014.8 1c0 1.7-2.4 2-2.4 3.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg><span>Как пользоваться</span></button>
     <button id="mWatch" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.8l2.5 1.6M9.5 3h5"/></svg><span>Вахтенный таймер: выкл</span></button>
+    <button id="mHelm" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M14 5v13M16.5 9h2M16.5 12h2M16.5 15h2"/></svg><span>Экран у штурвала: карта и приборы рядом (для планшета)</span></button>
     <button id="mDash" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16a7.5 7.5 0 1115 0"/><path d="M12 16l4-5"/><circle cx="12" cy="16" r="1.3" fill="currentColor"/><path d="M6.5 11.5l1 .7M17.5 11.5l-1 .7M12 8.5V10"/></svg><span>Приборы: скорость, ветер, компас, глубина — всё на одном экране</span></button>
     <button data-go="spb" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16c3-5 6-7 9-7s6 2 9 7"/><path d="M3 16h18M7 16v3M17 16v3M12 9V5M10 6l2-2 2 2"/></svg><span>Проход через Петербург: разводка мостов</span></button>
     <button data-go="ai" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21M9 21h6"/></svg><span>ИИ-помощник: спросить голосом или текстом (проба)</span></button>
@@ -804,7 +818,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.57';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.58';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -2865,6 +2879,25 @@ $('#btnFind').addEventListener('click',()=>setTimeout(findRender,30));
 
 /* экономия интернета */
 {const c=$('#sLow');c.checked=!!S.lowData;c.onchange=()=>{S.lowData=c.checked;saveS();if(S.base!=='kurs'&&S.lowData){setBase('kurs')}else setBase(S.base);toast(S.lowData?'Экономия: карта из памяти телефона (база «Курс»), наблюдения и суда обновляются реже':'Обычный режим загрузки')}}
+
+/* ===== экран у штурвала ===== */
+const HELM={on:false,t:null};
+function helmTick(){if(!HELM.on)return;const v=SK.v||{},MS=MS2KN,sog=G.sog!=null?G.sog:null,txt=id=>{const e=$(id);return e?e.textContent.trim():''};
+  $('#hClock').textContent=new Date().toLocaleTimeString('ru-RU',{timeZone:TZ,hour:'2-digit',minute:'2-digit'});
+  const DPh=typeof skDepth==='function'?skDepth(v):{},dep=DPh.dep!=null?DPh.dep:DPh.dk,under=DPh.under;
+  const aws=v['environment.wind.speedApparent'],awa=v['environment.wind.angleApparent'],tws=v['environment.wind.speedTrue'];
+  let fw=null;try{const p=G.pos||[map.getCenter().lat,map.getCenter().lng];if(W.g){const now=nowIdx();fw=[0,1,2,3].map(h=>{const sm=gridSample(W.g,p[0],p[1],Math.min(W.g.times.length-1,now+h));return sm?{s:sm.spd,g:sm.gust,d:sm.dir}:null})}}catch(e){}
+  const T=(lab,val,sub,cls,w)=>`<div class="ht${cls?' '+cls:''}${w?' w':''}"><span>${lab}</span><b>${val}</b>${sub?`<i>${sub}</i>`:''}</div>`;
+  let h=T('Скорость',txt('#hSog')||'—',spU())+T('Курс',txt('#hCog')||'—','по GPS');
+  h+=T('Глубина',dep!=null?f1(dep)+' м':'—',under!=null?`под килем ${f1(under)} м`:(dep==null?'нужны приборы лодки':''),under!=null&&under<.5?'bad':'');
+  h+=aws!=null?T('Ветер на лодке',fW(aws*MS),`${awa!=null?f0(Math.abs(awa*R2D))+'° '+(awa<0?'слева':'справа'):''}${tws!=null?' · истинный '+fW(tws*MS):''}`):T('Ветер здесь',fw&&fw[0]?fW(fw[0].s):'—',fw&&fw[0]?`порывы ${fW(fw[0].g)}, ${rumb(fw[0].d)} · прогноз`:'');
+  if(NAV&&NAV.mode){h+=T('До точки',txt('#nDtw')||'—',`пеленг ${txt('#nBrg')||'—'} · приход ${txt('#nEta')||'—'}`,'', true)}
+  else h+=`<div class="ht w"><span>Ведение</span><i>Включите «Вести по маршруту» — здесь будут пеленг, расстояние и время прихода к следующей точке.</i></div>`;
+  if(fw)h+=`<div class="ht w"><span>Ветер по прогнозу у лодки</span><div class="fc">${fw.map((x,i)=>`<div><i>${i?'+'+i+' ч':'сейчас'}</i><b>${x?fW(x.s):'—'}</b><i>${x?'пор. '+f0(x.g)+' · '+rumb(x.d):''}</i></div>`).join('')}</div></div>`;
+  $('#helmG').innerHTML=h}
+function helmSet(on){HELM.on=on;$('#helm').hidden=!on;document.body.classList.toggle('helmOn',on);clearInterval(HELM.t);if(on){closePanel();helmTick();HELM.t=setInterval(helmTick,1000);wake(true)}else wake(false);try{store.set('helm',on)}catch(e){}}
+$('#mHelm').onclick=()=>helmSet(true);$('#helmX').onclick=()=>helmSet(false);
+try{if(store.get('helm',false))setTimeout(()=>helmSet(true),1500)}catch(e){}
 </script>
 </body>
 </html>
