@@ -432,7 +432,7 @@ body.rail.tbMin #timebar{transform:translateY(calc(100% - 20px))}
 #tbCap b{font:700 22px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);white-space:nowrap}
 #tbCap span{font-size:11px;color:var(--muted);white-space:nowrap}
 body.rail #mob{left:calc(var(--safe-area-inset-left,env(safe-area-inset-left)) + 84px)!important}
-@media (max-height:440px){body.rail #top{gap:6px!important}body.rail #top nav{width:56px;padding:3px!important;gap:2px!important}body.rail #top nav button,body.rail #top nav #btnMore{flex-basis:38px!important;width:48px;height:38px;min-height:38px!important}html body.rail .brand{width:44px;height:44px;flex-basis:44px!important;border-radius:13px!important}html body.rail .brand .bm{width:28px!important;height:28px!important}body.rail #tbCap b{font-size:18px}body.rail #timebar{padding-top:14px!important;gap:8px!important}}
+@media (max-height:440px){body.rail #top{gap:6px!important}body.rail #top nav{width:56px;padding:3px!important;gap:2px!important}body.rail #top nav button,body.rail #top nav #btnMore{flex-basis:34px!important;width:48px;height:34px;min-height:34px!important}html body.rail .brand{width:44px;height:44px;flex-basis:44px!important;border-radius:13px!important}html body.rail .brand .bm{width:28px!important;height:28px!important}body.rail #tbCap b{font-size:18px}body.rail #timebar{padding-top:14px!important;gap:8px!important}}
 
 /* справочник капитана */
 .capT{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;margin:0 -2px;scrollbar-width:none}.capT::-webkit-scrollbar{display:none}
@@ -450,6 +450,11 @@ body.rail #mob{left:calc(var(--safe-area-inset-left,env(safe-area-inset-left)) +
 .knot{padding:10px 12px;margin:0 0 8px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}.knot b{font-size:16px}.knot ol{margin:6px 0 0 18px;padding:0;font-size:14.5px;line-height:1.45}
 .sosBig{display:flex;gap:8px;margin:4px 0 10px}.sosBig a,.sosBig div{flex:1;text-align:center;padding:12px 8px;border-radius:14px;background:#c81e1e;color:#fff;text-decoration:none;font-weight:800;font-size:22px;line-height:1.1}.sosBig small{display:block;font-size:12px;font-weight:600;opacity:.9}
 body.night .sosBig a,body.night .sosBig div{background:#5a0000;color:#ff5a4a}
+
+#fList .fi{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+#fList .fi .fx{flex:1;min-width:0}#fList .fi b{display:block;font-size:15.5px}#fList .fi .fm{font-size:13px;color:var(--muted)}
+#fList .fi .fb{display:flex;flex-direction:column;gap:6px;flex:none}#fList .fi .fb button{min-height:38px;padding:0 12px;font-size:13.5px;box-shadow:none}
+.tour{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 10px;background:var(--panel2)}.tour h3{margin:0 0 4px;font-size:16.5px}.tour p{margin:4px 0;font-size:14.5px;line-height:1.45}.tour ol{margin:6px 0 8px 18px;padding:0;font-size:14px;line-height:1.45}
 </style>
 </head>
 <body>
@@ -463,6 +468,7 @@ body.night .sosBig a,body.night .sosBig div{background:#5a0000;color:#ff5a4a}
     <button data-panel="route" id="btnRoute"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8 17.2c5-1 2.5-6.8 8-9.6"/></svg><span>Переход</span></button>
     <button id="btnGps"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></svg><span>GPS</span></button>
     <button data-panel="ais" id="btnAis"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 15.5h17l-2.6 4H6.1z"/><path d="M12 3.5v12M12 4.5l5.5 8H12"/></svg><span>AIS</span></button>
+    <button data-panel="find" id="btnFind"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg>Места</button>
     <button data-panel="layers"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l8.5 4.6L12 12.7 3.5 8.1z"/><path d="M3.5 12.4l8.5 4.6 8.5-4.6"/><path d="M3.5 16.4l8.5 4.6 8.5-4.6" opacity=".55"/></svg><span>Слои</span></button>
     <button data-panel="more" id="btnMore" aria-label="Ещё"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></svg><span>Ещё</span></button>
   </nav>
@@ -685,6 +691,15 @@ body.night .sosBig a,body.night .sosBig div{background:#5a0000;color:#ff5a4a}
   <p class="small muted" id="moreVer" style="text-align:center;margin:14px 0 2px;letter-spacing:.06em"></p>
 </section>
 
+<section class="panel" id="p-find" hidden>
+  <button class="close">✕</button>
+  <h2>Места</h2>
+  <div class="row"><input id="fQ" type="search" placeholder="Название: Валаам, заправка, слип…" style="flex:1;min-width:0" autocomplete="off"></div>
+  <div class="capT" id="fCat"><button data-fc="tour" class="on">Прогулки</button><button data-fc="berth">Стоянки</button><button data-fc="fuel">Заправки</button><button data-fc="slip">Слипы</button><button data-fc="sight">Что посмотреть</button><button data-fc="light">Маяки</button><button data-fc="lz">Из лоции</button></div>
+  <div id="fList"></div>
+  <p class="note" id="fSrc">Места — из OpenStreetMap (© участники OpenStreetMap, ODbL) и лоции «Курса». Часы работы, глубины у причалов и наличие топлива уточняйте по рации или телефону: в открытых данных бывают пропуски.</p>
+</section>
+
 <section class="panel" id="p-cap" hidden>
   <button class="close">✕</button>
   <h2>Капитану</h2>
@@ -788,7 +803,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.55';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.56';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -2801,6 +2816,51 @@ function capRender(t){const b=$('#capB');let h='';
   if(t==='sos'&&window.CAP_SOS)$('#capSosMore').outerHTML=window.CAP_SOS}
 $$('#p-cap [data-ct]').forEach(x=>x.onclick=()=>{$$('#p-cap [data-ct]').forEach(y=>y.classList.toggle('on',y===x));capRender(x.dataset.ct);$('#p-cap').scrollTop=0});
 capRender('chk');
+
+/* ===== Места: поиск и готовые прогулки ===== */
+const FIND={d:null,cat:'tour',lay:null};
+const F_CAT={berth:'стоянка',fuel:'заправка',slip:'слип',sight:'что посмотреть',light:'маяк',lz:'лоция'};
+const TOURS=[
+ {n:'Крепость Орешек и исток Невы',a:'Шлиссельбург',t:'Короткая прогулка к истоку Невы. Крепость Орешек стоит на Ореховом острове, где Нева вытекает из Ладоги. Её заложили новгородцы в 1323 году; с XVIII века — знаменитая тюрьма, в войну — оборона «Орешка» 500 дней. Рядом старый Шлиссельбург и Староладожский канал.',
+  s:[{n:'Крепость Орешек',ll:[59.95396,31.03808],t:'Подход к острову — по лоции и знакам: в истоке сильное течение, есть мели.'}]},
+ {n:'Коневец',a:'Ладога, западный берег',t:'Остров в 10 км от западного берега Ладоги. Рождество-Богородичный монастырь основал преподобный Арсений Коневский в 1393 году. На острове — Конь-камень, скиты, сосновый лес.',
+  s:[{n:'Коневский монастырь',ll:[60.84819,30.58397],t:'Стоянка у монастырского причала — по согласованию; в сильный ветер остров открыт, следите за прогнозом.'}]},
+ {n:'Валаам',a:'Ладога, север',t:'Архипелаг примерно из 50 островов. Спасо-Преображенский монастырь, скиты на островах, скалы и сосны. Классический переход выходного дня — от Приозерска (около 30 миль) или из шхер.',
+  s:[{n:'Никольский скит у входа в Монастырскую бухту',ll:[61.39812,30.92931],t:'Ориентир на входе в бухту.'},{n:'Спасо-Преображенский монастырь',ll:[61.38904,30.94526],t:'Стоянка в Монастырской бухте — по правилам монастыря и указаниям на месте.'}]},
+ {n:'Приозерск и крепость Корела',a:'Ладога, запад',t:'Город в устье Вуоксы. Крепость Корела (Кексгольм) известна с XIV века: каменные стены, Круглая башня, музей. Удобная точка старта на Валаам и в шхеры.',
+  s:[{n:'Крепость Корела',ll:[61.02992,30.12258],t:'Подход по Вуоксе — по знакам; у города есть стоянки.'}]},
+ {n:'Старая Ладога',a:'Волхов',t:'Один из древнейших городов Руси, на Волхове в 12 км от Ладожского озера. Староладожская крепость, Успенский монастырь, курганы и древние храмы.',
+  s:[{n:'Староладожская крепость',ll:[59.99769,32.2982],t:'Вход в Волхов — по створам у Новой Ладоги; на реке течение, обгон и расхождение местами запрещены.'}]},
+ {n:'Ладожские шхеры: Сортавала',a:'Ладога, север',t:'Шхеры — сотни скалистых островов и узких проливов от Приозерска до Питкяранты. Красиво и защищено от волны, но камни и мели повсюду: идти только по карте с глубинами и лоции.',
+  s:[{n:'Сортавала',ll:[61.69222,30.7233],t:'Город в глубине шхер; стоянки и заправка — уточняйте по лоции.'}]},
+ {n:'Выходные на Ладоге: Орешек → Коневец → Валаам',a:'Ладога',t:'Большой маршрут на 2–3 дня: исток Невы, остров Коневец, ночёвка, переход на Валаам. Для лодок, готовых к открытой Ладоге: волна там поднимается быстро.',
+  s:[{n:'Крепость Орешек',ll:[59.95396,31.03808]},{n:'Коневец',ll:[60.84819,30.58397]},{n:'Валаам',ll:[61.38904,30.94526]}]},
+ {n:'Форты Кронштадта',a:'Финский залив',t:'Цепь морских фортов XVIII–XIX веков вокруг Котлина. Часть стоит на линии дамбы, часть — в открытой воде. Подходить только по знакам: у фортов камни и остатки сооружений.',
+  s:[{n:'Северные форты',ll:[60.01828,29.79672],t:'Из Невской губы на север — через ворота дамбы С-2.'}]}];
+async function findData(){if(FIND.d)return FIND.d;let p=[];try{const r=await fetch('data/poi.json');if(r.ok)p=(await r.json()).p}catch(e){logE('poi '+e.message)}
+  try{if(!LZ.f&&typeof lzBuiltin==='function')await lzBuiltin()}catch(e){}
+  const lz=(LZ.f||[]).filter(f=>f.ll).map(f=>({c:'lz',n:f.t.split(/[.:;]/)[0].slice(0,90),ll:f.ll,t:f.t}));return FIND.d=[...p,...lz]}
+function findFrom(){return G.pos?[G.pos[0],G.pos[1]]:[map.getCenter().lat,map.getCenter().lng]}
+function findGo(P){RT.pts=P.map(p=>p.slice());routeChanged();openPanel('route');setTimeout(()=>{$('#rIso').click();setTimeout(()=>$('#rIsoOut').scrollIntoView({block:'nearest',behavior:'smooth'}),400)},150)}
+function findShow(ll,n){if(FIND.lay)map.removeLayer(FIND.lay);FIND.lay=L.circleMarker(ll,{radius:9,color:'#fff',weight:3,fillColor:'#ff8a3d',fillOpacity:1}).bindTooltip(n,{permanent:true,direction:'top'}).addTo(map);map.setView(ll,Math.max(map.getZoom(),13));if(innerWidth<820)closePanel()}
+async function findRender(){const el=$('#fList'),q=$('#fQ').value.trim().toLowerCase(),from=findFrom();
+  if(FIND.cat==='tour'&&!q){el.innerHTML=TOURS.map((t,i)=>{const d=dist(from,t.s[0].ll)/NM;return`<div class="tour"><h3>${t.n}</h3><div class="small muted">${t.a} · до первой точки ${fDn(d,'миль')} от ${G.pos?'лодки':'центра карты'}</div><p>${t.t}</p><ol>${t.s.map(x=>`<li><b>${x.n}</b>${x.t?' — '+x.t:''}</li>`).join('')}</ol><div class="row"><button class="primary" data-tour="${i}" style="flex:1">Проложить от ${G.pos?'лодки':'центра карты'}</button><button data-tshow="${i}">На карте</button></div></div>`}).join('')+'<p class="small muted">Путь строится под ветер по прогнозу или по воде. Подход к стоянкам, глубины и опасности — смотрите в лоции и на карте с глубинами.</p>';
+    el.querySelectorAll('[data-tour]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tour];findGo([from,...t.s.map(x=>x.ll)])});
+    el.querySelectorAll('[data-tshow]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tshow];findShow(t.s[0].ll,t.n)});return}
+  el.innerHTML='<p class="muted small">Ищу…</p>';const D=await findData();
+  let L2=D.filter(p=>q?(p.n+' '+(p.t||'')+' '+F_CAT[p.c]).toLowerCase().includes(q)||(q.startsWith('заправ')&&(p.c==='fuel'||p.fuel)):p.c===FIND.cat||(FIND.cat==='fuel'&&p.fuel));
+  if(!q&&FIND.cat!=='lz')L2=L2.filter(p=>p.n||p.c!=='sight');
+  L2=L2.map(p=>({...p,d:dist(from,p.ll)})).sort((a,b)=>a.d-b.d).slice(0,60);
+  const TQ=q?TOURS.map((t,i)=>({t,i})).filter(({t})=>(t.n+' '+t.a+' '+t.t+' '+t.s.map(x=>x.n).join(' ')).toLowerCase().includes(q)):[];
+  const tq=TQ.map(({t,i})=>`<div class="fi"><div class="fx"><b>${t.n}</b><div class="fm">прогулка · ${t.a}</div></div><div class="fb"><button class="primary" data-tq="${i}">Проложить</button></div></div>`).join('');
+  if(!L2.length&&!tq){el.innerHTML='<p class="muted">Ничего не нашлось. Попробуйте другое слово или раздел.</p>';return}
+  el.innerHTML=tq+L2.map((p,i)=>`<div class="fi"><div class="fx"><b>${p.n||(F_CAT[p.c][0].toUpperCase()+F_CAT[p.c].slice(1)+' без названия')}</b><div class="fm">${F_CAT[p.c]}${p.fuel?' · есть топливо':''} · ${fDn(p.d/NM,'миль')} · ${f0(brg(from,p.ll))}°${p.c==='lz'?'<br>'+lzE(p.t).slice(0,220):''}</div></div><div class="fb"><button class="primary" data-fgo="${i}">Маршрут сюда</button><button data-fsh="${i}">На карте</button></div></div>`).join('');
+  el.querySelectorAll('[data-fgo]').forEach(b=>b.onclick=()=>findGo([from,L2[+b.dataset.fgo].ll]));
+  el.querySelectorAll('[data-tq]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tq];findGo([from,...t.s.map(x=>x.ll)])});
+  el.querySelectorAll('[data-fsh]').forEach(b=>b.onclick=()=>{const p=L2[+b.dataset.fsh];findShow(p.ll,p.n||F_CAT[p.c])})}
+$$('#fCat [data-fc]').forEach(b=>b.onclick=()=>{FIND.cat=b.dataset.fc;$$('#fCat [data-fc]').forEach(x=>x.classList.toggle('on',x===b));findRender()});
+{let tm;$('#fQ').addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(findRender,250)})}
+$('#btnFind').addEventListener('click',()=>setTimeout(findRender,30));
 </script>
 </body>
 </html>
