@@ -788,7 +788,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.54';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.55';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1297,6 +1297,25 @@ $('#rIso').onclick=async()=>{const P=RT.pts.length===1&&G.pos?[[G.pos[0],G.pos[1
   }catch(err){logE('iso '+err.message);out.innerHTML=`<p class="badbox">Ошибка: ${err.message}</p>`}};
 
 /* ===== брифинг штурмана (по шаблонам из расчётов; позже — живой текст от ИИ на своём сервере) ===== */
+
+/* разводные мосты на маршруте: план прохода и время выхода */
+function routeBridgeBrief(dep){const D=SPB.d;if(!D||RT.pts.length<2)return null;
+  const P=RT.pts,cum=[0];for(let i=1;i<P.length;i++)cum.push(cum[i-1]+dist(P[i-1],P[i]));
+  const near=b=>{let best=null;for(let i=1;i<P.length;i++){const a=P[i-1],c=P[i],L=dist(a,c)||1,n=Math.max(2,Math.ceil(L/60));for(let k=0;k<=n;k++){const q=lerpPt(a,c,k/n),d=dist(q,b.ll);if(d<450&&(!best||d<best.d))best={d,s:cum[i-1]+L*k/n}}}return best};
+  const hit=D.b.filter(b=>b.kind==='night').map(b=>({b,h:near(b)})).filter(x=>x.h).sort((x,y)=>x.h.s-y.h.s);if(!hit.length)return null;
+  {const any=D.b.map(b=>({b,h:near(b)})).filter(x=>x.h);const k0=Math.min(...any.map(x=>x.b.km)),k1=Math.max(...any.map(x=>x.b.km)),up=hit[0].b.km>hit[hit.length-1].b.km;           // Нева — одна линия: мосты между пройденными тоже на пути
+   for(const b of D.b)if(b.kind==='night'&&b.km>k0&&b.km<k1&&!hit.some(x=>x.b===b)){const a=any.filter(x=>x.b.km<b.km).sort((p,q)=>q.b.km-p.b.km)[0],c=any.filter(x=>x.b.km>b.km).sort((p,q)=>p.b.km-q.b.km)[0];if(a&&c)hit.push({b,h:{s:a.h.s+(c.h.s-a.h.s)*(b.km-a.b.km)/(c.b.km-a.b.km)}})}
+   hit.sort((x,y)=>x.h.s-y.h.s)}
+  const dir=hit.length>1?(hit[0].b.km>hit[hit.length-1].b.km?'up':'down'):(dist(P[P.length-1],[59.94,30.9])<dist(P[0],[59.94,30.9])?'up':'down');
+  const kn=Math.max(1,S.boat.motor>0?S.boat.motor:S.boat.speed),travel=hit[0].h.s/NM/kn*36e5,T1=dep+travel;
+  const date=new Date(T1-6*36e5+3*36e5).toISOString().slice(0,10),bad=spbNightOk(D,date);
+  const names=hit.map(x=>x.b.n).join(', ');
+  if(bad)return`🌉 На пути разводные мосты (${names}). Ночь, когда вы к ним подойдёте: ${bad}. Без разводки мачтовой лодке не пройти — проверьте «Ещё» → «Проход через Петербург».`;
+  const D2={...D,b:D.b.filter(b=>hit.some(x=>x.b===b))};const pl=spbPlan(D2,dir,date);if(!pl||pl.err)return`🌉 На пути разводные мосты (${names}). ${pl&&pl.err?pl.err:'План прохода не посчитать.'}`;
+  const R=pl.rows,f=R[0],l=R[R.length-1];if(pl.miss)return`🌉 На пути разводные мосты (${names}). За одну ночь все окна разводки не успеть при ходе ${fSp(kn)} — понадобится ждать до следующей ночи.`;
+  const appr=f.t-20*6e4,goBy=appr-travel,late=T1>f.w[1]-5*6e4;
+  return`🌉 На пути разводные мосты: ${names}. Первый — ${f.b.n}, разводка ${f.w[0]?f.b.w.map(x=>x.join('–')).join(', '):''}. Чтобы подойти без долгого ожидания, выходите около ${fmtT(goBy/1000)}: дорога до моста ≈ ${fmtHM(travel)} под мотором, у моста быть к ${mskT(appr)}. Последний мост пройдёте ≈ ${mskT(pl.end)}, ожидание у мостов ${Math.round(pl.wait/6e4)} мин. `+(Math.abs(dep-goBy)<45*6e4?'Ваше время выхода подходит.':dep<goBy?`При выходе в ${mskT(dep)} придётся ждать у моста около ${fmtHM(goBy-dep)}.`:late?'При вашем времени выхода в эту ночь окно уже закроется.':`При вашем выходе в ${mskT(dep)} к первому окну можно не успеть.`)+' Время разводки сверяйте с диспетчером «Петербург-3» (каналы 2, 5).'}
+setTimeout(()=>spbData().catch(()=>{}),5000);
 function brief(rows){const el=$('#rBrief');if(rows===undefined)rows=RT.fc?evalRoute(depTs()):null;if(!rows||!rows.length){el.innerHTML='';return}
   const dep=depTs(),total=rows.reduce((a,r)=>a+r.d,0),dur=rows.arrive-dep,hm=t=>mskT(t);
   const L=[];const ens=RT.ens?ensEval(dep):null;
@@ -1313,6 +1332,7 @@ function brief(rows){const el=$('#rBrief');if(rows===undefined)rows=RT.fc?evalRo
   const unsure=rows.map((r,i)=>r.spread>=8?(i+1)+'→'+(i+2):null).filter(Boolean);if(unsure.length)L.push(`Модели спорят на участках ${unsure.join(', ')}: перед выходом обновите прогноз.`);
   const ah=mskH(rows.arrive);if(ah>=22||ah<5)L.push('Приход в тёмное время: заранее проверьте огни подхода и место стоянки.');
   if(RT.best&&Math.abs(RT.best.dep-dep)>3*36e5){L.push(`Если можно сдвинуть выход: ${fmtT(RT.best.dep/1000)} спокойнее, порывы до ${fW(RT.best.mg)}${RT.best.mw?`, волна до ${f1(RT.best.mw)} м`:''}.`)}
+  {const bb=routeBridgeBrief(dep);if(bb)L.push(bb)}
   if(LZ.f)L.push(...lzBrief());
   L.push(`Пределы лодки: ветер ${uWV(S.windMax)}, порывы ${fW(S.gustMax)}, волна ${f1(S.waveMax)} м. Прогноз ${MODEL_NAME[RT.fc.model]} от ${new Date(RT.fc.fetched).toLocaleString('ru-RU',{timeZone:TZ,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}.`);
   const txt=L.join('\n');el.innerHTML=`<div class="${verdict==='Выход нормальный'?'okbox':verdict.startsWith('Выход возможен')?'warnbox':'badbox'}"><b>🧭 Брифинг штурмана</b><div class="small" style="margin-top:6px;white-space:pre-line">${txt}</div><div class="row"><button id="bCopy">Скопировать</button>${navigator.share?'<button id="bShare">Отправить экипажу</button>':''}</div></div>`;
