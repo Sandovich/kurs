@@ -599,6 +599,15 @@ body.tbMin #tbBtn{display:flex;animation:tbBtnIn .35s var(--spring,cubic-bezier(
 html body.tbMin #timebar{transform:translateY(calc(100% + 40px))!important}
 html body.tbMin .leaflet-bottom{margin-bottom:0}
 html body .panel.wMin{left:84px!important;max-width:calc(100vw - 96px)!important}
+
+#nRules{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+#nRules:empty{display:none}
+#nRules .rc{display:inline-flex;align-items:center;gap:6px;font-size:13px;line-height:1.25;padding:5px 10px;border-radius:999px;background:rgba(127,127,127,.16);color:var(--text);max-width:100%}
+#nRules .rc b{font-weight:700}
+#nRules .rc.warn{background:rgba(255,159,10,.2);color:#ffb340}
+#nRules .rc.bad{background:var(--danger,#e01e1e);color:#fff}
+#nRules .rc.ok{background:rgba(48,209,88,.18);color:#4cd964}
+#nRules .rn{flex-basis:100%;font-size:11.5px;color:var(--muted);margin-top:1px}
 </style>
 </head>
 <body>
@@ -650,6 +659,7 @@ html body .panel.wMin{left:84px!important;max-width:calc(100vw - 96px)!important
     <div><b id="nXte">—</b><span>уход с линии</span></div>
     <div><b id="nEta">—</b><span>прибытие</span></div>
   </div>
+  <div id="nRules"></div>
   <div class="small muted" id="nNote"></div>
   <div class="row" id="nMob" hidden style="margin:6px 0 0"><button id="nMay" class="primary" style="flex:1">📢 Текст для MAYDAY по рации</button></div>
 </div>
@@ -959,7 +969,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.64';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.65';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -3274,6 +3284,47 @@ function wmUnstash(p){const n=wmName(p),t=document.getElementById('stash-'+n);if
  const upd=()=>{const t=($('#timeLabel')||{}).textContent||'',m=t.match(/центр\s+([\d,]+)\s*уз/);$('#tbBtnW').textContent=m?m[1]+' уз':'';
   if(document.body.classList.contains('tbMin'))try{tbUpd()}catch(e){}};
  upd();setInterval(upd,1500)})();
+
+/* ===== правила на участке — в полосе ведения ===== */
+const RZ={
+ // кольцо Невы и Фонтанки (Мойка, канал Грибоедова, Крюков канал, Зимняя канавка, сама Фонтанка) — 8 км/ч
+ slow:[{n:'Фонтанка, Мойка, канал Грибоедова, Крюков канал, Зимняя канавка',p:[[59.9455,30.3420],[59.9330,30.3485],[59.9262,30.3428],[59.9178,30.3275],[59.9146,30.3052],[59.9122,30.2800],[59.9110,30.2545],[59.9168,30.2540],[59.9225,30.2700],[59.9300,30.2870],[59.9352,30.2975],[59.9398,30.3110],[59.9432,30.3250],[59.9445,30.3360]]},
+       {n:'Кронверкский пролив',p:[[59.9545,30.3080],[59.9548,30.3195],[59.9512,30.3230],[59.9505,30.3150],[59.9515,30.3085]]},
+       {n:'Ждановка',p:[[59.9555,30.2780],[59.9590,30.2850],[59.9575,30.2990],[59.9545,30.3040],[59.9530,30.2960],[59.9540,30.2830]]}],
+ // центр: Нева от Благовещенского до Большеохтинского моста, Большая и Малая Невка, Малая Нева — ночью нельзя
+ night:[[59.9600,30.2350],[59.9850,30.2600],[59.9900,30.3300],[59.9620,30.4150],[59.9380,30.4120],[59.9300,30.3700],[59.9290,30.2700]],
+ city:[[60.0900,30.0400],[60.0900,30.5600],[59.8000,30.5600],[59.8000,30.0400]],
+ dp:[['Петербург-3','2, 5',59.94,30.33,14],['Ивановское-3','2, 5',59.84,30.86,12],['Шлиссельбург-3','3, 5',59.945,31.03,14],['Свирица-3','2, 5',60.48,32.88,22],['Лодейное поле-3','2, 5',60.73,33.55,25],['Вознесенье-3','4, 5',61.01,35.49,25],['Вытегра','3, 5',60.99,36.43,25],['Новгород-1','4, 5',58.52,31.27,25]]};
+function rzIn(pt,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const [ai,bi]=poly[i],[aj,bj]=poly[j];if(((bi>pt[1])!==(bj>pt[1]))&&(pt[0]<(aj-ai)*(pt[1]-bi)/(bj-bi)+ai))c=!c}return c}
+function rzMsk(){const d=new Date(Date.now()+3*36e5);return d.getUTCHours()*60+d.getUTCMinutes()}
+async function navRules(){const el=$('#nRules');if(!el)return;if(!NAV.mode||!G.pos){el.innerHTML='';return}
+  const P=G.pos,kn=G.sog,kmh=kn!=null?kn*1.852:null,out=[],rc=(t,c)=>out.push(`<span class="rc${c?' '+c:''}">${t}</span>`);
+  // 1. скорость
+  let lim=null,zn='';const sl=RZ.slow.find(z=>rzIn(P,z.p));if(sl){lim=8;zn=sl.n}else if(rzIn(P,RZ.city)){lim=15;zn='в черте Петербурга'}
+  if(lim){const over=kmh!=null&&kmh>lim+1;rc(`Ограничение <b>${lim} км/ч</b>${kmh!=null?` · у вас ${Math.round(kmh)}`:''}`,over?'bad':(kmh!=null?'ok':''))}
+  // 2. ночной запрет
+  if(!sl&&rzIn(P,RZ.night)){const m=rzMsk(),night=m>=23*60||m<5*60,soon=m>=22*60&&m<23*60;
+    if(night)rc('Ночь: с 23:00 до 05:00 здесь маломерным судам ходить нельзя','bad');else if(soon)rc('С 23:00 здесь ходить нельзя — до запрета '+(23*60-m)+' мин','warn')}
+  // 3. канал УКВ и диспетчер
+  let dp=null,best=1e9;for(const d of RZ.dp){const km=dist(P,[d[2],d[3]])/1000;if(km<d[4]&&km<best){best=km;dp=d}}
+  if(dp)rc(`Рация: канал <b>5</b> · диспетчер «${dp[0]}», каналы ${dp[1]}`);else if(rzIn(P,RZ.city))rc('Рация: канал <b>5</b>');
+  // 4. огни
+  try{const alt=sunAlt(P[0],P[1]),sn=sunNext(P[0],P[1]);if(alt<-0.833)rc('Темно — ходовые огни должны гореть','warn');
+    else if(sn&&sn.set&&sn.t-Date.now()<45*6e4)rc('Закат в '+new Date(sn.t).toLocaleTimeString('ru-RU',{timeZone:'Europe/Moscow',hour:'2-digit',minute:'2-digit'})+' — приготовьте ходовые огни','warn')}catch(e){}
+  // 5. мост впереди
+  try{const D=await spbData(),cog=G.cog!=null&&kn>0.8?G.cog:brg(P,NAV.pts[NAV.idx]||P),mast=+(S.boat&&S.boat.mast)||0;
+    let bb=null,bd=1e9;for(const b of D.b){const d=dist(P,b.ll)/NM;if(d>3||d<0.02)continue;let a=Math.abs(((brg(P,b.ll)-cog)%360+540)%360-180);if(a>50)continue;if(d<bd){bd=d;bb=b}}
+    if(bb){const cl=bb.clear,pass=mast&&cl?mast<=cl-0.3:null,w=(bb.w||[]).map(x=>x.join('–')).join(', ');
+      let t=`${bb.n} через ${fDn(bd,'миль')}`;if(cl)t+=` · высота ${String(cl).replace('.',',')} м от РСУ`;
+      if(pass===true)rc(t+' · мачта проходит','ok');else if(pass===false)rc(t+' · <b>мачта не пройдёт</b>'+(w?' · разводка '+w:bb.kind==='request'?' · разводка по заявке':''),'bad');
+      else rc(t+(w?' · разводка '+w:'')+(mast?'':' · укажите высоту мачты в «Лодка и пределы»'),'warn')}}catch(e){}
+  // 6. запретные места лоции рядом
+  try{if(!LZ.f&&typeof lzBuiltin==='function')await lzBuiltin();const near=(LZ.f||[]).filter(f=>f.ll&&/якор[^.]{0,30}(не брос|запрещ)|стрельб|запретн[а-я]* район/i.test(f.t)&&dist(P,f.ll)/NM<1.2).slice(0,2);
+    near.forEach(f=>rc('Рядом по лоции: '+lzE(f.t.split(/[.;]/)[0].slice(0,80)),'warn'))}catch(e){}
+  if(sl||rzIn(P,RZ.night))out.push('<span class="rn">Границы участков примерные — сверяйтесь со знаками на берегу.</span>');
+  el.innerHTML=out.join('')}
+{const _nu=navUpdate;navUpdate=function(){const r=_nu.apply(this,arguments);navRules();return r}}
+setInterval(()=>{if(NAV.mode)navRules()},5000);
 </script>
 </body>
 </html>
