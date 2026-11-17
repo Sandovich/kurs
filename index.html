@@ -506,6 +506,24 @@ html body #mob{bottom:calc(var(--tbUp,110px) + 12px)!important}
 #hud .hgrip{flex:0 0 auto;width:14px;align-self:stretch;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:grab;touch-action:none;font-size:14px;line-height:1;margin-right:-6px;opacity:.7}
 html body #hud.hudMoved{left:var(--hx)!important;top:var(--hy)!important;right:auto!important;bottom:auto!important}
 #hud.hDrag{opacity:.9;cursor:grabbing}
+
+#bBody .bf{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+#bBody .bf label{display:flex;flex-direction:column;font-size:13px;color:var(--muted);gap:4px;min-width:0}
+#bBody .bf input,#bBody .bf select,#bBody textarea{width:100%;min-width:0}
+#bBody .bf .w{grid-column:1/3}
+#bBody .bc{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 10px;background:var(--panel2)}
+#bBody .bc h3{margin:0 0 2px;font-size:16.5px}
+#bBody .bc .bm{font-size:13px;color:var(--muted)}
+#bBody .bc .bp{font-size:15px;margin:6px 0}
+#bBody .bc .bp b{font-size:18px}
+#bBody .tag{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin:2px 4px 2px 0}
+#bBody .tag.no{color:var(--danger);border-color:var(--danger)}
+#bBody .tag.ok{color:var(--good,#3ecf8e);border-color:var(--good,#3ecf8e)}
+#bBody .amen{display:flex;flex-wrap:wrap;gap:6px 12px;margin:8px 0}
+#bBody .amen label{display:flex;align-items:center;gap:6px;font-size:14px}
+#bBody .st{font-size:13px;font-weight:600}
+#bBody .sum{border-top:1px solid var(--line);margin-top:8px;padding-top:8px;font-size:14px}
+#bBody .sum div{display:flex;justify-content:space-between;gap:8px}
 </style>
 </head>
 <body>
@@ -734,6 +752,7 @@ html body #hud.hudMoved{left:var(--hx)!important;top:var(--hy)!important;right:a
     <button id="mNight"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg><span>Ночной режим</span></button>
     <button data-go="help"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 014.8 1c0 1.7-2.4 2-2.4 3.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg><span>Как пользоваться</span></button>
     <button id="mWatch" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7"/><path d="M12 10v3.8l2.5 1.6M9.5 3h5"/></svg><span>Вахтенный таймер: выкл</span></button>
+    <button id="mBerth" class="wide" hidden><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M6 18v-5M12 18v-5M18 18v-5M4 13h16"/><path d="M9 4h6l-1 5h-4z"/></svg><span>Бронь причала: место на ночь или неделю</span></button>
     <button id="mHelm" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M14 5v13M16.5 9h2M16.5 12h2M16.5 15h2"/></svg><span>Экран у штурвала: карта и приборы рядом (для планшета)</span></button>
     <button id="mDash" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16a7.5 7.5 0 1115 0"/><path d="M12 16l4-5"/><circle cx="12" cy="16" r="1.3" fill="currentColor"/><path d="M6.5 11.5l1 .7M17.5 11.5l-1 .7M12 8.5V10"/></svg><span>Приборы: скорость, ветер, компас, глубина — всё на одном экране</span></button>
     <button data-go="spb" class="wide"><svg class="mi" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16c3-5 6-7 9-7s6 2 9 7"/><path d="M3 16h18M7 16v3M17 16v3M12 9V5M10 6l2-2 2 2"/></svg><span>Проход через Петербург: разводка мостов</span></button>
@@ -745,11 +764,18 @@ html body #hud.hudMoved{left:var(--hx)!important;top:var(--hy)!important;right:a
   <p class="small muted" id="moreVer" style="text-align:center;margin:14px 0 2px;letter-spacing:.06em"></p>
 </section>
 
+<section class="panel" id="p-berth" hidden>
+  <button class="close">✕</button>
+  <h2>Бронь причала</h2>
+  <div class="capT" id="bTabs"><button data-bt="find" class="on">Найти место</button><button data-bt="my">Мои брони</button><button data-bt="host">Сдать своё место</button></div>
+  <div id="bBody"></div>
+</section>
+
 <section class="panel" id="p-find" hidden>
   <button class="close">✕</button>
   <h2>Места</h2>
   <div class="row"><input id="fQ" type="search" placeholder="Название: Валаам, заправка, слип…" style="flex:1;min-width:0" autocomplete="off"></div>
-  <div class="capT" id="fCat"><button data-fc="tour" class="on">Прогулки</button><button data-fc="berth">Стоянки</button><button data-fc="fuel">Заправки</button><button data-fc="slip">Слипы</button><button data-fc="sight">Что посмотреть</button><button data-fc="light">Маяки</button><button data-fc="lz">Из лоции</button></div>
+  <div class="capT" id="fCat"><button data-fc="tour" class="on">Прогулки</button><button data-fc="berth">Стоянки</button><button data-fc="fuel">Заправки</button><button data-fc="slip">Слипы</button><button data-fc="sight">Что посмотреть</button><button data-fc="light">Маяки</button><button data-fc="lz">Из лоции</button><button data-fc="berth2" id="fBerth" hidden>Бронь причала</button></div>
   <div id="fList"></div>
   <p class="note" id="fSrc">Места — из OpenStreetMap (© участники OpenStreetMap, ODbL) и лоции «Курса». Часы работы, глубины у причалов и наличие топлива уточняйте по рации или телефону: в открытых данных бывают пропуски.</p>
 </section>
@@ -858,7 +884,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.61';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.62';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -2940,7 +2966,7 @@ $('#mHelm').onclick=()=>helmSet(true);$('#helmX').onclick=()=>helmSet(false);
 try{if(store.get('helm',false))setTimeout(()=>helmSet(true),1500)}catch(e){}
 
 /* ===== v0.9.59: окна панелей, «Вести сюда», нажатия, MOB, перетаскивание приборов ===== */
-const WMD={def:{find:'full',cap:'full',lotsia:'full',help:'full',spb:'full',boat:'full',diag:'full'}};
+const WMD={def:{berth:'full',find:'full',cap:'full',lotsia:'full',help:'full',spb:'full',boat:'full',diag:'full'}};
 const WIC={min:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 18h12"/></svg>',
  win:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="5" y="8" width="12" height="10" rx="2"/><path d="M9 8V6h10v9h-2"/></svg>',
  full:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'};
@@ -3030,6 +3056,91 @@ tbUpd();addEventListener('resize',tbUpd);setInterval(tbUpd,800);if(window.Resize
   addEventListener('resize',()=>{if(hd.classList.contains('hudMoved')){const r=hd.getBoundingClientRect();put(r.left,r.top)}})})();
 
 function aisT(t){return String(t==null?'':t).replace(/[<>&"'`=\\]/g,'').trim().slice(0,40)}
+
+/* ===== Бронь причала ===== */
+const BERTH={tab:'find',d:null,lay:null,FEE_G:0.07,FEE_MIN:100,FEE_H:0.08,FEE_CLUB:0.10,feeOn:false,api:'',sel:null};
+const B_KIND={pier:'частный пирс',base:'база отдыха',club:'яхт-клуб, марина',member:'место владельца в клубе — сдаёт, пока в походе',buoy:'бочка / буй'};
+const B_MOOR={side:'лагом',stern:'кормой, с муринга',sternA:'кормой, на свой якорь',buoy:'на бочке',box:'в боксе со сваями'};
+const B_CANCEL={flex:'Гибкая: бесплатно за 24 часа до прихода',mod:'Умеренная: бесплатно за 5 дней, позже — половина суммы',strict:'Строгая: бесплатно за 14 дней, позже — половина суммы'};
+const B_AM={power:'электричество',water:'вода',fuel:'топливо',wc:'туалет',shower:'душ',guard:'охрана',wifi:'интернет',slip:'слип',crane:'кран',park:'парковка'};
+const bE=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const bRub=n=>Math.round(n).toLocaleString('ru-RU')+' ₽';
+function berthOn(){try{return !!BERTH.api||/[?&]berth=1/.test(location.search)||store.get('berthOn',false)}catch(e){return false}}
+async function berthData(){if(BERTH.d)return BERTH.d;let a=[];try{const r=await fetch('data/berths.json',{cache:'no-store'});if(r.ok)a=(await r.json()).items||[]}catch(e){}
+  try{a=a.concat(store.get('berthTest',[]))}catch(e){}return BERTH.d=a.filter(x=>x&&x.ll&&x.name)}
+function bBoat(){const b=S.boat||{};return{len:+b.len||0,beam:+b.beam||0,draft:+b.draft||0,name:b.name||''}}
+function bFit(x,bt){const r=[];if(bt.len&&x.maxLen&&bt.len>x.maxLen)r.push('длина до '+x.maxLen+' м');if(bt.beam&&x.maxBeam&&bt.beam>x.maxBeam)r.push('ширина до '+x.maxBeam+' м');
+  if(bt.draft&&x.depth&&bt.draft+0.3>x.depth)r.push('глубина у причала '+x.depth+' м');return r}
+function bPrice(x,n){const night=+x.price||0,sub=night*n,biz=x.kind==='club';let fee=biz?0:Math.max(BERTH.FEE_MIN,Math.round(sub*BERTH.FEE_G));if(!BERTH.feeOn)fee=0;return{night,sub,fee,total:sub+fee,biz}}
+function bQ(){const d=$('#bDate'),n=$('#bN');return{date:d&&d.value||new Date().toISOString().slice(0,10),n:Math.max(1,Math.min(60,+(n&&n.value)||1))}}
+async function berthSend(kind,payload){if(!BERTH.api)return false;try{const r=await fetch(BERTH.api+'/'+kind,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});return r.ok}catch(e){return false}}
+function berthLayer(list){if(BERTH.lay)map.removeLayer(BERTH.lay);BERTH.lay=L.layerGroup(list.map(x=>L.circle(x.ll,{radius:300,color:'#7c5cff',weight:2,fillColor:'#7c5cff',fillOpacity:.25}).bindTooltip(bE(x.name)+' · '+bRub(+x.price||0)).on('click',()=>{openPanel('berth');berthCard(x.id)}))).addTo(map)}
+async function berthRender(){const el=$('#bBody');if(!el)return;$$('#bTabs [data-bt]').forEach(b=>b.classList.toggle('on',b.dataset.bt===BERTH.tab));
+  if(BERTH.tab==='my')return berthMy(el);if(BERTH.tab==='host')return berthHost(el);
+  const bt=bBoat(),q=bQ(),from=findFrom();
+  el.innerHTML=`<div class="bf"><label>Заезд<input id="bDate" type="date" value="${q.date}"></label><label>Ночей<input id="bN" type="number" min="1" max="60" value="${q.n}"></label>
+   <label>Длина лодки, м<input id="bLen" type="number" step="0.1" min="0" value="${bt.len||''}" placeholder="например 9,5"></label><label>Осадка, м<input id="bDr" type="number" step="0.1" min="0" value="${bt.draft||''}"></label></div><div id="bList"><p class="muted small">Ищу…</p></div>`;
+  const upd=()=>{S.boat=S.boat||{};S.boat.len=+$('#bLen').value||0;S.boat.draft=+$('#bDr').value||S.boat.draft;saveS();berthList()};
+  ['#bLen','#bDr'].forEach(k=>$(k).addEventListener('change',upd));['#bDate','#bN'].forEach(k=>$(k).addEventListener('change',berthList));berthList()}
+async function berthList(){const el=$('#bList');if(!el)return;const D=await berthData(),bt=bBoat(),q=bQ(),from=findFrom();
+  if(!D.length){el.innerHTML=`<div class="bc"><h3>Мест пока нет</h3><p class="small">Сюда попадают частные пирсы, базы и яхт-клубы, которые сами сдают место лодке на ночь, неделю или сезон. Каждое место мы проверяем перед публикацией.</p><p class="small">Есть свой причал или знаете хозяина? Откройте «Сдать своё место» — это займёт пару минут.</p></div>`;berthLayer([]);return}
+  const L2=D.map(x=>({...x,d:dist(from,x.ll)/NM,no:bFit(x,bt)})).sort((a,b)=>(a.no.length-b.no.length)||(a.d-b.d));berthLayer(L2);
+  el.innerHTML=L2.map(x=>{const p=bPrice(x,q.n);return`<div class="bc"><h3>${bE(x.name)}</h3><div class="bm">${B_KIND[x.kind]||'причал'} · ${bE(x.area||'')} · ${fDn(x.d,'миль')} от ${G.pos?'лодки':'центра карты'}</div>
+   <div>${x.no.length?x.no.map(r=>`<span class="tag no">не подходит: ${r}</span>`).join(''):(bt.len?'<span class="tag ok">ваша лодка помещается</span>':'')}${x.verified?'<span class="tag ok">проверено</span>':''}${x.instant?'<span class="tag">мгновенная бронь</span>':'<span class="tag">хозяин подтверждает</span>'}</div>
+   <div class="bp"><b>${bRub(p.night)}</b> за ночь · ${q.n} ноч.: ${bRub(p.total)}${p.fee?' со сбором сервиса':''}</div>
+   <div class="row"><button class="primary" data-bo="${bE(x.id)}" style="flex:1">Подробнее и бронь</button><button data-bmap="${bE(x.id)}">На карте</button></div></div>`}).join('');
+  el.querySelectorAll('[data-bo]').forEach(b=>b.onclick=()=>berthCard(b.dataset.bo));
+  el.querySelectorAll('[data-bmap]').forEach(b=>b.onclick=()=>{const x=D.find(y=>y.id===b.dataset.bmap);if(x)findShow(x.ll,x.name)})}
+async function berthCard(id){const D=await berthData(),x=D.find(y=>y.id===id);if(!x)return;BERTH.sel=id;const el=$('#bBody'),q=bQ(),bt=bBoat(),p=bPrice(x,q.n),no=bFit(x,bt);
+  el.innerHTML=`<p><button id="bBack">← К списку</button></p><div class="bc"><h3>${bE(x.name)}</h3><div class="bm">${B_KIND[x.kind]||'причал'} · ${bE(x.area||'')}</div>
+   <p class="small">${bE(x.about||'')}</p>
+   <div class="small">Лодка до <b>${x.maxLen||'—'} м</b> длиной${x.maxBeam?`, до ${x.maxBeam} м шириной`:''} · глубина у причала <b>${x.depth||'—'} м</b>${x.moor?` · швартовка ${B_MOOR[x.moor]||''}`:''}${x.free?` · свободно ${bE(x.free)}`:''}</div>
+   <div class="amen">${Object.keys(B_AM).filter(k=>x.am&&x.am[k]).map(k=>`<span class="tag">${B_AM[k]}</span>`).join('')||'<span class="small muted">удобства не указаны</span>'}</div>
+   ${x.rules?`<p class="small"><b>Правила:</b> ${bE(x.rules)}</p>`:''}
+   <p class="small"><b>Отмена.</b> ${B_CANCEL[x.cancel]||B_CANCEL.mod}.</p><p class="small"><b>Погода.</b> Если по прогнозу «Курса» на день прихода ветер выше безопасного или объявлено штормовое предупреждение — отмена или перенос бесплатно.</p>
+   ${no.length?`<p class="small" style="color:var(--danger)">Может не подойти: ${no.join(', ')}. Уточните в запросе.</p>`:''}
+   <div class="sum"><div><span>${bRub(p.night)} × ${q.n} ноч.</span><span>${bRub(p.sub)}</span></div><div><span>Сбор сервиса «Курс»</span><span>${p.fee?bRub(p.fee):(p.biz?'нет':'0 ₽ — первый сезон')}</span></div><div><b>Итого</b><b>${bRub(p.total)}</b></div></div>
+   <div class="bf"><label class="w">Сообщение хозяину<textarea id="bMsg" rows="3" placeholder="Когда примерно подойдёте, сколько человек на борту, нужны ли электричество и вода"></textarea></label></div>
+   <button class="primary" id="bReq" style="width:100%">${x.instant?'Забронировать':'Отправить запрос хозяину'}</button>
+   <p class="small muted">Хозяин отвечает в течение 24 часов. Контакты и точное место откроются после подтверждения брони.</p></div>`;
+  $('#bBack').onclick=()=>{BERTH.sel=null;berthRender()};
+  $('#bReq').onclick=async()=>{const r={id:'r'+Date.now().toString(36),berth:x.id,name:x.name,date:q.date,nights:q.n,boat:bt,msg:$('#bMsg').value.trim().slice(0,600),total:p.total,fee:p.fee,t:Date.now(),st:'sent'};
+    const ok=await berthSend('request',r);r.st=ok?'sent':'local';const L3=store.get('berthReq',[]);L3.unshift(r);store.set('berthReq',L3);
+    toast(ok?'Запрос отправлен. Ответ хозяина придёт сюда, во вкладку «Мои брони».':'Запрос сохранён. Отправим, когда заработает приём броней.',6000);BERTH.tab='my';berthRender()}}
+function berthMy(el){const L3=store.get('berthReq',[]),M=store.get('berthMine',[]);
+  const ST={sent:'ждёт ответа хозяина',local:'сохранён, ещё не отправлен',ok:'подтверждено',paid:'оплачено',no:'хозяин отказал',cancel:'отменено'};
+  el.innerHTML=(L3.length?L3.map(r=>`<div class="bc"><h3>${bE(r.name)}</h3><div class="bm">заезд ${new Date(r.date).toLocaleDateString('ru-RU')} · ${r.nights} ноч. · ${bRub(r.total)}</div><div class="st">${ST[r.st]||r.st}</div><div class="row"><button data-bx="${r.id}">Отменить запрос</button></div></div>`).join(''):'<p class="muted">Броней пока нет. Найдите место во вкладке «Найти место».</p>')+
+   (M.length?'<h3 style="margin:14px 0 6px">Ваши места</h3>'+M.map(m=>`<div class="bc"><h3>${bE(m.name)}</h3><div class="bm">${B_KIND[m.kind]||''} · ${bRub(+m.price||0)} за ночь</div><div class="st">${m.st==='sent'?'на проверке у «Курса»':'сохранено, ещё не отправлено'}</div></div>`).join(''):'');
+  el.querySelectorAll('[data-bx]').forEach(b=>b.onclick=()=>{const L4=store.get('berthReq',[]).map(r=>r.id===b.dataset.bx?{...r,st:'cancel'}:r);store.set('berthReq',L4);berthMy(el)})}
+function berthHost(el){const c=map.getCenter();
+  el.innerHTML=`<p class="small">Сдавайте место у своего причала, пирса или базы. Вы сами ставите цену, правила и решаете, кого принять. «Курс» показывает место яхтсменам рядом с их маршрутом и проверяет, что лодка поместится. Первый сезон для первых хозяев — без сбора.</p>
+  <div class="bf"><label class="w">Название<input id="hN" maxlength="80" placeholder="Пирс у дома, база «Северная», яхт-клуб…"></label>
+  <label>Тип<select id="hK">${Object.entries(B_KIND).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label><label>Цена за ночь, ₽<input id="hP" type="number" min="0" step="100" placeholder="2000"></label>
+  <label>Лодка до, м длины<input id="hL" type="number" step="0.5" min="0"></label><label>Глубина у причала, м<input id="hD" type="number" step="0.1" min="0"></label>
+  <label>Ширина места, м<input id="hB" type="number" step="0.1" min="0"></label><label>Мест<input id="hC" type="number" min="1" value="1"></label>
+  <label>Швартовка<select id="hM">${Object.entries(B_MOOR).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label><label>Отмена<select id="hX">${Object.entries(B_CANCEL).map(([k,v])=>`<option value="${k}"${k==='mod'?' selected':''}>${v.split(':')[0]}</option>`).join('')}</select></label>
+  <label class="w">Когда свободно<input id="hF" maxlength="80" placeholder="весь сезон / 1–20 июля, пока я в походе"></label>
+  <label class="w" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="hI"> Мгновенная бронь — принимать без моего подтверждения</label>
+  <label class="w">Где — точка на карте<span class="row"><input id="hLL" readonly value="${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}" style="flex:1;min-width:0"><button id="hHere">${G.pos?'Здесь, по GPS':'Центр карты'}</button></span></label>
+  <label class="w">Район<input id="hA" maxlength="80" placeholder="Ладога, западный берег, у Приозерска"></label></div>
+  <div class="amen">${Object.entries(B_AM).map(([k,v])=>`<label><input type="checkbox" data-am="${k}"> ${v}</label>`).join('')}</div>
+  <div class="bf"><label class="w">О месте<textarea id="hAb" rows="3" maxlength="800" placeholder="Как подойти, что рядом, чем хорошо место"></textarea></label>
+  <label class="w">Правила<textarea id="hR" rows="2" maxlength="400" placeholder="Тишина после 23:00, без костров…"></textarea></label>
+  <label class="w">Как с вами связаться (видит только «Курс»)<input id="hT" maxlength="80" placeholder="Telegram или телефон"></label></div>
+  <label class="small" style="display:flex;gap:8px;align-items:flex-start;margin:8px 0"><input type="checkbox" id="hOk"> Я хозяин места или сдаю его с разрешения хозяина. Сведения верны.</label>
+  <button class="primary" id="hSend" style="width:100%">Отправить на проверку</button>
+  <p class="small muted">Мы свяжемся с вами, уточним детали и опубликуем место. Контакты гостям не показываются.</p>`;
+  $('#hHere').onclick=()=>{const p=G.pos||[map.getCenter().lat,map.getCenter().lng];$('#hLL').value=p[0].toFixed(5)+', '+p[1].toFixed(5)};
+  $('#hSend').onclick=async()=>{const v=k=>$(k).value.trim(),m={id:'h'+Date.now().toString(36),name:v('#hN'),kind:v('#hK'),price:+v('#hP')||0,maxLen:+v('#hL')||0,depth:+v('#hD')||0,maxBeam:+v('#hB')||0,cap:+v('#hC')||1,moor:v('#hM'),cancel:v('#hX'),free:v('#hF'),instant:$('#hI').checked,
+     ll:v('#hLL').split(',').map(Number),area:v('#hA'),am:Object.fromEntries([...el.querySelectorAll('[data-am]')].map(b=>[b.dataset.am,b.checked])),about:v('#hAb'),rules:v('#hR'),contact:v('#hT'),t:Date.now()};
+    const miss=[!m.name&&'название',!m.price&&'цена',!m.maxLen&&'длина лодки',!m.depth&&'глубина',!m.contact&&'связь'].filter(Boolean);
+    if(miss.length)return toast('Заполните: '+miss.join(', '));if(!$('#hOk').checked)return toast('Подтвердите, что вы хозяин места или сдаёте его с разрешения хозяина');
+    const ok=await berthSend('listing',m);m.st=ok?'sent':'local';const M=store.get('berthMine',[]);M.unshift(m);store.set('berthMine',M);
+    toast(ok?'Место отправлено на проверку. Мы свяжемся с вами.':'Сохранено. Отправим, когда заработает приём мест.',6000);BERTH.tab='my';berthRender()}}
+$$('#bTabs [data-bt]').forEach(b=>b.onclick=()=>{BERTH.tab=b.dataset.bt;BERTH.sel=null;berthRender()});
+$('#mBerth').onclick=()=>{openPanel('berth');berthRender()};
+{const fb=$('#fBerth');if(fb)fb.onclick=e=>{e.stopPropagation();openPanel('berth');berthRender()}}
+if(berthOn()){$('#mBerth').hidden=false;const fb=$('#fBerth');if(fb)fb.hidden=false}
 </script>
 </body>
 </html>
