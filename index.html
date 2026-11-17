@@ -848,7 +848,8 @@ html body #hud.hudMoved{left:var(--hx)!important;top:var(--hy)!important;right:a
 <div id="toast"></div>
 <div id="alarm" hidden><div id="alarmTitle">⚓ ЯКОРЬ ПОЛЗЁТ</div><div id="alarmDist" style="font-size:20px"></div><button id="alarmStop">Я на палубе</button></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js">
+</script>
 <script src="https://unpkg.com/protomaps-leaflet@5.1.0/dist/protomaps-leaflet.js"></script>
 <script>
 'use strict';
@@ -857,7 +858,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.60';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.61';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1591,7 +1592,7 @@ async function dtPoll(){if(!AIS.on)return;if(S.lowData&&DT.last&&Date.now()-DT.l
     for(const f of j.features){const[lon,lat]=f.geometry.coordinates,p=f.properties;if(!b.contains([lat,lon])||p.timestampExternal<old)continue;
       let s=AIS.ships.get(p.mmsi);if(!s){s={id:p.mmsi};AIS.ships.set(p.mmsi,s)}if(s.t&&s.t>p.timestampExternal)continue;
       s.lat=lat;s.lon=lon;s.sog=p.sog>=102.2?null:p.sog;s.cog=p.cog>=360?null:p.cog;s.hdg=p.heading<360?p.heading:null;s.t=p.timestampExternal;s.src='Digitraffic';
-      const m=DT.meta.get(p.mmsi);if(m){if(m.name&&m.name.trim())s.name=m.name.trim();s.type=m.shipType;s.dest=(m.destination||'').trim();s.len=(m.referencePointA||0)+(m.referencePointB||0)||null}
+      const m=DT.meta.get(p.mmsi);if(m){if(m.name&&aisT(m.name))s.name=aisT(m.name);s.type=m.shipType;s.dest=aisT(m.destination);s.len=(m.referencePointA||0)+(m.referencePointB||0)||null}
       aisDraw(s);n++}
     DT.ok=n;$('#dtStatus').textContent=`на связи, ${n} судов рядом · обновлено ${mskT(Date.now())}`;$('#aisCount').textContent=AIS.ships.size;if(openName==='ais')aisList();aisCpaCheck()
   }catch(e){logE('digitraffic '+e.message);$('#dtStatus').textContent='нет связи, повторю через минуту'}}
@@ -1607,9 +1608,9 @@ function aisSub(){if(!AIS.ws||AIS.ws.readyState!==1)return;const b=map.getBounds
   AIS.ws.send(JSON.stringify({APIKey:S.aisKey,BoundingBoxes:[[[b.getSouth(),b.getWest()],[b.getNorth(),b.getEast()]]],FilterMessageTypes:['PositionReport','StandardClassBPositionReport','ShipStaticData']}))}
 map.on('moveend',()=>{clearTimeout(AIS.subT);AIS.subT=setTimeout(()=>{aisSub();if(AIS.on&&Date.now()-(DT.last||0)>45000)dtPoll()},1500)});
 function aisMsg(m){const md=m.MetaData||{},id=md.MMSI;if(!id)return;let s=AIS.ships.get(id);if(!s){s={id};AIS.ships.set(id,s)}
-  if(md.ShipName&&md.ShipName.trim())s.name=md.ShipName.trim();const msg=m.Message||{},pr=msg.PositionReport||msg.StandardClassBPositionReport;
+  if(md.ShipName&&aisT(md.ShipName))s.name=aisT(md.ShipName);const msg=m.Message||{},pr=msg.PositionReport||msg.StandardClassBPositionReport;
   if(pr){s.lat=pr.Latitude;s.lon=pr.Longitude;s.sog=pr.Sog>=102.2?null:pr.Sog;s.cog=pr.Cog>=360?null:pr.Cog;s.hdg=pr.TrueHeading!=null&&pr.TrueHeading<360?pr.TrueHeading:null;s.t=Date.now();s.src='aisstream'}
-  if(msg.StandardClassBPositionReport)s.cls='B';const sd=msg.ShipStaticData;if(sd){if(sd.Name&&sd.Name.trim())s.name=sd.Name.trim();s.type=sd.Type;s.dest=(sd.Destination||'').trim();const D=sd.Dimension||{};s.len=(D.A||0)+(D.B||0)||null}
+  if(msg.StandardClassBPositionReport)s.cls='B';const sd=msg.ShipStaticData;if(sd){if(sd.Name&&aisT(sd.Name))s.name=aisT(sd.Name);s.type=sd.Type;s.dest=aisT(sd.Destination);const D=sd.Dimension||{};s.len=(D.A||0)+(D.B||0)||null}
   if(s.lat!=null&&Math.abs(s.lat)<=90)aisDraw(s)}
 const SHIPT=t=>t==null?['судно','#8aa1b5']:t===30?['рыболов','#ffb020']:t===36||t===37?['парус / прогулочное','#c78bff']:t>=50&&t<=59?['служебное (буксир, лоцман, спасатели)','#ffd84d']:t>=60&&t<=69?['пассажирское','#3fb6ff']:t>=70&&t<=79?['грузовое','#4cc38a']:t>=80&&t<=89?['танкер','#ff4d4f']:['судно','#8aa1b5'];
 const isSart=id=>id>=970000000&&id<975000000;
@@ -1634,7 +1635,7 @@ function aisPopup(s){const c=cpa(s),d=G.pos?dist(G.pos,[s.lat,s.lon])/NM:null;
 function aisList(){const arr=[...AIS.ships.values()].filter(s=>s.lat!=null).map(s=>({s,d:G.pos?dist(G.pos,[s.lat,s.lon])/NM:null,c:cpa(s)})).sort((a,b)=>(a.d??1e9)-(b.d??1e9)).slice(0,30);
   $('#aisList').innerHTML=arr.length?'<table><tr><th>Судно</th><th>Уз</th><th>Миль</th><th>Сближение</th><th>Данные</th></tr>'+arr.map(({s,d,c})=>`<tr><td>${s.name||s.id}</td><td>${f1(s.sog)}</td><td>${f1(d)}</td><td>${c&&c.t>0&&c.t<120?`${f1(c.cpa)} м. через ${f0(c.t)} мин`:'—'}</td><td>${ago(s.t)}</td></tr>`).join('')+'</table>':''}
 function aisCpaCheck(){ // интернет-AIS + свой приёмник через Signal K (одно судно — один номер MMSI)
-  const sk=typeof SK!=='undefined'?[...SK.ais].map(([k,a])=>{const mm=(k.match(/mmsi:(\d+)/)||[])[1];return a.ll&&{id:mm?+mm:k,name:a.name,lat:a.ll[0],lon:a.ll[1],sog:a.sog,cog:a.cog,t:a.t}}).filter(x=>x&&!AIS.ships.has(x.id)):[];
+  const sk=typeof SK!=='undefined'?[...SK.ais].map(([k,a])=>{const mm=(k.match(/mmsi:(\d+)/)||[])[1];return a.ll&&{id:mm?+mm:k,name:a.name&&aisT(a.name),lat:a.ll[0],lon:a.ll[1],sog:a.sog,cog:a.cog,t:a.t}}).filter(x=>x&&!AIS.ships.has(x.id)):[];
   for(const s of [...AIS.ships.values(),...sk]){if(s.lat==null||skEcho(s.lat,s.lon,s.sog))continue;const c=cpa(s);if(AIS.warned.has(s.id)&&!(c&&c.t>0&&c.t<30&&c.cpa<0.6))AIS.warned.delete(s.id); // разошлись — при новом сближении предупредим снова
     if(c&&c.t>0&&c.t<15&&c.cpa<0.3&&!AIS.warned.has(s.id)){AIS.warned.add(s.id);toast(`⚠ Сближение: ${s.name||s.id} — ${fDn(c.cpa)} через ${f0(c.t)} мин`,8000);beep();navigator.vibrate?.([300,150,300])}}}
 setInterval(()=>{const lim=Date.now()-20*60000;for(const[id,s]of AIS.ships){if(s.t&&s.t<lim){if(s.mk)AIS.layer.removeLayer(s.mk);if(s.vec)AIS.layer.removeLayer(s.vec);AIS.ships.delete(id)}else if(s.mk)s.mk.setIcon(shipIcon(s))}$('#aisCount').textContent=AIS.ships.size;if(openName==='ais')aisList()},30000);
@@ -2891,7 +2892,7 @@ const TOURS=[
   s:[{n:'Крепость Орешек',ll:[59.95396,31.03808]},{n:'Коневец',ll:[60.84819,30.58397]},{n:'Валаам',ll:[61.38904,30.94526]}]},
  {n:'Форты Кронштадта',a:'Финский залив',t:'Цепь морских фортов XVIII–XIX веков вокруг Котлина. Часть стоит на линии дамбы, часть — в открытой воде. Подходить только по знакам: у фортов камни и остатки сооружений.',
   s:[{n:'Северные форты',ll:[60.01828,29.79672],t:'Из Невской губы на север — через ворота дамбы С-2.'}]}];
-async function findData(){if(FIND.d)return FIND.d;let p=[];try{const r=await fetch('data/poi.json');if(r.ok)p=(await r.json()).p}catch(e){logE('poi '+e.message)}
+async function findData(){if(FIND.d)return FIND.d;let p=[];try{const r=await fetch('data/poi.json');if(r.ok)p=(await r.json()).p;p.forEach(x=>{for(const k of ['n','t'])if(x[k])x[k]=String(x[k]).replace(/[<>&"'`]/g,'')})}catch(e){logE('poi '+e.message)}
   try{if(!LZ.f&&typeof lzBuiltin==='function')await lzBuiltin()}catch(e){}
   const lz=(LZ.f||[]).filter(f=>f.ll).map(f=>({c:'lz',n:f.t.split(/[.:;]/)[0].slice(0,90),ll:f.ll,t:f.t}));return FIND.d=[...p,...lz]}
 function findFrom(){return G.pos?[G.pos[0],G.pos[1]]:[map.getCenter().lat,map.getCenter().lng]}
@@ -3027,6 +3028,8 @@ tbUpd();addEventListener('resize',tbUpd);setInterval(tbUpd,800);if(window.Resize
   hd.addEventListener('click',e=>{if(Date.now()-(hd._dr||0)<350){e.stopPropagation();e.preventDefault()}},true);
   g.addEventListener('dblclick',()=>{hd.classList.remove('hudMoved');try{store.set('hudPos',null)}catch(_){}});
   addEventListener('resize',()=>{if(hd.classList.contains('hudMoved')){const r=hd.getBoundingClientRect();put(r.left,r.top)}})})();
+
+function aisT(t){return String(t==null?'':t).replace(/[<>&"'`=\\]/g,'').trim().slice(0,40)}
 </script>
 </body>
 </html>
