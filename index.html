@@ -527,6 +527,78 @@ html body #hud.hudMoved{left:var(--hx)!important;top:var(--hy)!important;right:a
 
 #splash svg path[d^="M27.6"]{transform-box:view-box;transform-origin:32px 32px;animation:spOrbit 1s .45s cubic-bezier(.65,0,.35,1) infinite}
 @keyframes spOrbit{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+/* ===== «Ещё» как список iOS ===== */
+#p-more .mgrid{display:block}
+#p-more .mgh{font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 6px 7px}
+#p-more .mgh:first-child{margin-top:4px}
+#p-more .mgrp{background:var(--panel2);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+html body #p-more .mgrp>button{display:flex;width:100%;min-height:58px;margin:0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none!important;padding:9px 12px 9px 12px;gap:13px;text-align:left;justify-content:flex-start;align-items:center;transform:none!important;filter:none!important;color:var(--text)}
+html body #p-more .mgrp>button:first-child{border-top:0}
+html body #p-more .mgrp>button:active{background:rgba(127,127,127,.14)}
+@media (hover:hover){html body #p-more .mgrp>button:hover{background:rgba(127,127,127,.08)}}
+#p-more .mtile{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none;background:var(--c,#0a84ff);color:#fff;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18)}
+#p-more .mtile .mi{width:19px;height:19px;opacity:1;stroke-width:2}
+#p-more .mOrig{display:none}
+#p-more .mT{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+#p-more .mT b{font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
+#p-more .mT small{font-size:13px;font-weight:400;color:var(--muted);line-height:1.3}
+#p-more button.on .mT small{color:var(--accent)}
+#p-more .mChev{width:8px;height:14px;flex:none;color:var(--muted);opacity:.55}
+body.night #p-more .mtile{background:#4a0f0f;color:var(--text)}
+/* ===== лёгкие кнопки окна ===== */
+html body .panel h2 .wc{gap:6px}
+html body .panel h2 .wc button,html body .panel h2>.close,html body .panel>.close{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;padding:0!important;border-radius:50%!important;border:0!important;background:rgba(127,127,127,.16)!important;box-shadow:none!important;color:var(--text);display:inline-flex;align-items:center;justify-content:center;font-size:15px}
+html body .panel h2 .wc button svg{width:16px;height:16px}
+html body .panel h2 .wc button:active,html body .panel h2>.close:active{background:rgba(127,127,127,.3)!important;transform:scale(.92)!important}
+@media (hover:hover){html body .panel h2 .wc button:hover,html body .panel h2>.close:hover{background:rgba(127,127,127,.26)!important}}
+/* ===== свёрнутое окно — ярлычок ===== */
+html body .panel.wMin{left:12px!important;top:auto!important;right:auto!important;bottom:calc(var(--tbUp,110px) + 12px)!important;width:auto!important;max-width:calc(100vw - 110px)!important;border-radius:999px!important;padding:0!important;border:1px solid var(--barLine,var(--line))!important;background:var(--bar,var(--panel))!important;-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);box-shadow:0 8px 24px rgba(0,0,0,.35)!important}
+html body .panel.wMin>h2{position:static;margin:0!important;padding:5px 5px 5px 16px!important;min-height:0;font-size:15px;font-weight:600;border:0;background:transparent;gap:10px;cursor:pointer!important}
+html body .panel.wMin>h2::after{content:'';order:-1;width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;margin-right:-2px}
+html body .panel.wMin h2 .wc button[data-wm="full"]{display:none!important}
+html body .panel.wMin h2 .wc{margin-left:6px}
+body.rail .panel.wMin{left:84px!important}
+
+/* ===== единая шкала шрифтов и кнопок в окнах ===== */
+html body .panel{font-size:15px;line-height:1.45}
+html body .panel h3,html body .panel .bc h3,html body .panel .tour h3{font-size:16px!important;font-weight:600!important;letter-spacing:-.01em}
+html body .panel .tour p,html body .panel ol li,html body .panel ul li{font-size:15px}
+html body .panel .small,html body .panel small,html body .panel .note,html body .panel .fm,html body .panel .bm{font-size:13px!important;line-height:1.4}
+html body .panel .small b,html body .panel small b,html body .panel li b{font-weight:600}
+html body .panel .capS,html body #p-more .mgh{font-size:12px!important;font-weight:600!important;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+html body .panel .tag{font-size:12px!important;font-weight:600}
+html body .panel .bp b{font-size:17px}
+html body .panel button:not(.close):not([data-wm]):not(.mgrp>button):not(.stashTab){min-height:46px!important;font-size:15px!important;font-weight:600!important;border-radius:12px!important;line-height:1.2;padding:6px 14px;box-shadow:none!important;text-wrap:balance}
+html body .panel button:not(.close):not([data-wm]):not(.mgrp>button):active{transform:scale(.97)!important}
+html body .panel :is(.capT,.lzChips,#fCat,#bTabs) button{min-height:36px!important;height:auto;padding:6px 14px!important;border-radius:999px!important;font-size:14px!important;font-weight:600!important}
+html body .panel :is(.capT,.lzChips,#fCat,#bTabs){gap:8px!important}
+html body .panel :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea){font-size:15px!important;border-radius:12px!important}
+html body .panel :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select){min-height:46px!important}
+/* ===== спрятать окно к краю ===== */
+html body .panel.wStash{transform:translate(var(--sx,0),var(--sy,0)) scale(.92)!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:transform .32s cubic-bezier(.3,.7,.2,1),opacity .25s,visibility 0s .32s!important}
+.stashTab{position:fixed;z-index:1160;display:flex;align-items:center;justify-content:center;padding:0;margin:0;min-height:0;border:1px solid var(--barLine,var(--line));background:var(--bar,var(--panel));-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);box-shadow:0 6px 20px rgba(0,0,0,.35);color:var(--text);touch-action:none;animation:kWin .25s var(--ease)}
+.stashTab i{display:block;background:currentColor;opacity:.55;border-radius:3px}
+.stashTab[data-e=l],.stashTab[data-e=r]{width:24px;height:78px}
+.stashTab[data-e=l]{left:0;border-left:0;border-radius:0 14px 14px 0}
+.stashTab[data-e=r]{right:0;border-right:0;border-radius:14px 0 0 14px}
+.stashTab[data-e=l] i,.stashTab[data-e=r] i{width:4px;height:36px}
+.stashTab[data-e=t],.stashTab[data-e=b]{width:78px;height:24px}
+.stashTab[data-e=t]{border-top:0;border-radius:0 0 14px 14px}
+.stashTab[data-e=b]{border-bottom:0;border-radius:14px 14px 0 0}
+.stashTab[data-e=t] i,.stashTab[data-e=b] i{width:36px;height:4px}
+html body #bBody .bc .bp b{font-size:17px}
+
+/* ===== свёрнутая погода — кнопка ===== */
+#tbBtn{position:fixed;z-index:1001;left:50%;bottom:calc(var(--safe-area-inset-bottom,env(safe-area-inset-bottom)) + 12px);width:56px;height:56px;min-height:56px;padding:0;margin:0 0 0 -28px;border-radius:16px;background:var(--bar,var(--panel));border:1px solid var(--barLine,var(--line));box-shadow:0 10px 28px rgba(0,0,0,.6);color:var(--text);display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px;touch-action:none}
+body.tbMin #tbBtn{display:flex;animation:tbBtnIn .35s var(--spring,cubic-bezier(.3,1.4,.5,1))}
+@keyframes tbBtnIn{from{transform:translateY(30px) scale(.6);opacity:0}to{transform:none;opacity:1}}
+#tbBtn svg{width:26px;height:22px;flex:none}
+#tbBtn b{font:700 11px/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.01em;white-space:nowrap}
+#tbBtn:active{transform:scale(.93)}
+html body.tbMin #timebar{transform:translateY(calc(100% + 40px))!important}
+html body.tbMin .leaflet-bottom{margin-bottom:0}
+html body .panel.wMin{left:84px!important;max-width:calc(100vw - 96px)!important}
 </style>
 </head>
 <body>
@@ -887,7 +959,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.63';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.64';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -2998,12 +3070,12 @@ $$('.panel').forEach(p=>{const h=p.querySelector('h2');if(!h)return;const c=docu
   // перетаскивание окна за заголовок
   let st=null;h.addEventListener('pointerdown',e=>{if(!(p.classList.contains('wWin')||p.classList.contains('wMin'))||e.target.closest('button,input,select,a'))return;const r=p.getBoundingClientRect();st={x:e.clientX,y:e.clientY,l:r.left,t:r.top,m:0,id:e.pointerId}});
   h.addEventListener('pointermove',e=>{if(!st)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;if(!st.m&&Math.hypot(dx,dy)<6)return;if(!st.m){st.m=1;p.classList.add('wDrag');try{h.setPointerCapture(st.id)}catch(_){}}
-    e.preventDefault();p.style.setProperty('--wx',(st.l+dx)+'px');p.style.setProperty('--wy',(st.t+dy)+'px')});
-  const end=()=>{if(!st)return;const m=st.m;st=null;p.classList.remove('wDrag');if(m){wmClamp(p);const r=p.getBoundingClientRect();try{store.set('wpos_'+wmName(p),{x:r.left,y:r.top,w:p.classList.contains('wWin')?r.width:null,h:p.classList.contains('wWin')?r.height:null})}catch(_){}h._dr=Date.now()}
+    e.preventDefault();{const now=e.timeStamp;if(st.pt){const dt=Math.max(8,now-st.pt);st.vx=(e.clientX-st.px)/dt;st.vy=(e.clientY-st.py)/dt}st.pt=now;st.px=e.clientX;st.py=e.clientY}p.style.setProperty('--wx',(st.l+dx)+'px');p.style.setProperty('--wy',(st.t+dy)+'px')});
+  const end=()=>{if(!st)return;const m=st.m,st0=st;st=null;p.classList.remove('wDrag');if(m&&p.classList.contains('wWin')&&wmFling(p,st0)){h._dr=Date.now();return}if(m){wmClamp(p);const r=p.getBoundingClientRect();try{store.set('wpos_'+wmName(p),{x:r.left,y:r.top,w:p.classList.contains('wWin')?r.width:null,h:p.classList.contains('wWin')?r.height:null})}catch(_){}h._dr=Date.now()}
     else if(p.classList.contains('wMin'))wmSet(p,'win')};
   h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end)});
 // размер маленького окна, если его потянули за уголок
-if(window.ResizeObserver){const ro=new ResizeObserver(es=>es.forEach(en=>{const p=en.target;if(!p.classList.contains('wWin')||p.hidden)return;clearTimeout(p._rs);p._rs=setTimeout(()=>{const r=p.getBoundingClientRect();try{store.set('wpos_'+wmName(p),{x:r.left,y:r.top,w:r.width,h:r.height})}catch(_){}},400)}));$$('.panel').forEach(p=>ro.observe(p))}
+if(window.ResizeObserver){const ro=new ResizeObserver(es=>es.forEach(en=>{const p=en.target;if(!p.classList.contains('wWin')||p.hidden)return;clearTimeout(p._rs);p._rs=setTimeout(()=>{if(!p.classList.contains('wWin')||p.hidden||p.classList.contains('wStash'))return;const r=p.getBoundingClientRect();try{store.set('wpos_'+wmName(p),{x:r.left,y:r.top,w:r.width,h:r.height})}catch(_){}},400)}));$$('.panel').forEach(p=>ro.observe(p))}
 {const _op=openPanel;openPanel=function(n){_op(n);const p=$('#p-'+n);if(p)wmSet(p,wmGet(n),true)}}
 addEventListener('resize',()=>$$('.panel.wWin,.panel.wMin').forEach(wmClamp));
 
@@ -3043,7 +3115,7 @@ function mapFree(ll){const w=$('.panel.wWin:not([hidden]),.panel.wMin:not([hidde
   const tx=(b.x0+b.x1)/2,ty=Math.min(b.y1-30,(b.y0+b.y1)/2+70),pt=map.latLngToContainerPoint(ll);map.panBy([Math.round(pt.x-tx),Math.round(pt.y-ty)],{animate:false})}
 
 /* высота нижней полосы → MOB всегда над ней */
-function tbUpd(){const t=$('#timebar');if(!t)return;const r=t.getBoundingClientRect(),v=r.height===0||getComputedStyle(t).display==='none'?0:Math.max(0,innerHeight-r.top);document.documentElement.style.setProperty('--tbUp',Math.round(v)+'px')}
+function tbUpd(){const t=$('#timebar');if(!t)return;const r=t.getBoundingClientRect(),v=r.height===0||getComputedStyle(t).display==='none'?0:document.body.classList.contains('tbMin')?68:Math.max(0,innerHeight-r.top);document.documentElement.style.setProperty('--tbUp',Math.round(v)+'px')}
 tbUpd();addEventListener('resize',tbUpd);setInterval(tbUpd,800);if(window.ResizeObserver)new ResizeObserver(tbUpd).observe($('#timebar'));$('#timebar').addEventListener('transitionend',tbUpd);
 
 /* приборы (скорость, курс) — перетаскиваются, место запоминается; двойное нажатие на ручку — вернуть на место */
@@ -3149,6 +3221,59 @@ $$('#bTabs [data-bt]').forEach(b=>b.onclick=()=>{BERTH.tab=b.dataset.bt;BERTH.se
 $('#mBerth').onclick=()=>{openPanel('berth');berthRender()};
 {const fb=$('#fBerth');if(fb)fb.onclick=e=>{e.stopPropagation();openPanel('berth');berthRender()}}
 if(berthOn()){$('#mBerth').hidden=false;const fb=$('#fBerth');if(fb)fb.hidden=false}
+
+/* «Ещё»: группы, значки, пояснения */
+(function(){const g=$('#p-more .mgrid');if(!g)return;
+ const K=b=>b.id||('go:'+b.dataset.go);
+ const M={'btnAnchor':['Якорь','якорная вахта и тревога','#0a84ff'],'mWatch':['Вахтенный таймер','','#ff9f0a'],'mHelm':['Экран у штурвала','карта и крупные приборы рядом','#30b0c7'],'mDash':['Приборы','скорость, ветер, компас, глубина','#30d158'],
+  'mBerth':['Бронь причала','место на ночь, неделю или сезон','#bf5af2'],'go:spb':['Проход через Петербург','разводка мостов','#5e5ce6'],'go:lotsia':['Лоция и штурман','мосты, шлюзы, каналы, стоянки','#a2845e'],'go:cap':['Капитану','чек-лист, связь, сигналы, узлы','#ff453a'],
+  'go:boat':['Лодка и пределы','размеры, скорость, ветер и волна','#64d2ff'],'mNight':['Ночной режим','красный экран, не слепит','#8e8e93'],'go:diag':['Проверка связи','GPS, интернет, приборы лодки','#34c759'],'go:help':['Как пользоваться','короткая справка','#8e8e93'],'go:ai':['ИИ-помощник','голосом или текстом, проба','#ff375f']};
+ const G=[['На воде',['btnAnchor','mWatch','mHelm','mDash']],['Маршрут и стоянки',['go:spb','go:lotsia','go:cap','mBerth']],['Настройки',['go:boat','mNight','go:diag','go:help','go:ai']]];
+ const all=[...g.querySelectorAll(':scope>button')],by={};all.forEach(b=>by[K(b)]=b);
+ const chev='<svg class="mChev" viewBox="0 0 8 14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg>';
+ const dress=b=>{const m=M[K(b)]||[null,'','#0a84ff'],sp=b.querySelector('span'),ic=b.querySelector('svg.mi');if(!sp)return;sp.classList.add('mOrig');
+  const tile=document.createElement('span');tile.className='mtile';tile.style.setProperty('--c',m[2]);if(ic)tile.appendChild(ic);b.prepend(tile);
+  const t=document.createElement('span');t.className='mT';t.innerHTML='<b></b><small></small>';sp.after(t);b.insertAdjacentHTML('beforeend',chev);
+  const sync=()=>{const x=sp.textContent.trim(),c=x.search(/:| — /),head=c>0?x.slice(0,c).trim():x,tail=c>0?x.slice(c).replace(/^(:| — )\s*/,''):'';
+   t.firstChild.textContent=m[0]||head;t.lastChild.textContent=m[0]&&m[1]?m[1]:tail;t.lastChild.hidden=!t.lastChild.textContent};
+  sync();new MutationObserver(sync).observe(sp,{childList:true,characterData:true,subtree:true})};
+ const frag=document.createDocumentFragment(),used=new Set();
+ G.forEach(([h,ks])=>{const L2=ks.map(k=>by[k]).filter(Boolean);if(!L2.length)return;const hd=document.createElement('div');hd.className='mgh';hd.textContent=h;const gr=document.createElement('div');gr.className='mgrp';L2.forEach(b=>{gr.appendChild(b);used.add(b)});frag.append(hd,gr)});
+ const rest=all.filter(b=>!used.has(b));if(rest.length){const gr=document.createElement('div');gr.className='mgrp';gr.style.marginTop='14px';rest.forEach(b=>gr.appendChild(b));frag.append(gr)}
+ g.innerHTML='';g.appendChild(frag);all.forEach(dress)})();
+
+/* ===== спрятать окно к краю и вытащить за ползунок ===== */
+function wmFling(p,st){const r=p.getBoundingClientRect(),W=innerWidth,H=innerHeight,tb=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tbUp'))||0,top=60;
+  const off={l:-r.left/r.width,r:(r.right-W)/r.width,t:(top-r.top)/r.height,b:(r.bottom-(H-tb))/r.height};
+  const vx=st&&st.vx||0,vy=st&&st.vy||0,V=0.9;const fl={l:-vx,r:vx,t:-vy,b:vy};
+  const mv=st?{l:st.x-(st.px||st.x),r:(st.px||st.x)-st.x,t:st.y-(st.py||st.y),b:(st.py||st.y)-st.y}:{};
+  let e=null,best=0;for(const k of ['l','r','t','b']){if(!(mv[k]>40))continue;const sc=Math.max(off[k]>0.33?off[k]+1:0,fl[k]>V?fl[k]:0);if(sc>best){best=sc;e=k}}
+  if(!e)return false;p._pre={x:st.l,y:st.t};wmStash(p,e);return true}
+function wmStash(p,e){const r=p.getBoundingClientRect(),W=innerWidth,H=innerHeight,tb=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tbUp'))||0,n=wmName(p);
+  const sx={l:-(r.right+30),r:W-r.left+30,t:0,b:0}[e],sy={t:-(r.bottom+30),b:H-r.top+30,l:0,r:0}[e];p.style.setProperty('--sx',sx+'px');p.style.setProperty('--sy',sy+'px');
+  p.classList.add('wStash');p.dataset.edge=e;let t=document.getElementById('stash-'+n);if(!t){t=document.createElement('button');t.type='button';t.className='stashTab';t.id='stash-'+n;document.body.appendChild(t)}
+  const ttl=(p.querySelector('h2')||{}).firstChild;const name=ttl&&ttl.textContent?ttl.textContent.trim():'';t.setAttribute('aria-label','Показать окно'+(name?' «'+name+'»':''));t.title=t.getAttribute('aria-label');
+  t.dataset.e=e;t.innerHTML='<i></i>';t.style.left=t.style.right=t.style.top=t.style.bottom='';
+  const cl=(v,a,b)=>Math.min(Math.max(v,a),b);
+  if(e==='l'||e==='r')t.style.top=cl(r.top+r.height/2-39,70,H-tb-90)+'px';else{t.style.left=cl(r.left+r.width/2-39,8,W-86)+'px';if(e==='t')t.style.top='64px';else t.style.bottom=(tb+2)+'px'}
+  let d=null;t.onpointerdown=ev=>{d={x:ev.clientX,y:ev.clientY};try{t.setPointerCapture(ev.pointerId)}catch(_){}};
+  t.onpointermove=ev=>{if(!d)return;if(Math.hypot(ev.clientX-d.x,ev.clientY-d.y)>16){d=null;wmUnstash(p)}};
+  t.onpointerup=()=>{if(d){d=null;wmUnstash(p)}}}
+function wmUnstash(p){const n=wmName(p),t=document.getElementById('stash-'+n);if(t)t.remove();if(p.hidden){openPanel(n);}if(p._pre){p.style.setProperty('--wx',p._pre.x+'px');p.style.setProperty('--wy',p._pre.y+'px')}p.classList.remove('wStash');requestAnimationFrame(()=>wmClamp(p))}
+{const _ws=wmSet;wmSet=function(p,m,keep){const q=typeof p==='string'?$('#p-'+p):p;if(q&&q.classList.contains('wStash')){q.classList.remove('wStash');const t=document.getElementById('stash-'+wmName(q));if(t)t.remove()}return _ws(p,m,keep)}}
+{const _cp=closePanel;closePanel=function(){$$('.stashTab').forEach(t=>t.remove());$$('.panel.wStash').forEach(p=>p.classList.remove('wStash'));return _cp.apply(this,arguments)}}
+
+/* свёрнутая погода — кнопка с облачком */
+(function(){const b=document.createElement('button');b.type='button';b.id='tbBtn';b.setAttribute('aria-label','Показать погоду и время');b.title='Погода';
+ b.innerHTML='<svg viewBox="0 0 26 22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 18.5h11a4.5 4.5 0 0 0 .6-8.96A6.5 6.5 0 0 0 6.6 8.7 4.9 4.9 0 0 0 7.5 18.5z" fill="currentColor" fill-opacity=".14"/><path d="M5 21h4M12 21h6" stroke="#5fb0ff"/></svg><b id="tbBtnW"></b>';
+ document.body.appendChild(b);
+ const open=()=>{document.body.classList.remove('tbMin');try{store.set('tbMin',false)}catch(e){}setTimeout(()=>{try{tbUpd()}catch(e){}},460)};
+ let y0=null;b.addEventListener('pointerdown',e=>{y0=e.clientY});b.addEventListener('pointerup',e=>{if(y0!=null){y0=null;open()}});
+ b.addEventListener('pointermove',e=>{if(y0!=null&&y0-e.clientY>24){y0=null;open()}});
+ b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
+ const upd=()=>{const t=($('#timeLabel')||{}).textContent||'',m=t.match(/центр\s+([\d,]+)\s*уз/);$('#tbBtnW').textContent=m?m[1]+' уз':'';
+  if(document.body.classList.contains('tbMin'))try{tbUpd()}catch(e){}};
+ upd();setInterval(upd,1500)})();
 </script>
 </body>
 </html>
