@@ -788,7 +788,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.53';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.54';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1099,7 +1099,7 @@ async function routeWx(){if(RT.pts.length<2)return toast('Поставьте м�
   if(smp.length>120){while(smp.length>120&&stepNm<200){stepNm*=1.5;mk()}toast('Маршрут очень длинный: точки прогноза стоят реже, через '+fDn(stepNm,'миль')+'')}
   const my=RT.wseq=(RT.wseq||0)+1;const models=uniq([S.model,...CMP]).filter(x=>x!=='fmi_harmonie');const la=smp.map(s=>s.p[0].toFixed(3)),lo=smp.map(s=>s.p[1].toFixed(3));
   try{const [a,m]=await Promise.allSettled([
-      S.model==='fmi_harmonie'?Promise.reject(Object.assign(new Error('выбрана модель FMI'),{status:0,own:1})):getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${models}`),
+      S.model==='fmi_harmonie'?Promise.reject(Object.assign(new Error('выбрана модель FMI'),{status:0,own:1})):getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code&wind_speed_unit=kn&forecast_days=5&timeformat=unixtime&models=${models}`),
       getJSON(`https://marine-api.open-meteo.com/v1/marine?latitude=${la}&longitude=${lo}&hourly=wave_height&forecast_days=5&timeformat=unixtime`)]);
     if(my!==RT.wseq)return;let A,mods=models,dm=S.model;
     if(a.status==='fulfilled'){A=a.value;if(!Array.isArray(A))A=[A]}
@@ -1108,18 +1108,18 @@ async function routeWx(){if(RT.pts.length<2)return toast('Поставьте м�
     const r1=v=>v==null?null:Math.round(v*10)/10;
     const fc={pts:RT.pts,fetched:(a.status==='fulfilled'&&a.value._at)||Date.now(),model:dm,models:mods,times:A[0].hourly.time,smp:smp.map((s,i)=>{const h=A[i].hourly,o={li:s.li,len:s.len,p:s.p};
       for(const k of mods){o['s_'+k]=h['wind_speed_10m_'+k].map(r1);o['g_'+k]=h['wind_gusts_10m_'+k].map(r1)}
-      o.d=h['wind_direction_10m_'+dm];o.w=M&&M[i]&&M[i].hourly?M[i].hourly.wave_height:null;return o})};
+      o.d=h['wind_direction_10m_'+dm];{const wc=h['weather_code_'+dm]||h['weather_code_'+models[0]];if(wc)o.wc=wc}o.w=M&&M[i]&&M[i].hourly?M[i].hourly.wave_height:null;return o})};
     RT.fc=fc;if(!store.set('routefc',fc))toast('Прогноз маршрута большой, не поместился в память');renderRoute();bestWindows();
   }catch(err){logE('route '+err.message);$('#rSum').innerHTML=`<p class="badbox">Погода не загрузилась (${err.message}).</p>`;if(RT.fc){renderRoute();toast('Показываю сохранённый прогноз маршрута')}}}
 /* ход вдоль маршрута: время на каждом отрезке считается по скорости лодки при ветре в момент, когда она там будет */
 function evalRoute(dep){const fc=RT.fc,L2=legs();if(!fc)return null;
-  const rows=L2.map(l=>({...l,spd:null,gst:null,dir:null,wave:null,eta:null,spread:0,boat:0,time:0}));let t=dep;const m=fc.model;
+  const rows=L2.map(l=>({...l,spd:null,gst:null,dir:null,wave:null,eta:null,spread:0,boat:0,time:0,thun:false}));let t=dep;const m=fc.model;
   for(const s of fc.smp){let i=fc.times.findIndex(x=>x>=t/1000-1800);if(i<0)return null;
     const v=s['s_'+m][i],g=s['g_'+m][i],d=s.d[i],r=rows[s.li];if(!r)continue;let w=s.w?s.w[i]:null;const we=d!=null?waveEst(v,fetchKm(s.p[0],s.p[1],d)):null;if(we&&(w==null||we.h>w))w=we.h;
     const twa=d!=null?offBow(d,r.c):90,bs=boatSpeed(v,twa),dt=s.len/(bs*NM/3600000);
     const vs=fc.models.map(k=>s['s_'+k][i]).filter(x=>x!=null),spr=vs.length>1?Math.max(...vs)-Math.min(...vs):0;
     if(r.eta==null)r.eta=t;
-    if(r.spd==null||g>r.gst){r.spd=v;r.gst=g;r.dir=d}if(w!=null&&(r.wave==null||w>r.wave))r.wave=w;r.spread=Math.max(r.spread,spr);r.time+=dt;
+    if(r.spd==null||g>r.gst){r.spd=v;r.gst=g;r.dir=d}if(w!=null&&(r.wave==null||w>r.wave))r.wave=w;r.spread=Math.max(r.spread,spr);r.time+=dt;if(s.wc&&s.wc[i]>=95)r.thun=true;
     t+=dt}
   rows.forEach(r=>r.boat=r.d/NM/(r.time/3600000));rows.arrive=t;return rows}
 function conf(s){return s<4?'<span class="conf hi">уверенно</span>':s<8?'<span class="conf mid">средне</span>':'<span class="conf lo">модели спорят</span>'}
@@ -1301,12 +1301,14 @@ function brief(rows){const el=$('#rBrief');if(rows===undefined)rows=RT.fc?evalRo
   const dep=depTs(),total=rows.reduce((a,r)=>a+r.d,0),dur=rows.arrive-dep,hm=t=>mskT(t);
   const L=[];const ens=RT.ens?ensEval(dep):null;
   const over=rows.filter(r=>r.spd>S.windMax||r.gst>S.gustMax||r.wave>S.waveMax);
-  let verdict=ens?(ens.p<.2?'Выход нормальный':ens.p<.5?'Выход возможен, но с риском':'Выход не советую'):(over.length?'Выход не советую':'Выход нормальный');
+  let verdict=ens?(ens.p<.2?'Выход нормальный':ens.p<.5?'Выход возможен, но с риском':'Выход не советую'):(over.length?'Выход не советую':'Выход нормальный');if(verdict==='Выход нормальный'&&rows.some(r=>r.thun))verdict='Выход возможен, но с риском';if(rows.some(r=>(r.gst||0)>=34||(r.spd||0)>=28))verdict='Выход не советую';
   L.push(`${verdict}: ${fmtT(dep/1000)}, ${fDn(total/NM,'миль')}, в пути около ${fmtHM(dur)}, приход ${fmtT(rows.arrive/1000)}.`+(ens?` По 51 варианту прогноза риск превысить ваши пределы — ${Math.round(ens.p*100)} %.`:''));
   const w=rows.reduce((a,r)=>(r.gst||0)>(a.gst||0)?r:a,rows[0]),wi=rows.indexOf(w);
   if(w.spd!=null)L.push(`Сильнее всего на участке ${wi+1}→${wi+2} (около ${hm(w.eta)}): ветер ${fW(w.spd)}, порывы до ${f0(w.gst)}, с ${rumb(w.dir)}, ${sail(offBow(w.dir,w.c))}${w.wave!=null?`, волна до ${f1(w.wave)} м`:''}.`);
   const sails=uniq(rows.filter(r=>r.dir!=null).map(r=>sail(offBow(r.dir,r.c))));if(sails.length)L.push(`Курсы к ветру: ${sails.join(', ')}.`);
   const head=rows.map((r,i)=>r.dir!=null&&offBow(r.dir,r.c)<40?(i+1)+'→'+(i+2):null).filter(Boolean);if(head.length)L.push(`В лоб на участках ${head.join(', ')}: закладывайте галсы, путь там примерно в 1,5 раза длиннее и медленнее.`);
+  const th=rows.map((r,i)=>r.thun?(i+1)+'→'+(i+2):null).filter(Boolean);if(th.length)L.push(`⚡ Гроза в прогнозе на участках ${th.join(', ')}: в грозу порывы резко усиливаются, молнии опасны для мачты. Лучше переждать в укрытии или сдвинуть выход.`);
+  const st=rows.map((r,i)=>(r.gst||0)>=34||(r.spd||0)>=28?(i+1)+'→'+(i+2):null).filter(Boolean);if(st.length)L.push(`🌊 Штормовой ветер на участках ${st.join(', ')} (средний от 28 уз или порывы от 34 уз, 7–8 баллов и выше). Проверьте штормовые предупреждения: «Ещё» → «Капитану» → «Правила».`);
   const calm=rows.map((r,i)=>r.spd!=null&&r.spd<4?(i+1)+'→'+(i+2):null).filter(Boolean);if(calm.length)L.push(`Штиль на участках ${calm.join(', ')}: пойдёте под мотором, проверьте топливо.`);
   const unsure=rows.map((r,i)=>r.spread>=8?(i+1)+'→'+(i+2):null).filter(Boolean);if(unsure.length)L.push(`Модели спорят на участках ${unsure.join(', ')}: перед выходом обновите прогноз.`);
   const ah=mskH(rows.arrive);if(ah>=22||ah<5)L.push('Приход в тёмное время: заранее проверьте огни подхода и место стоянки.');
@@ -1620,7 +1622,7 @@ function lzMast(regs){const m=S.boat.mast||0;const rows=[];LZ.f.forEach(x=>{if(!
 function lzRouteRegions(){const r=new Set();(RT.pts||[]).forEach(p=>r.add(lzRegion(p)));return r}
 function lzBrief(){const L=[],regs=lzRouteRegions();if(!regs.size)return L;const{m,rows}=lzMast(regs);
   if(m){const low=rows.filter(r=>r[0]<m+1);if(low.length)L.push(`Лоция: в районе маршрута ${low.length} мест с высотой меньше ${f1(m+1)} м (ваша мачта ${f1(m)} м), самое низкое — ${f1(low[0][0])} м. Проверьте во вкладке «Лоция».`)}
-  const hz=lzSearch('#hazard',{reg:regs,n:60}).filter(x=>(x.r||[]).some(r=>regs.has(r)));if(hz.length)L.push(`Лоция: по району ${[...regs].map(r=>LZ_R[r]).join(', ')} отмечено ${hz.length} опасностей и запретов. Главное: ${hz.slice(0,2).map(x=>x.t.replace(/\s+/g,' ').slice(0,140)).join(' / ')}`);
+  const hz=lzSearch('#hazard',{reg:regs,n:60}).filter(x=>(x.r||[]).some(r=>regs.has(r)));if(hz.length)L.push(`Лоция: по району ${[...regs].map(r=>LZ_R[r]).join(', ')} опасностей и запретов в лоции: ${hz.length}. Главное: ${hz.slice(0,2).map(x=>x.t.replace(/\s+/g,' ').slice(0,140)).join(' / ')}`);
   const vh=lzSearch('#vhf',{reg:regs,n:80}).filter(x=>(x.r||[]).some(r=>regs.has(r))&&/канал|кан\./i.test(x.t));if(vh.length)L.push(`Связь: ${vh.slice(0,2).map(x=>x.t.slice(0,120)).join(' / ')}`);
   return L}
 const lzE=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
