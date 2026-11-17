@@ -663,6 +663,7 @@ body.night .sosBig a,body.night .sosBig div{background:#5a0000;color:#ff5a4a}
   <div class="row"><label>Ветер <input id="sWind" type="number" style="width:64px"> <span class="uW">уз</span></label><label>Порывы <input id="sGust" type="number" style="width:64px"> <span class="uW">уз</span></label><label>Волна <input id="sWave" type="number" step="0.1" style="width:64px"> м</label></div>
   <h3>Режимы</h3>
   <label><input type="checkbox" id="sNight"> Ночной режим (красный, не слепит)</label>
+  <label><input type="checkbox" id="sLow"> Экономить интернет (спутниковый, Starlink, роуминг): карта из памяти телефона, реже обновления</label>
   <label><input type="checkbox" id="sAutoN"> Ночной режим сам по солнцу (закат / рассвет)</label>
   <label><input type="checkbox" id="sSaver"> Экономия батареи (без анимации, GPS реже)</label>
   <details><summary>Ключи сервисов</summary>
@@ -803,7 +804,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.56';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.57';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -887,7 +888,7 @@ map.on('moveend',()=>{const c=map.getCenter();store.set('view',{c:[c.lat,c.lng],
 const REG={id:'ladoga',W:28.4,S:59.55,E:33.2,N:61.85,maxz:12};
 const pmOpts=()=>({url:`map/${REG.id}/{z}/{x}/{y}.mvt`,maxDataZoom:REG.maxz,maxZoom:19,flavor:S.night?'dark':'light',lang:'ru',bounds:[[REG.S,REG.W],[REG.N,REG.E]],attribution:'Protomaps'});
 const bases={
-  kurs:()=>L.featureGroup([L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}),protomapsL.leafletLayer(pmOpts())]),
+  kurs:()=>S.lowData?L.featureGroup([protomapsL.leafletLayer(pmOpts())]):L.featureGroup([L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}),protomapsL.leafletLayer(pmOpts())]),
   osm:()=>L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}),
   topo:()=>L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,subdomains:'abc',attribution:'© OpenTopoMap, OSM'}),
   yandex:()=>L.tileLayer('https://tiles.api-maps.yandex.ru/v1/tiles/?x={x}&y={y}&z={z}&lang=ru_RU&l=map&projection=web_mercator&apikey='+encodeURIComponent(S.yandexKey),{maxZoom:19,attribution:'© Яндекс'})
@@ -1530,7 +1531,7 @@ function aisBtn(){$('#btnAis').classList.toggle('on',AIS.on||openName==='ais')}
 const aisSt=m=>{$('#aisStatus').textContent=m;aisBtn()};
 /* финский государственный поток AIS: без ключа, береговые станции Финского залива */
 function dtStart(){clearInterval(DT.timer);dtPoll();DT.timer=setInterval(dtPoll,60000)}
-async function dtPoll(){if(!AIS.on)return;DT.last=Date.now();$('#dtStatus').textContent=DT.ok==null?'загружаю…':$('#dtStatus').textContent;
+async function dtPoll(){if(!AIS.on)return;if(S.lowData&&DT.last&&Date.now()-DT.last<5*6e4)return;DT.last=Date.now();$('#dtStatus').textContent=DT.ok==null?'загружаю…':$('#dtStatus').textContent;
   try{if(Date.now()-DT.metaT>3600e3){const v=await fetch('https://meri.digitraffic.fi/api/ais/v1/vessels',DT.H).then(r=>r.json());v.forEach(x=>DT.meta.set(x.mmsi,x));DT.metaT=Date.now()}
     const r=await fetch('https://meri.digitraffic.fi/api/ais/v1/locations',DT.H);if(!r.ok)throw new Error('ответ '+r.status);const j=await r.json();
     const b=map.getBounds().pad(.5),old=Date.now()-20*60000;let n=0;
@@ -2016,7 +2017,7 @@ async function obsFmi(){const st=new Date(Date.now()-50*6e4).toISOString().slice
   return Object.values(last)}
 const WXRAW='https://raw.githubusercontent.com/Sandovich/kurs/data/';
 async function obsOwn(){try{const r=await fetch(WXRAW+'obs.json',{cache:'no-store'});if(!r.ok)return[];const j=await r.json();return(j.st||[]).filter(o=>o&&isFinite(o.lat)&&isFinite(o.spd)).map(o=>({...o,src:o.src||'метеостанция'}))}catch(e){return[]}}
-async function obsLoad(){if(!S.obs)return;const [a,b]=await Promise.allSettled([obsFmi(),obsOwn()]);
+async function obsLoad(){if(!S.obs)return;if(S.lowData&&OB.lastLoad&&Date.now()-OB.lastLoad<30*6e4)return;OB.lastLoad=Date.now();const [a,b]=await Promise.allSettled([obsFmi(),obsOwn()]);
   if(a.status==='rejected')logE('obs '+a.reason.message);OB.list=[...(a.value||[]),...(b.value||[])];OB.at=Date.now();obsDraw()}
 function obsInit(){$('#chkObs').checked=S.obs;if(S.obs){OB.layer.addTo(map);obsLoad()}
   $('#chkObs').onchange=e=>{S.obs=e.target.checked;saveS();if(S.obs){OB.layer.addTo(map);obsLoad()}else map.removeLayer(OB.layer)};
@@ -2429,7 +2430,7 @@ function cuStyle(){const sea=S.seamarks!==false;return{version:8,glyphs:'https:/
     {id:'pmE',type:'fill',source:'pm','source-layer':'earth',paint:{'fill-color':'#efeadf'}},{id:'pmL',type:'fill',source:'pm','source-layer':'landuse',paint:{'fill-color':'#dcebd0','fill-opacity':.6}},
     {id:'pmW',type:'fill',source:'pm','source-layer':'water',paint:{'fill-color':'#aad3df'}},
     {id:'pmP',type:'symbol',source:'pm','source-layer':'places',layout:{'text-field':['coalesce',['get','name:ru'],['get','name']],'text-font':['Noto Sans Regular'],'text-size':12,'text-rotation-alignment':'viewport'},paint:{'text-color':'#334','text-halo-color':'#fff','text-halo-width':1.2}},
-    {id:'osm',type:'raster',source:'osm'},{id:'sea',type:'raster',source:'sea',layout:{visibility:sea?'visible':'none'}},
+    {id:'osm',type:'raster',source:'osm',layout:{visibility:S.lowData?'none':'visible'}},{id:'sea',type:'raster',source:'sea',layout:{visibility:sea?'visible':'none'}},
     {id:'trk',type:'line',source:'trk',paint:{'line-color':S.trackCol||'#ff8a3d','line-width':3,'line-opacity':.85}},
     {id:'rt',type:'line',source:'rt',filter:['==','$type','LineString'],paint:{'line-color':'#3fb6ff','line-width':4}},
     {id:'rtp',type:'circle',source:'rt',filter:['==','$type','Point'],paint:{'circle-radius':9,'circle-color':'#3fb6ff','circle-stroke-color':'#fff','circle-stroke-width':2}},
@@ -2861,6 +2862,9 @@ async function findRender(){const el=$('#fList'),q=$('#fQ').value.trim().toLower
 $$('#fCat [data-fc]').forEach(b=>b.onclick=()=>{FIND.cat=b.dataset.fc;$$('#fCat [data-fc]').forEach(x=>x.classList.toggle('on',x===b));findRender()});
 {let tm;$('#fQ').addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(findRender,250)})}
 $('#btnFind').addEventListener('click',()=>setTimeout(findRender,30));
+
+/* экономия интернета */
+{const c=$('#sLow');c.checked=!!S.lowData;c.onchange=()=>{S.lowData=c.checked;saveS();if(S.base!=='kurs'&&S.lowData){setBase('kurs')}else setBase(S.base);toast(S.lowData?'Экономия: карта из памяти телефона (база «Курс»), наблюдения и суда обновляются реже':'Обычный режим загрузки')}}
 </script>
 </body>
 </html>
