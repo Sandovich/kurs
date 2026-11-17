@@ -673,6 +673,40 @@ html body .panel .grp.sw label:active{background:rgba(127,127,127,.1)!important}
 #navd:not([hidden]){animation:kFade .3s cubic-bezier(.2,.8,.3,1)}
 #nRules .rc{animation:kFade .25s both}
 @media (prefers-reduced-motion:reduce){html body .panel,html body .panel *,#navd,#nRules .rc,#tbBtn{animation:none!important}}
+
+/* ===== нижняя полоса — как верхняя: выезжает из облачка ===== */
+html body #tbBtn{display:flex!important}
+html body #tbGrip{display:none!important}
+html body #timebar{left:calc(var(--safe-area-inset-left,env(safe-area-inset-left)) + 72px)!important;transform-origin:left center!important;transition:transform .42s cubic-bezier(.3,1.25,.5,1),opacity .25s!important}
+html body.tbMin #timebar{transform:translateX(-46%) scale(.12)!important;opacity:0!important;pointer-events:none}
+/* ===== строки-действия во всех окнах (как «Ещё») ===== */
+html body .panel .mgh{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:20px 6px 7px}
+html body .panel .mgrp{background:var(--panel2);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:10px 0}
+html body .panel .mgrp>button{display:flex!important;width:100%;min-height:58px!important;margin:0!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;padding:9px 12px!important;gap:13px;text-align:left;justify-content:flex-start;align-items:center;transform:none!important;filter:none!important;color:var(--text)!important;font-size:15px;font-weight:600;flex:none!important}
+html body .panel .mgrp>button[hidden]{display:none!important}
+html body .panel .mgrp>button:first-child,html body .panel .mgrp>button[hidden]:first-child+button{border-top:0!important}
+html body .panel .mgrp>button:active{background:rgba(127,127,127,.14)!important}
+html body .panel .mgrp>button:disabled{opacity:.45}
+html body .panel .mgrp>button.busy{justify-content:center;color:var(--accent)!important}
+@media (hover:hover){html body .panel .mgrp>button:hover{background:rgba(127,127,127,.08)!important}}
+html body .panel .mtile{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex:none;background:var(--c,#0a84ff);color:#fff;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18)}
+html body .panel .mtile svg{width:19px;height:19px;display:block}
+html body .panel .mT{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+html body .panel .mT b{font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
+html body .panel .mT small{font-size:13px!important;font-weight:400;color:var(--muted);line-height:1.3}
+html body .panel .mgrp>button.on .mT small{color:var(--accent)}
+html body .panel .mChev{width:8px;height:14px;flex:none;color:var(--muted);opacity:.55}
+body.night .panel .mtile{background:#4a0f0f;color:var(--text)}
+html body .panel .grp .row.mix{display:flex;align-items:center;gap:8px;padding-right:12px;border-top:1px solid var(--line)}
+html body .panel .grp .row.mix>label{flex:1;border-top:0}
+html body .panel .rowGone{display:none!important}
+html body.rail #timebar,html body.helmOn #timebar{left:calc(var(--safe-area-inset-left,env(safe-area-inset-left)) + 72px)!important;border-top-left-radius:18px!important}
+html body .panel #lzQ{flex:1 1 auto!important;min-width:0}
+html body .panel #lzGo{flex:0 0 auto!important}
+html body .panel .lzChips{flex-wrap:wrap}
+html body .panel .lzChips button{flex:0 0 auto!important}
+html body .panel details>summary>svg,html body .panel details>summary::before{display:none!important}
+html body .panel details>summary{color:var(--text)!important}
 </style>
 </head>
 <body>
@@ -1034,7 +1068,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.66';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.67';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:false,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -3342,9 +3376,9 @@ function wmUnstash(p){const n=wmName(p),t=document.getElementById('stash-'+n);if
 (function(){const b=document.createElement('button');b.type='button';b.id='tbBtn';b.setAttribute('aria-label','Показать погоду и время');b.title='Погода';
  b.innerHTML='<svg viewBox="0 0 26 22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 18.5h11a4.5 4.5 0 0 0 .6-8.96A6.5 6.5 0 0 0 6.6 8.7 4.9 4.9 0 0 0 7.5 18.5z" fill="currentColor" fill-opacity=".14"/><path d="M5 21h4M12 21h6" stroke="#5fb0ff"/></svg><b id="tbBtnW"></b>';
  document.body.appendChild(b);
- const open=()=>{document.body.classList.remove('tbMin');try{store.set('tbMin',false)}catch(e){}setTimeout(()=>{try{tbUpd()}catch(e){}},460)};
+ const open=()=>{const on=!document.body.classList.contains('tbMin');document.body.classList.toggle('tbMin',on);try{store.set('tbMin',on)}catch(e){}setTimeout(()=>{try{tbUpd()}catch(e){}},460)};
  let y0=null;b.addEventListener('pointerdown',e=>{y0=e.clientY});b.addEventListener('pointerup',e=>{if(y0!=null){y0=null;open()}});
- b.addEventListener('pointermove',e=>{if(y0!=null&&y0-e.clientY>24){y0=null;open()}});
+ 
  b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
  const upd=()=>{const t=($('#timeLabel')||{}).textContent||'',m=t.match(/центр\s+([\d,]+)\s*уз/);$('#tbBtnW').textContent=m?m[1]+' уз':'';
   if(document.body.classList.contains('tbMin'))try{tbUpd()}catch(e){}};
@@ -3427,6 +3461,63 @@ addEventListener('resize',()=>$$('.panel.wMin').forEach(wmMinPos));
  $$('.panel').forEach(p=>{if(['p-more','p-berth','p-find','p-ai','p-point'].includes(p.id))return;pass(p);p.querySelectorAll('details').forEach(pass)})})();
 
 $$('.panel .close').forEach(b=>b.classList.add('xbtn'));
+
+/* ===== окна как «Ещё»: действия — строки со значками ===== */
+(function(){
+ const I={plus:'M12 5v14M5 12h14',undo:'M9 14l-4-4 4-4M5 10h9a5 5 0 0 1 0 10h-3',swap:'M7 4v16M7 4l-3 3M7 4l3 3M17 20V4M17 20l-3-3M17 20l3-3',trash:'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13',
+  compass:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM15.5 8.5l-2 5-5 2 2-5z',cloud:'M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z',cal:'M5 6h14v14H5zM5 10h14M9 3v4M15 3v4',play:'M8 5l11 7-11 7z',
+  save:'M12 4v11M7 11l5 5 5-5M5 20h14',open:'M12 16V5M7 9l5-5 5 5M5 20h14',pin:'M12 21s-6-5.5-6-10a6 6 0 0 1 12 0c0 4.5-6 10-6 10zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+  anchor:'M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 8v13M5 14a7 7 0 0 0 14 0M9 12h6',target:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',up:'M12 19V5M6 11l6-6 6 6',
+  power:'M12 3v9M6.5 7a8 8 0 1 0 11 0',x:'M6 6l12 12M18 6L6 18',bridge:'M3 17h18M5 17V9M19 17V9M5 11c3 3 11 3 14 0',map:'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14',ok:'M5 12l5 5 9-10',
+  plug:'M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4',list:'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',file:'M7 3h7l5 5v13H7zM14 3v5h5',track:'M4 18c4 0 3-12 8-12s4 12 8 12',key:'M14 10a4 4 0 1 0-3.5 4L12 15.5V18h2.5v2H18v-3.5l-4.2-4.2c.1-.4.2-.9.2-1.3z'};
+ const chev='<svg class="mChev" viewBox="0 0 8 14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg>';
+ const C={blue:'#0a84ff',green:'#30d158',orange:'#ff9f0a',red:'#ff453a',teal:'#30b0c7',indigo:'#5e5ce6',purple:'#bf5af2',gray:'#8e8e93',brown:'#a2845e',cyan:'#64d2ff'};
+ const clean=t=>t.replace(/^[^0-9A-Za-zА-Яа-яЁё«(]+/,'').replace(/\s+/g,' ').trim();
+ function row(b,title,sub,col,ic){const t0=clean(b.textContent);
+  const build=()=>{if(b.classList.contains('busy')||b.querySelector(':scope>.mT'))return;const now=clean(b.textContent),ttl=now&&now!==t0?now:(title||now);
+   b.innerHTML=`<span class="mtile" style="--c:${C[col]||col||C.blue}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${I[ic]||I.ok}"/></svg></span><span class="mT"><b></b><small></small></span>${chev}`;
+   b.querySelector('.mT b').textContent=ttl;const sm=b.querySelector('.mT small');sm.textContent=now&&now!==t0?'':(sub||'');sm.hidden=!sm.textContent};
+  build();new MutationObserver(build).observe(b,{childList:true})}
+ // группа: [заголовок|null, [[селектор, название, пояснение, цвет, значок],...], [что поставить сразу после группы]]
+ function group(head,items,after){const els=items.map(it=>[$(it[0]),it]).filter(x=>x[0]);if(!els.length)return;const first=els[0][0],top=first.closest('.row')&&!first.closest('.mgrp')?first.closest('.row'):first;
+  const g=document.createElement('div');g.className='mgrp';const og0=first.closest('.grp');if(og0)og0.after(g);else top.parentNode.insertBefore(g,top);if(head){const h=document.createElement('div');h.className='mgh';h.textContent=head;g.parentNode.insertBefore(h,g)}
+  const rows=new Set();els.forEach(([b,it])=>{const r=b.closest('.row');if(r)rows.add(r);g.appendChild(b);row(b,it[1],it[2],it[3],it[4])});
+  rows.forEach(r=>{if(![...r.children].some(c=>!c.hidden&&c.tagName!=='INPUT'||(c.tagName==='INPUT'&&c.type!=='file'&&!c.hidden)))r.classList.add('rowGone')});
+  let ref=g;(after||[]).forEach(sel=>{const e=$(sel);if(e){ref.after(e);ref=e}})}
+ // поля: подписи с полями — в одну карточку
+ function fields(head,sels){const labs=sels.map(x=>$(x)&&$(x).closest('label')).filter(Boolean);if(!labs.length)return;const first=labs[0],top=first.closest('.grp')||first.closest('.row')||first;
+  const g=document.createElement('div');g.className='grp fm';top.parentNode.insertBefore(g,top);if(head){const h=document.createElement('div');h.className='mgh';h.textContent=head;g.parentNode.insertBefore(h,g)}
+  const olds=new Set();labs.forEach(l=>{const r=l.closest('.row'),og=l.closest('.grp');if(r&&[...r.children].some(c=>c.tagName==='BUTTON')){r.classList.add('mix');g.appendChild(r)}else{if(r)olds.add(r);g.appendChild(l)}if(og&&og!==g)olds.add(og)});
+  olds.forEach(o=>{if(!o.querySelector('label,button:not([hidden])'))o.classList.add('rowGone')})}
+ try{
+ // Переход
+ group('Маршрут',[['#rAdd','Ставить точки','нажимайте на карту по очереди','blue','plus'],['#rUndo','Убрать последнюю точку','','gray','undo'],['#rRev','Развернуть маршрут','идти в обратную сторону','indigo','swap'],['#rClear','Очистить маршрут','','red','trash']]);
+ fields('Время',['#rDep','#rPta']);
+ group('Расчёт',[['#rIso','Проложить под ветер','через все точки, по прогнозу','green','compass'],['#rWx','Погода по маршруту','ветер, порывы и волна по пути','teal','cloud'],['#rEns','Календарь выхода','7 суток, 51 вариант прогноза','orange','cal'],['#rGo','Вести по маршруту','пеленг, расстояние, время прихода','blue','play']],['#rIsoOut','#rSum','#rBrief','#rWin','#rLegs','#rEnsOut']);
+ group('Файлы',[['#rGpx','Сохранить маршрут','файл GPX','gray','save'],['#rImpBtn','Открыть маршрут','из файла GPX','gray','open'],['#mkExp','Сохранить метки','','brown','save'],['#mkImpBtn','Открыть метки','','brown','open']],['#mkL']);
+ // Якорь
+ group('Якорь',[['#aSetGps','Якорь здесь','по GPS лодки','blue','anchor'],['#aSetMap','Якорь в центре карты','','teal','target'],['#aOff','Поднять якорь','выключить вахту','red','up']]);
+ // AIS
+ group(null,[['#aisOn','Включить АИС','суда рядом на карте','green','power'],['#aisOff','Выключить','','gray','x']]);
+ group(null,[['#aisSave','Сохранить ключ','','gray','key']]);
+ // Петербург
+ fields(null,['#spDir','#spDate']);
+ group(null,[['#spGo','Рассчитать проход','когда подойти к каждому мосту','indigo','bridge'],['#spMap','Мосты на карте','','teal','map']]);
+ // Проверка связи
+ group(null,[['#dRun','Проверить связь','GPS, интернет, прогноз, приборы','green','ok']]);
+ // Лоция
+ group('Файл лоции',[['#lzLoad','Загрузить файл лоции','','gray','open'],['#lzDel','Удалить лоцию с устройства','','red','trash']]);
+ // Слои
+ group(null,[['#mapDl','Скачать карту района','около 70 МБ, потом работает без сети','blue','save']],['#mapSt']);
+ group(null,[['#skUsb','Приборы по USB-кабелю','NMEA 0183','orange','plug'],['#skDiag','Что пришло с приборов','','gray','list']]);
+ group(null,[['#mcLoad','Загрузить файл карт','','gray','open'],['#mcDel','Удалить карты','','red','trash']]);
+ // Лодка
+ group(null,[['#bPolLoad','Загрузить файл поляр','.pol, .txt, .csv','indigo','file']]);
+ group(null,[['#sSave','Сохранить','','blue','ok']]);
+ group('Трек и журнал',[['#sTrkGpx','Сохранить трек','файл GPX','gray','save'],['#sTrkImpBtn','Показать трек из файла','','gray','open'],['#sTrkImpX','Убрать чужой трек','','gray','x'],['#sTrack','Стереть трек','','red','trash'],['#sLog','Журнал ошибок','','gray','list']]);
+ {const l=$('#lzPts')&&$('#lzPts').closest('label');if(l&&!l.closest('.grp')){const w=document.createElement('div');w.className='grp sw';l.before(w);w.appendChild(l)}}
+ }catch(e){try{logE('lists '+e.message)}catch(_){}}
+})();
 </script>
 </body>
 </html>
