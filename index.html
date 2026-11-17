@@ -524,6 +524,9 @@ html body #hud.hudMoved{left:var(--hx)!important;top:var(--hy)!important;right:a
 #bBody .st{font-size:13px;font-weight:600}
 #bBody .sum{border-top:1px solid var(--line);margin-top:8px;padding-top:8px;font-size:14px}
 #bBody .sum div{display:flex;justify-content:space-between;gap:8px}
+
+#splash svg path[d^="M27.6"]{transform-box:view-box;transform-origin:32px 32px;animation:spOrbit 1s .45s cubic-bezier(.65,0,.35,1) infinite}
+@keyframes spOrbit{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -884,7 +887,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.62';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.63';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:true,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -3065,9 +3068,14 @@ const B_CANCEL={flex:'Гибкая: бесплатно за 24 часа до п�
 const B_AM={power:'электричество',water:'вода',fuel:'топливо',wc:'туалет',shower:'душ',guard:'охрана',wifi:'интернет',slip:'слип',crane:'кран',park:'парковка'};
 const bE=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const bRub=n=>Math.round(n).toLocaleString('ru-RU')+' ₽';
-function berthOn(){try{return !!BERTH.api||/[?&]berth=1/.test(location.search)||store.get('berthOn',false)}catch(e){return false}}
+function berthOn(){try{return !!BERTH.api||/[?&]berth=(1|demo)/.test(location.search)||store.get('berthOn',false)}catch(e){return false}}
 async function berthData(){if(BERTH.d)return BERTH.d;let a=[];try{const r=await fetch('data/berths.json',{cache:'no-store'});if(r.ok)a=(await r.json()).items||[]}catch(e){}
-  try{a=a.concat(store.get('berthTest',[]))}catch(e){}return BERTH.d=a.filter(x=>x&&x.ll&&x.name)}
+  try{a=a.concat(store.get('berthTest',[]))}catch(e){}
+  if(/[?&]berth=demo/.test(location.search))a=a.concat([
+   {id:'demo1',name:'Пример: пирс у дома на Вуоксе',kind:'pier',ll:[61.05,30.25],area:'Вуокса, у Приозерска',price:2000,maxLen:11,maxBeam:3.8,depth:2.2,moor:'side',cancel:'mod',am:{power:true,water:true,wc:true,park:true},about:'Это пример, а не настоящее место: так будет выглядеть карточка. Тихая протока, от ветра закрыто со всех сторон, кроме юга.',rules:'Тишина после 23:00, без костров на пирсе.',free:'весь сезон',verified:true},
+   {id:'demo2',name:'Пример: гостевое место в яхт-клубе',kind:'club',ll:[60.86,30.55],area:'Ладога, западный берег',price:3500,maxLen:14,depth:3,moor:'stern',cancel:'flex',am:{power:true,water:true,fuel:true,shower:true,guard:true,wifi:true},about:'Это пример. У клубов гость не платит сбор сервиса.',instant:true},
+   {id:'demo3',name:'Пример: место владельца, пока он в походе',kind:'member',ll:[59.97,30.24],area:'Петербург, Крестовский остров',price:2500,maxLen:10,maxBeam:3.5,depth:2.5,moor:'stern',cancel:'strict',am:{power:true,water:true,wc:true,shower:true,guard:true},about:'Это пример режима «отпусти своё место»: владелец сезонного места сдаёт его на даты своего похода.',free:'1–20 июля'}]);
+  return BERTH.d=a.filter(x=>x&&x.ll&&x.name)}
 function bBoat(){const b=S.boat||{};return{len:+b.len||0,beam:+b.beam||0,draft:+b.draft||0,name:b.name||''}}
 function bFit(x,bt){const r=[];if(bt.len&&x.maxLen&&bt.len>x.maxLen)r.push('длина до '+x.maxLen+' м');if(bt.beam&&x.maxBeam&&bt.beam>x.maxBeam)r.push('ширина до '+x.maxBeam+' м');
   if(bt.draft&&x.depth&&bt.draft+0.3>x.depth)r.push('глубина у причала '+x.depth+' м');return r}
