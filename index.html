@@ -707,6 +707,66 @@ html body .panel .lzChips{flex-wrap:wrap}
 html body .panel .lzChips button{flex:0 0 auto!important}
 html body .panel details>summary>svg,html body .panel details>summary::before{display:none!important}
 html body .panel details>summary{color:var(--text)!important}
+
+/* ===== вкладки: одна ровная строка, листается пальцем ===== */
+html body .panel :is(.capT,#fCat){flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;margin:0 -14px 4px!important;padding:2px 14px 10px!important;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 30px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 30px),transparent 100%)}
+html body .panel :is(.capT,#fCat)::-webkit-scrollbar{display:none}
+/* три вкладки — переключатель во всю ширину */
+html body .panel #bTabs{overflow:hidden!important;margin:0 0 12px!important;padding:3px!important;gap:0!important;background:rgba(127,127,127,.16);border-radius:12px;-webkit-mask-image:none;mask-image:none}
+html body .panel #bTabs button{flex:1 1 0!important;min-width:0;min-height:34px!important;padding:4px 6px!important;border:0!important;border-radius:9px!important;background:transparent!important;color:var(--text)!important;font-size:13.5px!important;box-shadow:none!important;overflow:hidden;text-overflow:ellipsis}
+html body .panel #bTabs button.on{background:rgba(255,255,255,.16)!important;box-shadow:0 1px 4px rgba(0,0,0,.3)!important}
+/* ===== «Капитану» ===== */
+html body .panel .capS{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:20px 6px 7px}
+html body .panel .capChk{background:var(--panel2);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:0}
+html body .panel .capChk label{display:block!important;position:relative;margin:0!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;padding:15px 58px 15px 14px!important;min-height:54px}
+html body .panel .capChk label:first-child{border-top:0!important}
+html body .panel .capChk label:active{background:rgba(127,127,127,.1)!important}
+html body .panel .capChk label input{position:absolute!important;left:auto!important;right:14px!important;top:50%!important;transform:translateY(-50%);margin:0!important;width:26px!important;height:26px!important;border-radius:50%!important;background:transparent!important;border:2px solid var(--muted);opacity:.9;transition:background-color .2s,border-color .2s}
+html body .panel .capChk label input::before{left:8px!important;top:3px!important;width:6px!important;height:12px!important;border-radius:0!important;background:none!important;box-shadow:none!important;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) scale(0)!important;transition:transform .22s cubic-bezier(.3,1.4,.5,1)}
+html body .panel .capChk label input:checked{background:var(--ok)!important;border-color:var(--ok)}
+html body .panel .capChk label input:checked::before{transform:rotate(45deg) scale(1)!important}
+html body .panel #capCnt{padding:0 6px}
+html body .panel #capRst{margin-top:14px}
+html body .panel .capTbl{background:var(--panel2);border:1px solid var(--line);border-radius:16px;border-collapse:separate;border-spacing:0;overflow:hidden;margin:0}
+html body .panel .capTbl td{padding:11px 14px;border-bottom:1px solid var(--line)}
+html body .panel .capTbl tr:last-child td{border-bottom:0}
+html body .panel #capB ul{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:12px 14px 12px 32px!important;margin:0!important}
+html body .panel #capB ul li+li{margin-top:6px}
+html body .panel #capB>p{padding:0 6px}
+html body .panel .cardL{background:var(--panel2);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+html body .panel .cardL .buoy{padding:12px 14px;border-bottom:1px solid var(--line)}
+html body .panel .cardL .buoy:last-child{border-bottom:0}
+html body .panel .knot{border-radius:16px;padding:14px;margin:0 0 10px}
+html body .panel .capGrid div{border-radius:12px}
+html body .panel .sosBig a,html body .panel .sosBig div{border-radius:16px;padding:14px 8px}
+/* ===== карточки мест и брони ===== */
+html body .panel :is(.tour,.bc){border-radius:16px;padding:14px;margin:0 0 12px}
+html body .panel :is(.tour,.bc)>.row{display:flex;flex-wrap:nowrap;gap:8px;margin:12px 0 0}
+html body .panel :is(.tour,.bc)>.row>button{flex:1 1 0!important;min-width:0;min-height:44px!important;white-space:nowrap;padding:0 10px!important}
+html body .panel #fList .fi{background:var(--panel2);border:1px solid var(--line);border-top-width:0;padding:10px 12px;gap:12px;align-items:center}
+html body .panel #fList .fi:first-child{border-top-width:1px;border-radius:16px 16px 0 0}
+html body .panel #fList .fi:last-child{border-radius:0 0 16px 16px}
+html body .panel #fList .fi:first-child:last-child{border-radius:16px}
+html body .panel #fList .fi b{font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
+html body .panel #fList .fi .fb button{min-height:34px!important;padding:0 12px!important;border-radius:999px!important;font-size:13px!important;white-space:nowrap}
+html body .panel #fList>p{padding:0 6px}
+/* ===== карточка точки ===== */
+html body .panel #pointBody .chart{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:10px 6px 4px;margin:10px 0 8px;box-sizing:border-box}
+html body .panel #pointBody .scroll{background:var(--panel2);border:1px solid var(--line);border-radius:16px;margin:10px 0}
+html body .panel #pointBody .scroll table{margin:0}
+html body .panel #pointBody .scroll :is(td,th){padding:9px 12px}
+html body .panel #pointBody .scroll tr:last-child td{border-bottom:0}
+html body .panel #pointBody>.row.small{padding:0 6px;gap:6px 12px}
+html body .panel #pointBody>p{padding:0 6px}
+html body .panel :is(.okbox,.warnbox,.badbox){border-radius:14px;padding:11px 14px}
+/* ===== справка: разделы раскрываются ===== */
+html body .panel .mgrp>.hBody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.2,.8,.2,1)}
+html body .panel .mgrp>.hBody>div{overflow:hidden;min-height:0}
+html body .panel .mgrp>.hBody p{margin:0;padding:2px 14px 14px 57px;font-size:15px;line-height:1.5;color:var(--text)}
+html body .panel .mgrp>button.open+.hBody{grid-template-rows:1fr}
+html body .panel .mgrp>button .mChev{transition:transform .25s}
+html body .panel .mgrp>button.open .mChev{transform:rotate(90deg)}
+@media (prefers-reduced-motion:reduce){html body .panel .mgrp>.hBody{transition:none}}
 </style>
 </head>
 <body>
@@ -951,7 +1011,7 @@ html body .panel details>summary{color:var(--text)!important}
 <section class="panel" id="p-berth" hidden>
   <button class="close">✕</button>
   <h2>Бронь причала</h2>
-  <div class="capT" id="bTabs"><button data-bt="find" class="on">Найти место</button><button data-bt="my">Мои брони</button><button data-bt="host">Сдать своё место</button></div>
+  <div class="capT" id="bTabs"><button data-bt="find" class="on">Найти место</button><button data-bt="my">Мои брони</button><button data-bt="host">Сдать место</button></div>
   <div id="bBody"></div>
 </section>
 
@@ -1068,7 +1128,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.67';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.68';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:false,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1329,7 +1389,7 @@ async function showPoint(ll){const my=PT.seq=(PT.seq||0)+1;
   const pr=h['pressure_msl_'+main];if(pr&&pr[i0]!=null&&pr[i0+12]!=null){const dp=pr[i0+12]-pr[i0];html+=`<p class="small">Давление ${f0(pr[i0])} гПа, за 12 ч ${dp>0?'+':''}${f1(dp)}${dp<=-4?' — <b style="color:var(--warn)">быстро падает: жди усиления ветра</b>':''}</p>`}
   if(est){const d0=dr(main)[i0],F=fetchKm(ll.lat,ll.lng,d0);html+=`<p class="note">«По разгону» — своя оценка волны: сколько километров воды ветер прошёл до этой точки (сейчас с ${rumb(d0)}: ${f0(F)} км). На Ладоге и в заливе это надёжнее морской модели. Расчёт для глубокой воды: на мелководье юга Ладоги волна ниже, но круче.</p>`}
   if(!mh&&!est)html+='<p class="note">Волну в этой точке морская модель не считает.</p>';
-  body.innerHTML=`<div class="row"><button id="ptGo">➜ Идти сюда</button></div>`+html;$('#ptGo').onclick=()=>{navStart('point',[PT.last],0,'Точка '+fmtC(PT.last[0],1));closePanel()}}
+  body.innerHTML=`<div class="mgrp"><button id="ptGo"><span class="mtile" style="--c:#0a84ff"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l11 7-11 7z"/></svg></span><span class="mT"><b>Идти сюда</b><small>пеленг и расстояние до этой точки</small></span><svg class="mChev" viewBox="0 0 8 14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></button></div>`+html;$('#ptGo').onclick=()=>{navStart('point',[PT.last],0,'Точка '+fmtC(PT.last[0],1));closePanel()}}
 function chart(t,a,b,series,dirs){const Wd=360,H=170,P=26;let mx=10;series.forEach(s=>{for(let i=a;i<b;i++)if(s.v[i]>mx)mx=s.v[i]});mx=Math.ceil(mx/5)*5;
   const X=i=>P+(i-a)/Math.max(1,b-a-1)*(Wd-P-6),Y=v=>H-22-(v/mx)*(H-40);let g=`<svg class="chart" viewBox="0 0 ${Wd} ${H}" font-size="9" fill="var(--muted)">`;
   for(let v=0;v<=mx;v+=5){g+=`<line x1="${P}" x2="${Wd-6}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="2" y="${Y(v)+3}">${Math.round(v*uW()[0])}</text>`}
@@ -3109,7 +3169,7 @@ function findFrom(){return G.pos?[G.pos[0],G.pos[1]]:[map.getCenter().lat,map.ge
 function findGo(P){RT.pts=P.map(p=>p.slice());routeChanged();openPanel('route');setTimeout(()=>{$('#rIso').click();setTimeout(()=>$('#rIsoOut').scrollIntoView({block:'nearest',behavior:'smooth'}),400)},150)}
 function findShow(ll,n){if(FIND.lay)map.removeLayer(FIND.lay);FIND.lay=L.circleMarker(ll,{radius:9,color:'#fff',weight:3,fillColor:'#ff8a3d',fillOpacity:1}).bindTooltip(n,{permanent:true,direction:'top'}).addTo(map);map.setView(ll,Math.max(map.getZoom(),13));if(innerWidth<820)closePanel()}
 async function findRender(){const el=$('#fList'),q=$('#fQ').value.trim().toLowerCase(),from=findFrom();
-  if(FIND.cat==='tour'&&!q){el.innerHTML=TOURS.map((t,i)=>{const d=dist(from,t.s[0].ll)/NM;return`<div class="tour"><h3>${t.n}</h3><div class="small muted">${t.a} · до первой точки ${fDn(d,'миль')} от ${G.pos?'лодки':'центра карты'}</div><p>${t.t}</p><ol>${t.s.map(x=>`<li><b>${x.n}</b>${x.t?' — '+x.t:''}</li>`).join('')}</ol><div class="row"><button class="primary" data-tour="${i}" style="flex:1">Проложить от ${G.pos?'лодки':'центра карты'}</button><button data-tshow="${i}">На карте</button></div></div>`}).join('')+'<p class="small muted">Путь строится под ветер по прогнозу или по воде. Подход к стоянкам, глубины и опасности — смотрите в лоции и на карте с глубинами.</p>';
+  if(FIND.cat==='tour'&&!q){el.innerHTML=TOURS.map((t,i)=>{const d=dist(from,t.s[0].ll)/NM;return`<div class="tour"><h3>${t.n}</h3><div class="small muted">${t.a} · до первой точки ${fDn(d,'миль')} от ${G.pos?'лодки':'центра карты'}</div><p>${t.t}</p><ol>${t.s.map(x=>`<li><b>${x.n}</b>${x.t?' — '+x.t:''}</li>`).join('')}</ol><div class="row"><button class="primary" data-tour="${i}" style="flex:1">Проложить путь</button><button data-tshow="${i}">На карте</button></div></div>`}).join('')+'<p class="small muted">Путь строится под ветер по прогнозу или по воде. Подход к стоянкам, глубины и опасности — смотрите в лоции и на карте с глубинами.</p>';
     el.querySelectorAll('[data-tour]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tour];findGo([from,...t.s.map(x=>x.ll)])});
     el.querySelectorAll('[data-tshow]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tshow];findShow(t.s[0].ll,t.n)});return}
   el.innerHTML='<p class="muted small">Ищу…</p>';const D=await findData();
@@ -3117,9 +3177,9 @@ async function findRender(){const el=$('#fList'),q=$('#fQ').value.trim().toLower
   if(!q&&FIND.cat!=='lz')L2=L2.filter(p=>p.n||p.c!=='sight');
   L2=L2.map(p=>({...p,d:dist(from,p.ll)})).sort((a,b)=>a.d-b.d).slice(0,60);
   const TQ=q?TOURS.map((t,i)=>({t,i})).filter(({t})=>(t.n+' '+t.a+' '+t.t+' '+t.s.map(x=>x.n).join(' ')).toLowerCase().includes(q)):[];
-  const tq=TQ.map(({t,i})=>`<div class="fi"><div class="fx"><b>${t.n}</b><div class="fm">прогулка · ${t.a}</div></div><div class="fb"><button class="primary" data-tq="${i}">Проложить</button></div></div>`).join('');
+  const tq=TQ.map(({t,i})=>`<div class="fi">${fiT('tour')}<div class="fx"><b>${t.n}</b><div class="fm">прогулка · ${t.a}</div></div><div class="fb"><button class="primary" data-tq="${i}">Проложить</button></div></div>`).join('');
   if(!L2.length&&!tq){el.innerHTML='<p class="muted">Ничего не нашлось. Попробуйте другое слово или раздел.</p>';return}
-  el.innerHTML=tq+L2.map((p,i)=>`<div class="fi"><div class="fx"><b>${p.n||(F_CAT[p.c][0].toUpperCase()+F_CAT[p.c].slice(1)+' без названия')}</b><div class="fm">${F_CAT[p.c]}${p.fuel?' · есть топливо':''} · ${fDn(p.d/NM,'миль')} · ${f0(brg(from,p.ll))}°${p.c==='lz'?'<br>'+lzE(p.t).slice(0,220):''}</div></div><div class="fb"><button class="primary" data-fgo="${i}">Маршрут сюда</button><button data-fsh="${i}">На карте</button></div></div>`).join('');
+  el.innerHTML=tq+L2.map((p,i)=>`<div class="fi">${fiT(p.c)}<div class="fx"><b>${p.n||(F_CAT[p.c][0].toUpperCase()+F_CAT[p.c].slice(1)+' без названия')}</b><div class="fm">${F_CAT[p.c]}${p.fuel?' · есть топливо':''} · ${fDn(p.d/NM,'миль')} · ${f0(brg(from,p.ll))}°${p.c==='lz'?'<br>'+lzE(p.t).slice(0,220):''}</div></div><div class="fb"><button class="primary" data-fgo="${i}">Маршрут</button><button data-fsh="${i}">На карте</button></div></div>`).join('');
   el.querySelectorAll('[data-fgo]').forEach(b=>b.onclick=()=>findGo([from,L2[+b.dataset.fgo].ll]));
   el.querySelectorAll('[data-tq]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tq];findGo([from,...t.s.map(x=>x.ll)])});
   el.querySelectorAll('[data-fsh]').forEach(b=>b.onclick=()=>{const p=L2[+b.dataset.fsh];findShow(p.ll,p.n||F_CAT[p.c])})}
@@ -3277,7 +3337,7 @@ async function berthList(){const el=$('#bList');if(!el)return;const D=await bert
   el.innerHTML=L2.map(x=>{const p=bPrice(x,q.n);return`<div class="bc"><h3>${bE(x.name)}</h3><div class="bm">${B_KIND[x.kind]||'причал'} · ${bE(x.area||'')} · ${fDn(x.d,'миль')} от ${G.pos?'лодки':'центра карты'}</div>
    <div>${x.no.length?x.no.map(r=>`<span class="tag no">не подходит: ${r}</span>`).join(''):(bt.len?'<span class="tag ok">ваша лодка помещается</span>':'')}${x.verified?'<span class="tag ok">проверено</span>':''}${x.instant?'<span class="tag">мгновенная бронь</span>':'<span class="tag">хозяин подтверждает</span>'}</div>
    <div class="bp"><b>${bRub(p.night)}</b> за ночь · ${q.n} ноч.: ${bRub(p.total)}${p.fee?' со сбором сервиса':''}</div>
-   <div class="row"><button class="primary" data-bo="${bE(x.id)}" style="flex:1">Подробнее и бронь</button><button data-bmap="${bE(x.id)}">На карте</button></div></div>`}).join('');
+   <div class="row"><button class="primary" data-bo="${bE(x.id)}" style="flex:1">Подробнее</button><button data-bmap="${bE(x.id)}">На карте</button></div></div>`}).join('');
   el.querySelectorAll('[data-bo]').forEach(b=>b.onclick=()=>berthCard(b.dataset.bo));
   el.querySelectorAll('[data-bmap]').forEach(b=>b.onclick=()=>{const x=D.find(y=>y.id===b.dataset.bmap);if(x)findShow(x.ll,x.name)})}
 async function berthCard(id){const D=await berthData(),x=D.find(y=>y.id===id);if(!x)return;BERTH.sel=id;const el=$('#bBody'),q=bQ(),bt=bBoat(),p=bPrice(x,q.n),no=bFit(x,bt);
@@ -3517,6 +3577,37 @@ $$('.panel .close').forEach(b=>b.classList.add('xbtn'));
  group('Трек и журнал',[['#sTrkGpx','Сохранить трек','файл GPX','gray','save'],['#sTrkImpBtn','Показать трек из файла','','gray','open'],['#sTrkImpX','Убрать чужой трек','','gray','x'],['#sTrack','Стереть трек','','red','trash'],['#sLog','Журнал ошибок','','gray','list']]);
  {const l=$('#lzPts')&&$('#lzPts').closest('label');if(l&&!l.closest('.grp')){const w=document.createElement('div');w.className='grp sw';l.before(w);w.appendChild(l)}}
  }catch(e){try{logE('lists '+e.message)}catch(_){}}
+})();
+
+/* ===== значок раздела в списке мест ===== */
+function fiT(c){const M={berth:['#30b0c7','M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 8v13M5 14a7 7 0 0 0 14 0M9 12h6'],fuel:['#ff9f0a','M5 20V5h8v15M4 20h10M7 9h4M13 11h2.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V9l-3-3'],slip:['#5e5ce6','M3 18l18-8M3 18h18M8 12l5-2 1 3'],
+  sight:['#bf5af2','M12 4l2.4 5 5.6.7-4.1 3.9 1 5.4-4.9-2.7L7.1 19l1-5.4L4 9.7 9.6 9z'],light:['#ffd60a','M10 21l1-12h2l1 12zM9 9h6M10 5h4v4h-4zM4 6l3 1M20 6l-3 1'],lz:['#a2845e','M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11'],
+  tour:['#30d158','M4 18c4 0 3-12 8-12s4 12 8 12']},m=M[c]||M.sight;
+ return `<span class="mtile" style="--c:${m[0]}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${m[1]}"/></svg></span>`}
+(function(){
+ const ease='cubic-bezier(.2,.8,.2,1)',calm=()=>{try{return matchMedia('(prefers-reduced-motion:reduce)').matches}catch(e){return false}};
+ // вкладки: выбранная подъезжает в середину, содержимое мягко появляется
+ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.capT button,#fCat button');if(!b)return;const st=b.parentNode;
+  try{if(st.scrollWidth>st.clientWidth+2)st.scrollTo({left:b.offsetLeft-(st.clientWidth-b.offsetWidth)/2,behavior:calm()?'auto':'smooth'})}catch(_){}
+  const c=st.nextElementSibling;if(c&&c.animate&&!calm())requestAnimationFrame(()=>{try{c.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:240,easing:ease})}catch(_){}})});
+ // «Капитану»: знаки — одной карточкой
+ try{const _cr=capRender;capRender=function(t){const r=_cr.apply(this,arguments);const b=$('#capB'),bs=b?[...b.querySelectorAll(':scope>.buoy')]:[];
+   if(bs.length){const g=document.createElement('div');g.className='cardL';b.insertBefore(g,bs[0]);bs.forEach(x=>g.appendChild(x))}return r};
+  const on=$('#p-cap [data-ct].on');if(on&&on.dataset.ct==='buoy')capRender('buoy')}catch(e){try{logE('rest cap '+e.message)}catch(_){}}
+ // справка: разделы списком, раскрываются по нажатию
+ try{const P=$('#p-help'),ps=P?[...P.querySelectorAll(':scope>p')].filter(p=>p.firstElementChild&&p.firstElementChild.tagName==='B'&&!p.classList.contains('note')):[];
+  if(ps.length){const IC=[[/погода/i,'#30b0c7','M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z'],[/переход/i,'#0a84ff','M4 18c4 0 3-12 8-12s4 12 8 12'],[/на воде/i,'#30d158','M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM15.5 8.5l-2 5-5 2 2-5z'],
+    [/интернет/i,'#ff9f0a','M12 4v11M7 11l5 5 5-5M5 20h14'],[/лоци/i,'#a2845e','M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11'],[/карт/i,'#5e5ce6','M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14'],
+    [/цвет/i,'#bf5af2','M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'],[/якор/i,'#30b0c7','M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 8v13M5 14a7 7 0 0 0 14 0M9 12h6'],[/мост|петербург/i,'#5e5ce6','M3 17h18M5 17V9M19 17V9M5 11c3 3 11 3 14 0'],
+    [/прибор|ais|аис/i,'#ff9f0a','M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4'],[/бронь|причал|мест/i,'#30d158','M12 21s-6-5.5-6-10a6 6 0 0 1 12 0c0 4.5-6 10-6 10zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4z']];
+   const chev='<svg class="mChev" viewBox="0 0 8 14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg>';
+   const g=document.createElement('div');g.className='mgrp';P.insertBefore(g,ps[0]);
+   ps.forEach((p,i)=>{const bEl=p.firstElementChild,ttl=bEl.textContent.replace(/^\d+\.\s*/,'').replace(/[.:]\s*$/,'').trim();bEl.remove();const ic=IC.find(x=>x[0].test(ttl))||[0,'#8e8e93','M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v6M12 7.5v.01'];
+    const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-expanded','false');
+    btn.innerHTML=`<span class="mtile" style="--c:${ic[1]}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${ic[2]}"/></svg></span><span class="mT"><b></b></span>${chev}`;btn.querySelector('b').textContent=ttl;
+    const body=document.createElement('div');body.className='hBody';const inner=document.createElement('div');p.innerHTML=p.innerHTML.trim();inner.appendChild(p);body.appendChild(inner);
+    btn.onclick=()=>{const o=!btn.classList.contains('open');g.querySelectorAll(':scope>button.open').forEach(x=>{x.classList.remove('open');x.setAttribute('aria-expanded','false')});btn.classList.toggle('open',o);btn.setAttribute('aria-expanded',o?'true':'false')};
+    g.appendChild(btn);g.appendChild(body)})}}catch(e){try{logE('rest help '+e.message)}catch(_){}}
 })();
 </script>
 </body>
