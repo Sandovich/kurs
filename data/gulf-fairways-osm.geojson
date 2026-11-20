@@ -1,0 +1,1260 @@
+{
+ "type": "FeatureCollection",
+ "name": "Невская губа — выборка открытых объектов, не для навигации",
+ "attribution": "© OpenStreetMap contributors, ODbL 1.0, https://www.openstreetmap.org/copyright",
+ "features": [
+  {
+   "type": "Feature",
+   "id": "way/589972668",
+   "properties": {
+    "kind": "fairway",
+    "name": "Kronshtadtskiy Korabelniy Fairway",
+    "osm_url": "https://www.openstreetmap.org/way/589972668",
+    "osm_last_edit": "2025-03-12T06:06:57Z",
+    "tags": {
+     "area": "yes",
+     "boundary": "protected_area",
+     "heritage": "1",
+     "heritage:operator": "whc",
+     "ref:whc": "540-035a",
+     "seamark:name": "Kronshtadtskiy Korabelniy Fairway",
+     "seamark:national_name": "Кронштадтский корабельный фарватер",
+     "seamark:type": "fairway",
+     "source:whc": "https://whc.unesco.org/document/128572",
+     "whc:inscription_date": "1990",
+     "wikidata": "Q4303374"
+    }
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       29.4950167,
+       60.0242667
+      ],
+      [
+       29.4950167,
+       60.0256833
+      ],
+      [
+       29.5506742,
+       60.0162747
+      ],
+      [
+       29.5797728,
+       60.0113547
+      ],
+      [
+       29.6234999,
+       60.0039599
+      ],
+      [
+       29.695405,
+       59.9917962
+      ],
+      [
+       29.70765,
+       59.9897667
+      ],
+      [
+       29.7115503,
+       59.9890827
+      ],
+      [
+       29.7442333,
+       59.98355
+      ],
+      [
+       29.7440667,
+       59.9832833
+      ],
+      [
+       29.7609782,
+       59.9805668
+      ],
+      [
+       29.7933167,
+       59.9642167
+      ],
+      [
+       29.7990833,
+       59.9625833
+      ],
+      [
+       29.7905467,
+       59.9643158
+      ],
+      [
+       29.7886,
+       59.9654167
+      ],
+      [
+       29.7874667,
+       59.966
+      ],
+      [
+       29.7599166,
+       59.9796986
+      ],
+      [
+       29.7435667,
+       59.9825
+      ],
+      [
+       29.73315,
+       59.9840167
+      ],
+      [
+       29.70585,
+       59.9886667
+      ],
+      [
+       29.7049177,
+       59.9888213
+      ],
+      [
+       29.6945515,
+       59.9905582
+      ],
+      [
+       29.6227036,
+       60.0026998
+      ],
+      [
+       29.5788046,
+       60.0101161
+      ],
+      [
+       29.5498057,
+       60.0150143
+      ],
+      [
+       29.4950167,
+       60.0242667
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/590202107",
+   "properties": {
+    "kind": "fairway",
+    "name": "Podkhodnoy Kanal to multifunctional sea transshipment complex Bronka",
+    "osm_url": "https://www.openstreetmap.org/way/590202107",
+    "osm_last_edit": "2020-05-29T18:33:19Z",
+    "tags": {
+     "area": "yes",
+     "seamark:name": "Podkhodnoy Kanal to multifunctional sea transshipment complex Bronka",
+     "seamark:national_name": "Подходной канал ММПК \"Бронка\"",
+     "seamark:type": "fairway"
+    }
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       29.7246002,
+       59.9460497
+      ],
+      [
+       29.7434833,
+       59.9642167
+      ],
+      [
+       29.7445333,
+       59.9655333
+      ],
+      [
+       29.7450386,
+       59.9669218
+      ],
+      [
+       29.7449667,
+       59.9683333
+      ],
+      [
+       29.74435,
+       59.9697167
+      ],
+      [
+       29.7342181,
+       59.9827167
+      ],
+      [
+       29.7327375,
+       59.9833675
+      ],
+      [
+       29.73315,
+       59.9840167
+      ],
+      [
+       29.7435667,
+       59.9825
+      ],
+      [
+       29.7430167,
+       59.9816667
+      ],
+      [
+       29.7417167,
+       59.9812333
+      ],
+      [
+       29.7408333,
+       59.9805833
+      ],
+      [
+       29.7404833,
+       59.9798167
+      ],
+      [
+       29.7456671,
+       59.9720007
+      ],
+      [
+       29.747546,
+       59.9702336
+      ],
+      [
+       29.7483167,
+       59.9685333
+      ],
+      [
+       29.7483833,
+       59.9667833
+      ],
+      [
+       29.7477667,
+       59.9650667
+      ],
+      [
+       29.74645,
+       59.9634333
+      ],
+      [
+       29.7441,
+       59.9619167
+      ],
+      [
+       29.7270333,
+       59.9454833
+      ],
+      [
+       29.7246002,
+       59.9460497
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/590202108",
+   "properties": {
+    "kind": "fairway",
+    "name": "Lomonosovskiy Kanal",
+    "osm_url": "https://www.openstreetmap.org/way/590202108",
+    "osm_last_edit": "2018-05-24T19:51:21Z",
+    "tags": {
+     "area": "yes",
+     "seamark:name": "Lomonosovskiy Kanal",
+     "seamark:national_name": "Ломоносовский канал",
+     "seamark:type": "fairway"
+    }
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       29.7815482,
+       59.9309284
+      ],
+      [
+       29.7807917,
+       59.9309676
+      ],
+      [
+       29.7802988,
+       59.9309931
+      ],
+      [
+       29.7874667,
+       59.966
+      ],
+      [
+       29.7886,
+       59.9654167
+      ],
+      [
+       29.7815482,
+       59.9309284
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/590810129",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/590810129",
+    "osm_last_edit": "2018-05-26T19:38:48Z",
+    "tags": {
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "108.6",
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7607774,
+      59.9800004
+     ],
+     [
+      29.7770269,
+      59.9771234
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/590820863",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/590820863",
+    "osm_last_edit": "2018-08-04T19:58:55Z",
+    "tags": {
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "315.1",
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7607774,
+      59.9800004
+     ],
+     [
+      29.7601628,
+      59.9802755
+     ],
+     [
+      29.7574834,
+      59.9816207
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/590861159",
+   "properties": {
+    "kind": "recommended_track",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/590861159",
+    "osm_last_edit": "2018-05-29T23:42:55Z",
+    "tags": {
+     "seamark:recommended_track:orientation": "5.9",
+     "seamark:type": "recommended_track"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7881589,
+      59.9662376
+     ],
+     [
+      29.7817833,
+      59.9354667
+     ],
+     [
+      29.7807917,
+      59.9309676
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/590861169",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/590861169",
+    "osm_last_edit": "2018-05-24T19:51:18Z",
+    "tags": {
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "315.1",
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7574834,
+      59.9816207
+     ],
+     [
+      29.7557331,
+      59.9824994
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/590861172",
+   "properties": {
+    "kind": "recommended_track",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/590861172",
+    "osm_last_edit": "2020-05-29T18:33:19Z",
+    "tags": {
+     "seamark:recommended_track:orientation": "108.6",
+     "seamark:type": "recommended_track"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.4950167,
+      60.0249667
+     ],
+     [
+      29.7357705,
+      59.9842341
+     ],
+     [
+      29.7362644,
+      59.9841505
+     ],
+     [
+      29.7607774,
+      59.9800004
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/590887405",
+   "properties": {
+    "kind": "fairway",
+    "name": "Морской канал",
+    "osm_url": "https://www.openstreetmap.org/way/590887405",
+    "osm_last_edit": "2025-08-23T20:10:35Z",
+    "tags": {
+     "area": "yes",
+     "boundary": "protected_area",
+     "heritage": "1",
+     "heritage:operator": "whc",
+     "historic": "fairway",
+     "name": "Морской канал",
+     "name:de": "Meereskanal",
+     "name:en": "Sea Canal",
+     "name:ru": "Морской канал",
+     "ref:whc": "540-035a",
+     "seamark:name": "Sankt-Peterburgskiy Morskoy Kanal",
+     "seamark:national_name": "Санкт-Петербургский Морской Канал",
+     "seamark:type": "fairway",
+     "source:geometry": "Bylaws of of the sea port “Bolshoy port St.-Petersburg”",
+     "source:whc": "https://whc.unesco.org/document/128572",
+     "whc:inscription_date": "1990",
+     "wikidata": "Q4303374"
+    }
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       30.0926551,
+       59.9024888
+      ],
+      [
+       30.0925881,
+       59.9024054
+      ],
+      [
+       30.0578475,
+       59.9094208
+      ],
+      [
+       30.0564695,
+       59.909699
+      ],
+      [
+       30.0119955,
+       59.9186777
+      ],
+      [
+       30.0101488,
+       59.9190505
+      ],
+      [
+       30.00758,
+       59.919569
+      ],
+      [
+       29.9297833,
+       59.93545
+      ],
+      [
+       29.7937167,
+       59.9628667
+      ],
+      [
+       29.7905467,
+       59.9643158
+      ],
+      [
+       29.7990833,
+       59.9625833
+      ],
+      [
+       29.87515,
+       59.9472333
+      ],
+      [
+       29.8765928,
+       59.9469414
+      ],
+      [
+       29.8780333,
+       59.94665
+      ],
+      [
+       29.9961142,
+       59.9228512
+      ],
+      [
+       30.0095595,
+       59.9201373
+      ],
+      [
+       30.013975,
+       59.919246
+      ],
+      [
+       30.0566796,
+       59.9106247
+      ],
+      [
+       30.0580576,
+       59.9103465
+      ],
+      [
+       30.0932572,
+       59.9032386
+      ],
+      [
+       30.0931902,
+       59.9031551
+      ],
+      [
+       30.173981,
+       59.8868351
+      ],
+      [
+       30.1826961,
+       59.8864134
+      ],
+      [
+       30.1937279,
+       59.8876765
+      ],
+      [
+       30.2030942,
+       59.8897175
+      ],
+      [
+       30.2064872,
+       59.8911358
+      ],
+      [
+       30.2148429,
+       59.8969601
+      ],
+      [
+       30.2313942,
+       59.9094052
+      ],
+      [
+       30.2340215,
+       59.911789
+      ],
+      [
+       30.2356987,
+       59.9130497
+      ],
+      [
+       30.2386343,
+       59.9152563
+      ],
+      [
+       30.2529818,
+       59.9158106
+      ],
+      [
+       30.261383,
+       59.9173714
+      ],
+      [
+       30.2647219,
+       59.9190436
+      ],
+      [
+       30.2683641,
+       59.9227161
+      ],
+      [
+       30.271768,
+       59.9288312
+      ],
+      [
+       30.2722252,
+       59.9287673
+      ],
+      [
+       30.2731494,
+       59.9286382
+      ],
+      [
+       30.2697096,
+       59.9224584
+      ],
+      [
+       30.2659015,
+       59.9186186
+      ],
+      [
+       30.2621749,
+       59.9167522
+      ],
+      [
+       30.2532918,
+       59.9151017
+      ],
+      [
+       30.2394394,
+       59.9145666
+      ],
+      [
+       30.2352482,
+       59.9114161
+      ],
+      [
+       30.2326204,
+       59.9090318
+      ],
+      [
+       30.2160349,
+       59.896561
+      ],
+      [
+       30.2075436,
+       59.890642
+      ],
+      [
+       30.2038537,
+       59.8890995
+      ],
+      [
+       30.1941765,
+       59.8869907
+      ],
+      [
+       30.182789,
+       59.885687
+      ],
+      [
+       30.1736377,
+       59.8861297
+      ],
+      [
+       30.16485,
+       59.88795
+      ],
+      [
+       30.1560165,
+       59.8897503
+      ],
+      [
+       30.0926551,
+       59.9024888
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/591256997",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/591256997",
+    "osm_last_edit": "2018-05-26T19:38:37Z",
+    "tags": {
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "108.6",
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7879099,
+      59.9752802
+     ],
+     [
+      29.8567119,
+      59.9636254
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/591256998",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/591256998",
+    "osm_last_edit": "2018-05-26T19:38:37Z",
+    "tags": {
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "108.6",
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7770269,
+      59.9771234
+     ],
+     [
+      29.7879099,
+      59.9752802
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/591370701",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/591370701",
+    "osm_last_edit": "2021-03-28T07:20:48Z",
+    "tags": {
+     "name:de": "Richtfeuerlinie Kronstadt",
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "91.3",
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7482334,
+      59.9841226
+     ],
+     [
+      29.7616667,
+      59.9833333
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/591370702",
+   "properties": {
+    "kind": "recommended_track",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/591370702",
+    "osm_last_edit": "2020-05-29T18:33:19Z",
+    "tags": {
+     "seamark:navigation_line:orientation": "91.3",
+     "seamark:type": "recommended_track"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7080667,
+      59.9845333
+     ],
+     [
+      29.7357705,
+      59.9842341
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/591370703",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/591370703",
+    "osm_last_edit": "2018-05-27T14:06:50Z",
+    "tags": {
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "5.9",
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7881589,
+      59.9662376
+     ],
+     [
+      29.7892418,
+      59.9721022
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/591888269",
+   "properties": {
+    "kind": "recommended_track",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/591888269",
+    "osm_last_edit": "2018-05-29T19:21:57Z",
+    "tags": {
+     "seamark:national_name": "Фарватер N7",
+     "seamark:type": "recommended_track"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.8117,
+      59.9796667
+     ],
+     [
+      29.7881589,
+      59.9662376
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/591888275",
+   "properties": {
+    "kind": "recommended_track",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/591888275",
+    "osm_last_edit": "2020-05-31T15:16:45Z",
+    "tags": {
+     "seamark:recommended_track:orientation": "111.9",
+     "seamark:type": "recommended_track"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.9018656,
+      59.9413847
+     ],
+     [
+      29.8768532,
+      59.94646
+     ],
+     [
+      29.81405,
+      59.9592
+     ],
+     [
+      29.7943333,
+      59.9631333
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/809654241",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/809654241",
+    "osm_last_edit": "2022-01-12T22:52:37Z",
+    "tags": {
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "111.9",
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7561333,
+      59.9749333
+     ],
+     [
+      29.7476762,
+      59.9668127
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/809654242",
+   "properties": {
+    "kind": "recommended_track",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/809654242",
+    "osm_last_edit": "2020-05-29T18:33:19Z",
+    "tags": {
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "91.3",
+     "seamark:type": "recommended_track"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7214667,
+      59.9416333
+     ],
+     [
+      29.7476762,
+      59.9668127
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/809654243",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/809654243",
+    "osm_last_edit": "2020-05-29T18:33:19Z",
+    "tags": {
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "111.9",
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.75435,
+      59.9567333
+     ],
+     [
+      29.7476762,
+      59.9668127
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/809654244",
+   "properties": {
+    "kind": "recommended_track",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/809654244",
+    "osm_last_edit": "2020-05-29T18:33:19Z",
+    "tags": {
+     "seamark:navigation_line:orientation": "91.3",
+     "seamark:type": "recommended_track"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7476762,
+      59.9668127
+     ],
+     [
+      29.7362644,
+      59.9841505
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/809654245",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/809654245",
+    "osm_last_edit": "2020-05-29T18:33:19Z",
+    "tags": {
+     "seamark:navigation_line:category": "leading",
+     "seamark:navigation_line:orientation": "91.3",
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7357705,
+      59.9842341
+     ],
+     [
+      29.7482334,
+      59.9841226
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/809980447",
+   "properties": {
+    "kind": "recommended_track",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/809980447",
+    "osm_last_edit": "2020-05-31T15:16:45Z",
+    "tags": {
+     "seamark:recommended_track:orientation": "315.1",
+     "seamark:type": "recommended_track"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7607774,
+      59.9800004
+     ],
+     [
+      29.7881589,
+      59.9662376
+     ],
+     [
+      29.7934447,
+      59.9635801
+     ],
+     [
+      29.7943333,
+      59.9631333
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/1020688436",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/1020688436",
+    "osm_last_edit": "2022-01-12T22:52:37Z",
+    "tags": {
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7656604,
+      59.9688243
+     ],
+     [
+      29.7948358,
+      59.9630148
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/1020688437",
+   "properties": {
+    "kind": "navigation_line",
+    "name": "",
+    "osm_url": "https://www.openstreetmap.org/way/1020688437",
+    "osm_last_edit": "2022-01-12T22:52:37Z",
+    "tags": {
+     "seamark:type": "navigation_line"
+    }
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      29.7309685,
+      59.975731
+     ],
+     [
+      29.7656604,
+      59.9688243
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "way/589949081",
+   "properties": {
+    "kind": "fairway",
+    "name": "Korabelniy channel",
+    "osm_url": "https://www.openstreetmap.org/way/589949081",
+    "osm_last_edit": "2020-06-09T19:27:27Z",
+    "tags": {
+     "area": "yes",
+     "seamark:name": "Korabelniy channel",
+     "seamark:national_name": "Корабельный канал",
+     "seamark:type": "fairway"
+    }
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       30.1191333,
+       59.9419167
+      ],
+      [
+       30.1372,
+       59.9375833
+      ],
+      [
+       30.191229,
+       59.9246193
+      ],
+      [
+       30.20955,
+       59.9203167
+      ],
+      [
+       30.2108658,
+       59.9200054
+      ],
+      [
+       30.2281254,
+       59.9158139
+      ],
+      [
+       30.2298206,
+       59.9155127
+      ],
+      [
+       30.2370167,
+       59.91665
+      ],
+      [
+       30.2423,
+       59.9172
+      ],
+      [
+       30.2459,
+       59.9186
+      ],
+      [
+       30.24035,
+       59.9211
+      ],
+      [
+       30.2360862,
+       59.9230654
+      ],
+      [
+       30.2378243,
+       59.9235547
+      ],
+      [
+       30.2420167,
+       59.92165
+      ],
+      [
+       30.2481333,
+       59.9188667
+      ],
+      [
+       30.2506384,
+       59.9178015
+      ],
+      [
+       30.2291286,
+       59.9147679
+      ],
+      [
+       30.2107451,
+       59.9192176
+      ],
+      [
+       30.2089167,
+       59.9196667
+      ],
+      [
+       30.1904994,
+       59.9240521
+      ],
+      [
+       30.1366,
+       59.93695
+      ],
+      [
+       30.1185333,
+       59.94125
+      ],
+      [
+       30.10845,
+       59.9436667
+      ],
+      [
+       30.11015,
+       59.9440667
+      ],
+      [
+       30.1191333,
+       59.9419167
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

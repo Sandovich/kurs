@@ -767,6 +767,32 @@ html body .panel .mgrp>button.open+.hBody{grid-template-rows:1fr}
 html body .panel .mgrp>button .mChev{transition:transform .25s}
 html body .panel .mgrp>button.open .mChev{transform:rotate(90deg)}
 @media (prefers-reduced-motion:reduce){html body .panel .mgrp>.hBody{transition:none}}
+#timeLabel .wxMeta{font-size:11px;color:var(--muted);line-height:1.3;margin-top:2px}
+#p-layers details.layerGroup{margin:8px 0;padding:0 12px 0;background:var(--panel2);border:1px solid var(--line);border-radius:var(--r)}
+#p-layers .layerGroup>summary{min-height:46px;display:flex;align-items:center;font-weight:650;cursor:pointer}
+#p-layers .layerGroup[open]{padding-bottom:10px}
+@media(prefers-reduced-motion:reduce){
+  html body #timebar,html body #timebar *,html body #tbBtn,html body .panel.wStash,html body .stashTab{transition:none!important;animation:none!important}
+}
+body.rail #navd.unified{left:calc(env(safe-area-inset-left,0px) + 84px);top:calc(env(safe-area-inset-top,0px) + 8px)!important}
+#navd.unified{max-height:55dvh;overflow:auto;overscroll-behavior:contain}
+#navd.unified .nt #nName{flex:1;min-width:0}
+#navFold svg{width:16px;height:16px}
+@media (hover:hover){html body #navd .nt .xbtn:hover{background:rgba(127,127,127,.26)!important}}
+#navd.unified .ng{grid-template-columns:repeat(4,minmax(0,1fr))}
+#navd.unified .ng b{font-size:clamp(15px,4vw,19px);white-space:normal}
+#navd.unified:not(.compact) .navSpeed,#navd.compact .ng>div:nth-last-child(-n+2),
+#navd.compact #hud,#navd.compact #nRules>.rc:not(.bad),#navd.compact #nRules .rn{display:none!important}
+#navAlerts{display:none}
+#navd.compact #navAlerts:not(:empty){display:inline;color:var(--warn);font-size:12px}
+#navd.compact .ng{grid-template-columns:repeat(3,minmax(0,1fr))}
+html body #navd.unified #hud{position:static!important;inset:auto!important;max-width:100%!important;width:auto!important;margin:7px 0 0!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;padding:7px 0 0;flex-wrap:wrap}
+#navd #hud .hgrip{display:none}
+#cu .cuBot{display:grid;grid-template-columns:1fr auto;align-items:end}
+#cu #cuMe{grid-column:1;grid-row:2;justify-self:start;width:auto;white-space:nowrap}
+#cu #cuNote{grid-column:1/-1;grid-row:1;justify-self:start;max-width:100%;line-height:1.35;overflow-wrap:anywhere}
+#cu .cuZ{grid-column:2;grid-row:2}
+@media(max-width:520px){body > #hud{box-sizing:border-box;width:auto;min-width:0}#hud .hgrip{display:none}}
 </style>
 </head>
 <body>
@@ -811,8 +837,9 @@ html body .panel .mgrp>button.open .mChev{transform:rotate(90deg)}
   <div class="cuBot"><button id="cuMe" hidden>⊙ К лодке</button><span id="cuNote"></span><span class="cuZ"><button id="cuZm" aria-label="Мельче">−</button><button id="cuZp" aria-label="Крупнее">＋</button></span></div>
 </div>
 <div id="navd" hidden>
-  <div class="nt"><span id="nName">—</span><button id="nStop" title="Закончить ведение">✕</button></div>
+  <div class="nt"><span id="nName">—</span><span id="navAlerts"></span><button id="navFold" class="xbtn" hidden type="button" aria-label="Развернуть панель ведения" aria-expanded="false"></button><button id="nStop" aria-label="Закончить ведение" title="Закончить ведение">✕</button></div>
   <div class="ng">
+    <div class="navSpeed" hidden><b id="nSpeed">—</b><span>скорость</span></div>
     <div><b id="nBrg">—</b><span>пеленг</span></div>
     <div><b id="nDtw">—</b><span>миль до</span></div>
     <div><b id="nXte">—</b><span>уход с линии</span></div>
@@ -837,25 +864,33 @@ html body .panel .mgrp>button.open .mChev{transform:rotate(90deg)}
   </select>
   <button id="play" aria-label="Проиграть">▶</button>
   <input type="range" id="time" min="0" max="0" value="0" aria-label="Время прогноза">
-  <div id="tbCap"><div><b id="cSog">—</b><span>уз, скорость</span></div><div><b id="cCog">—</b><span>курс</span></div><div><b id="cWind">—</b><span>ветер здесь</span></div></div><div id="timeLabel"><b id="tl">Прогноз загружается…</b><span style="display:flex;gap:6px;align-items:center;flex:none">0<span id="legend"></span><span id="legendU">40 уз</span></span></div>
+  <div id="tbCap"><div><b id="cSog">—</b><span>уз, скорость</span></div><div><b id="cCog">—</b><span>курс</span></div><div><b id="cWind">—</b><span>ветер здесь</span></div></div><div id="timeLabel"><div><b id="tl">Прогноз загружается…</b><div class="wxMeta">МСК<span id="wxAge"></span></div></div><span style="display:flex;gap:6px;align-items:center;flex:none">0<span id="legend"></span><span id="legendU">40 уз</span></span></div>
 </footer>
 
 <section class="panel" id="p-layers" hidden>
   <button class="close">✕</button>
   <h2>Слои карты</h2>
+  <details class="layerGroup"><summary>Основа карты</summary>
   <label><input type="radio" name="base" value="kurs"> <b>Карта «Курса»</b>: Нева, Ладога, Финский залив. Работает без интернета после скачивания</label>
   <div class="row"><button class="primary" id="mapDl">Скачать карту района (≈70 МБ)</button></div><p class="small muted" id="mapSt"></p>
   <label><input type="radio" name="base" value="osm"> OpenStreetMap: весь мир, только с интернетом</label>
   <label><input type="radio" name="base" value="yandex"> Яндекс Карты (нужен ключ в «Лодка» → «Ключи»)</label>
   <label><input type="radio" name="base" value="topo"> Рельеф берега (OpenTopoMap)</label>
-  <hr>
+  </details>
+  <details class="layerGroup" open><summary>Судоходство</summary>
   <label><input type="checkbox" id="chkSea"> Буи, маяки, огни (OpenSeaMap)</label>
-  <label><input type="checkbox" id="chkObs"> Ветер на станциях — измерен сейчас</label>
-  <label><input type="checkbox" id="chkWind"> Ветер на карте</label>
+  <label><input type="checkbox" id="chkFairways" aria-describedby="fairwayNote"> Фарватеры у Кронштадта (OSM)</label>
+  <p class="small muted" id="fairwayNote">Выборка по Невской губе. Контур — граница фарватера, штрихи — рекомендованный путь, точки — навигационная линия. Глубины не проверены.</p>
+  <div class="row"><button id="showFairways" type="button">Показать район на карте</button></div>
+  <span class="small muted" id="fairwayStatus" role="status"></span>
   <label><input type="checkbox" id="chkTrack"> Мой трек</label>
   <label class="small">Цвет трека <select id="selTrk"><option value="#ff8a3d">оранжевый</option><option value="#ffd23f">жёлтый</option><option value="#3fb6ff">голубой</option><option value="#ffffff">белый</option><option value="#ff3bd4">малиновый</option><option value="#2ee59d">зелёный</option></select></label>
-  <hr>
-  <h3 style="margin:6px 0">Приборы лодки (Signal K)</h3>
+  </details>
+  <details class="layerGroup"><summary>Погода</summary>
+  <label><input type="checkbox" id="chkObs"> Ветер на станциях — измерен сейчас</label>
+  <label><input type="checkbox" id="chkWind"> Ветер на карте</label>
+  </details>
+  <details class="layerGroup"><summary>Приборы лодки (Signal K)</summary>
   <label><input type="checkbox" id="chkSk"> Брать данные с приборов: GPS, эхолот, ветер, лаг, свой AIS</label>
   <div class="row"><input id="skUrl" placeholder="адрес сервера на лодке, напр. 192.168.1.10:3000 (demo — проверка)" style="flex:1;min-width:0"></div>
   <p class="small muted" id="skSt">Сервер Signal K стоит на бортовом компьютере (OpenPlotter, Raspberry Pi, Victron Cerbo). Телефон должен быть в Wi-Fi лодки.</p>
@@ -879,19 +914,21 @@ html body .panel .mgrp>button.open .mChev{transform:rotate(90deg)}
     </ul>
     <p class="small muted">Если чего-то нет — нажмите «Что пришло с приборов»: «Курс» покажет, какой прибор не виден и что проверить.</p>
   </details>
-  <hr>
-  <h3 style="margin:6px 0">Мои карты (атлас и лоция экипажа)</h3>
+  </details>
+  <details class="layerGroup"><summary>Мои карты и лоция экипажа</summary>
   <p class="small muted" id="mcStat">Листы атласа, привязанные к карте: глубины, изобаты, буи и фарватеры поверх карты, без интернета. Файл хранится только на этом устройстве.</p>
   <div id="mcList"></div>
   <label id="mcDepRow" hidden><input type="checkbox" id="mcDep"> Глубины цифрами (красные — мельче осадки)</label>
   <div class="row" id="mcOpRow" hidden><label class="small" style="flex:1">Прозрачность <input type="range" id="mcOp" min="30" max="100" step="5" style="width:100%"></label></div>
   <div class="row"><button id="mcLoad">Загрузить файл карт</button><input type="file" id="mcFile" accept=".json,application/json" multiple hidden><button id="mcDel" hidden>Удалить</button></div>
   <p class="note">Глубины — только на «Моих картах» из атласа экипажа; «Курс» предупреждает «Мель по курсу», если впереди отметка мельче вашей осадки с запасом 0,3 м; линии равных глубин в разработке. Не для навигации: на борту штатный плоттер или бумажная карта.</p>
+  </details>
 </section>
 
 <section class="panel" id="p-point" hidden>
   <button class="close">✕</button>
   <h2><span id="pointTitle">Прогноз в точке</span></h2>
+  <div class="mgrp"><button id="ptGo"><span class="mtile" style="--c:#0a84ff"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l11 7-11 7z"/></svg></span><span class="mT"><b>Идти сюда</b><small>пеленг и расстояние до этой точки</small></span><svg class="mChev" viewBox="0 0 8 14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></button></div>
   <div id="pointBody"></div>
 </section>
 
@@ -979,6 +1016,7 @@ html body .panel .mgrp>button.open .mChev{transform:rotate(90deg)}
   <label><input type="checkbox" id="sNight"> Ночной режим (красный, не слепит)</label>
   <label><input type="checkbox" id="sLow"> Экономить интернет (спутниковый, Starlink, роуминг): карта из памяти телефона, реже обновления</label>
   <label><input type="checkbox" id="sAutoN"> Ночной режим сам по солнцу (закат / рассвет)</label>
+  <label><input type="checkbox" id="sHaptic"> <span id="hapticLabel">Лёгкая вибрация кнопок</span></label>
   <label><input type="checkbox" id="sSaver"> Экономия батареи (без анимации, GPS реже)</label>
   <details><summary>Ключи сервисов</summary>
     <label class="small" style="display:block">Яндекс Tiles API<br><input id="sYa" style="width:100%" placeholder="developer.tech.yandex.ru → Подключить API → Tiles API"></label>
@@ -1128,7 +1166,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.68';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.74';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:false,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1243,7 +1281,7 @@ function buildGrid(raw){const{N,times,spd,dir,gst}=raw,T=times.length,K=(raw.Nx|
     for(let k=0;k<K;k++){const s=spd[k][t],d=dir[k][t];if(s==null||d==null){u[k]=v[k]=NaN}else{u[k]=-s*Math.sin(rad(d));v[k]=-s*Math.cos(rad(d))}g[k]=gst[k][t]??NaN}
     U.push(u);V.push(v);G.push(g)}
   return{...raw,U,V,G}}
-function freshChip(){const g=W.g;if(!g)return;const age=Date.now()-g.fetched;chip('wx',`Прогноз ${MODEL_NAME[g.model]}: ${ago(g.fetched)}`,age>6*3600e3?'warn':'')}
+function freshChip(){const g=W.g;if(!g)return;const age=Date.now()-g.fetched;const stamp=ago(g.fetched);$('#wxAge').textContent=' · прогноз '+stamp;chip('wx',age>6*3600e3?`Прогноз ${MODEL_NAME[g.model]}: ${stamp}`:null,'warn')}
 // район плавания: ветер грузим одной сеткой на всю акваторию (Финский залив — Ладога) и держим час.
 // Раньше сетка 9×9 бралась только по видимой части: при отдалении ветер был «маленьким квадратом», а каждое движение карты = 81 запрос (лимит Open-Meteo, ответ 429).
 // запасной источник прогноза — Финский метеоинститут (HARMONIE, ~2,5 км, открытые данные CC BY 4.0): не зависим от одного Open-Meteo
@@ -1339,18 +1377,91 @@ $('#model').value=S.model;$('#model').onchange=e=>{S.model=e.target.value;saveS(
 
 /* раскладка верхних блоков: HUD → панель ведения → плашки, без наложений */
 function layoutTop(){const base=$('#top').getBoundingClientRect().bottom+6;let y=base;
-  for(const id of ['#hud','#navd']){const e=$(id);if(e.hidden)continue;e.style.top=y+'px';y=e.getBoundingClientRect().bottom+6}
+  for(const id of ['#hud','#navd']){const e=$(id);if(e.hidden||e.parentElement.id==='navd')continue;e.style.top=y+'px';y=e.getBoundingClientRect().bottom+6}
   $('#status').style.top=(y===base?base:y)+'px'}
 new MutationObserver(layoutTop).observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden']});addEventListener('resize',layoutTop);setTimeout(layoutTop,50);
 /* ===== панели ===== */
 $$('.panel').forEach(p=>{const c=p.querySelector(':scope > .close'),h=p.querySelector('h2');if(c&&h)h.appendChild(c)});
 let openName=null;
-function openPanel(n){if(n==='spb')setTimeout(spbUI,0);$$('.panel').forEach(p=>p.hidden=p.id!=='p-'+n);openName=n;$$('#top [data-panel]').forEach(b=>b.classList.toggle('on',b.dataset.panel===n));if(n==='ais')aisList()}
-function closePanel(){$$('.panel').forEach(p=>p.hidden=true);openName=null;$$('#top [data-panel]').forEach(b=>b.classList.remove('on'));if(ptMarker){map.removeLayer(ptMarker);ptMarker=null}anchorBtn()}
-$$('#top [data-panel]').forEach(b=>b.onclick=()=>openName===b.dataset.panel?closePanel():openPanel(b.dataset.panel));
-$$('.panel .close').forEach(b=>b.onclick=closePanel);
+let panelExit;
+function cancelPanelExit(){
+  if(panelExit){panelExit.cancel();panelExit=null}
+}
+function dismissPanel(){
+  const panel=document.querySelector('.panel:not([hidden])');
+  if(!panel || !panel.animate || S.saver || matchMedia('(prefers-reduced-motion: reduce)').matches){closePanel();return}
+  if(panelExit)return;
+  panelExit=panel.animate([{opacity:1,translate:'0 0'},{opacity:0,translate:'0 8px'}],{duration:160,easing:'ease-in',fill:'forwards'});
+  panelExit.onfinish=()=>{closePanel()};
+}
+function openPanel(n){cancelPanelExit();if(n==='spb')setTimeout(spbUI,0);$$('.panel').forEach(p=>p.hidden=p.id!=='p-'+n);openName=n;$$('#top [data-panel]').forEach(b=>b.classList.toggle('on',b.dataset.panel===n));if(n==='ais')aisList()}
+function closePanel(){cancelPanelExit();$$('.panel').forEach(p=>p.hidden=true);openName=null;$$('#top [data-panel]').forEach(b=>b.classList.remove('on'));if(ptMarker){map.removeLayer(ptMarker);ptMarker=null}anchorBtn()}
+$$('#top [data-panel]').forEach(b=>b.onclick=()=>openName===b.dataset.panel?dismissPanel():openPanel(b.dataset.panel));
+$$('.panel .close').forEach(b=>b.onclick=dismissPanel);
 $$('input[name=base]').forEach(r=>r.onchange=()=>setBase(r.value));
 $('#chkSea').onchange=e=>setSea(e.target.checked);
+const fairwayTypes = {
+  fairway: {label:'Границы фарватера', style:{color:'#884897',weight:2,fillOpacity:0.09}},
+  recommended_track: {label:'Рекомендованный путь', style:{color:'#853469',weight:3,dashArray:'9 6'}},
+  navigation_line: {label:'Навигационная линия', style:{color:'#50497d',weight:2,dashArray:'2 5'}}
+};
+let fairwayLayer, fairwayRequest, fairwayChange = 0;
+async function setFairways(on, focus=false) {
+  const change = ++fairwayChange;
+  const status = $('#fairwayStatus');
+  $('#chkFairways').checked = on;
+  S.fairways = on;
+  saveS();
+  status.textContent = '';
+  if (!on) {
+    if (fairwayLayer) map.removeLayer(fairwayLayer);
+    return;
+  }
+  try {
+    if (!fairwayLayer) {
+      status.textContent = 'Загружаем объекты…';
+      fairwayRequest ??= fetch('data/gulf-fairways-osm.geojson').then(response => {
+        if (!response.ok) throw new Error('Нет данных');
+        return response.json();
+      }).then(data => L.geoJSON(data, {
+        attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+        style:feature => fairwayTypes[feature.properties.kind].style,
+        onEachFeature(feature, layer) {
+          const {name, kind, osm_url} = feature.properties;
+          const box = document.createElement('div');
+          const title = document.createElement('b');
+          title.textContent = name || fairwayTypes[kind].label;
+          box.append(title, document.createElement('br'));
+          if (name) box.append(fairwayTypes[kind].label, document.createElement('br'));
+          const link = document.createElement('a');
+          link.href = osm_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = 'Источник: OpenStreetMap';
+          box.append(link);
+          layer.bindPopup(box);
+        }
+      }));
+      fairwayLayer = await fairwayRequest;
+    }
+    if (change !== fairwayChange) return;
+    fairwayLayer.addTo(map);
+    status.textContent = 'Объектов на карте: ' + fairwayLayer.getLayers().length;
+    if (focus) {
+      closePanel();
+      // Первый вид — стык Морского канала и Корабельного фарватера у Кронштадта.
+      map.setView([59.964,29.795],13);
+    }
+  } catch {
+    if (change !== fairwayChange) return;
+    fairwayRequest = null;
+    setFairways(false);
+    status.textContent = 'Слой не загрузился. Включите его ещё раз.';
+  }
+}
+$('#chkFairways').onchange=e=>setFairways(e.target.checked);
+$('#showFairways').onclick=()=>setFairways(true,true);
+if (S.fairways) setFairways(true);
 $('#chkWind').onchange=e=>{S.wind=e.target.checked;saveS();S.wind?loadGrid(true):clearWind()};
 $('#selTrk').onchange=e=>{S.trackCol=e.target.value;saveS();G.line.setStyle({color:S.trackCol})};
 $('#chkTrack').onchange=e=>{S.track=e.target.checked;saveS();S.track?G.line.addTo(map):map.removeLayer(G.line)};
@@ -1389,7 +1500,8 @@ async function showPoint(ll){const my=PT.seq=(PT.seq||0)+1;
   const pr=h['pressure_msl_'+main];if(pr&&pr[i0]!=null&&pr[i0+12]!=null){const dp=pr[i0+12]-pr[i0];html+=`<p class="small">Давление ${f0(pr[i0])} гПа, за 12 ч ${dp>0?'+':''}${f1(dp)}${dp<=-4?' — <b style="color:var(--warn)">быстро падает: жди усиления ветра</b>':''}</p>`}
   if(est){const d0=dr(main)[i0],F=fetchKm(ll.lat,ll.lng,d0);html+=`<p class="note">«По разгону» — своя оценка волны: сколько километров воды ветер прошёл до этой точки (сейчас с ${rumb(d0)}: ${f0(F)} км). На Ладоге и в заливе это надёжнее морской модели. Расчёт для глубокой воды: на мелководье юга Ладоги волна ниже, но круче.</p>`}
   if(!mh&&!est)html+='<p class="note">Волну в этой точке морская модель не считает.</p>';
-  body.innerHTML=`<div class="mgrp"><button id="ptGo"><span class="mtile" style="--c:#0a84ff"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l11 7-11 7z"/></svg></span><span class="mT"><b>Идти сюда</b><small>пеленг и расстояние до этой точки</small></span><svg class="mChev" viewBox="0 0 8 14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg></button></div>`+html;$('#ptGo').onclick=()=>{navStart('point',[PT.last],0,'Точка '+fmtC(PT.last[0],1));closePanel()}}
+  body.innerHTML=html}
+$('#ptGo').onclick=()=>{if(PT.last)navStart('point',[PT.last],0,'Точка '+fmtC(PT.last[0],1))};
 function chart(t,a,b,series,dirs){const Wd=360,H=170,P=26;let mx=10;series.forEach(s=>{for(let i=a;i<b;i++)if(s.v[i]>mx)mx=s.v[i]});mx=Math.ceil(mx/5)*5;
   const X=i=>P+(i-a)/Math.max(1,b-a-1)*(Wd-P-6),Y=v=>H-22-(v/mx)*(H-40);let g=`<svg class="chart" viewBox="0 0 ${Wd} ${H}" font-size="9" fill="var(--muted)">`;
   for(let v=0;v<=mx;v+=5){g+=`<line x1="${P}" x2="${Wd-6}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="2" y="${Y(v)+3}">${Math.round(v*uW()[0])}</text>`}
@@ -1726,7 +1838,7 @@ $('#btnGps').onclick=()=>{
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);G.watch=null;$('#btnGps').classList.remove('on');$('#hud').hidden=true;$('#mob').hidden=true;chip('gps',null);wake(false);store.set('track',G.track);return}
   if(!('geolocation' in navigator))return toast('В этом браузере нет GPS');
   audio();gpsStart();G.last=Date.now();G.first=null;G.start=Date.now();$('#btnGps').classList.add('on');$('#hud').hidden=false;$('#mob').hidden=false;G.follow=true;wake(true);toast('Ищу спутники…')};
-$('#btnFollow').onclick=()=>{G.follow=true;if(G.pos)map.panTo(G.pos)};
+$('#btnFollow').onclick=()=>{G.follow=true;if(G.pos)followBoat(G.pos)};
 map.on('dragstart',()=>{G.follow=false});
 function onPos(p){if(!p._sk&&SK.posT&&Date.now()-SK.posT<10e3)return;const c=p.coords,ll=[c.latitude,c.longitude],now=Date.now();let sog=c.speed!=null?c.speed*3600/NM:null,cog=c.heading!=null&&!isNaN(c.heading)?c.heading:null;
   if(G.pos&&G.last){const dtj=(now-G.last)/1000,dj=dist(G.pos,ll);if(dtj>0&&dtj<120&&dj>Math.max(200,(c.accuracy||10)*3)&&dj/dtj*3600/NM>45&&(G.jump=(G.jump||0)+1)<3){logE('gps скачок на '+f0(dj)+' м за '+f0(dtj)+' с — отметка отброшена');return}}G.jump=0;
@@ -1741,7 +1853,7 @@ function onPos(p){if(!p._sk&&SK.posT&&Date.now()-SK.posT<10e3)return;const c=p.c
   const sv=G.marker.getElement()?.querySelector('svg');if(sv&&(sog==null||sog>=.5))sv.style.transform=`rotate(${G.cog||0}deg)`;G.marker.getElement()?.classList.remove('stale');
   if(G.vec){map.removeLayer(G.vec);G.vec=null}if(sog>=.5&&G.cog!=null){const dnm=sog*10/60,k=Math.cos(rad(ll[0]));G.vec=L.polyline([ll,[ll[0]+Math.cos(rad(G.cog))*dnm/60,ll[1]+Math.sin(rad(G.cog))*dnm/60/k]],{color:'#ff8a3d',weight:2,dashArray:'6 4',interactive:false}).addTo(map)}
   const last=G.track[G.track.length-1];if(!last||dist(last,ll)>10){G.track.push([ll[0],ll[1],Math.round(now/1000)]);if(G.track.length>20000)G.track.shift();G.line.addLatLng(ll);if(Date.now()-G.saved>15000){store.set('track',G.track);G.saved=Date.now()}}
-  if(G.follow)map.panTo(ll);
+  if(G.follow)followBoat(ll);
   $('#hSog').textContent=uSV(sog);$('#hCog').textContent=G.cog!=null?String(Math.round(G.cog)%360).padStart(3,'0')+'°':'—';$('#hPos').innerHTML=`${fmtC(ll[0],1)}<br>${fmtC(ll[1],0)}`;
   const acc=c.accuracy;$('#hAcc').innerHTML=`<span style="color:${acc<15?'var(--ok)':acc<50?'var(--warn)':'var(--danger)'}">точность ±${f0(acc)} м</span>`;
   $('#hud').classList.remove('stale');chip('gps',acc>50?`GPS неточный: ±${f0(acc)} м`:null,'warn');
@@ -1759,9 +1871,49 @@ const PT={last:null};
 const NAV=Object.assign({mode:null,pts:[],idx:0,name:'',mobT:0,arrNm:.1,xteNm:.15,xteWarned:false},store.get('nav',{}));
 const navSave=()=>store.set('nav',{mode:NAV.mode,pts:NAV.pts,idx:NAV.idx,name:NAV.name,mobT:NAV.mobT});
 const navLayer=L.layerGroup().addTo(map);
+const hudHome=document.createComment('GPS panel');
+$('#hud').before(hudHome);
+let zoomOnFix=false;
+function isPassage(){return NAV.mode==='point'||NAV.mode==='route'}
+function followBoat(ll){
+  if(!isPassage()){map.panTo(ll);return}
+  const zoom=zoomOnFix?Math.max(map.getZoom(),15):map.getZoom();
+  zoomOnFix=false;
+  const center=map.project(ll,zoom).subtract([0,map.getSize().y*.17]);
+  map.setView(map.unproject(center,zoom),zoom,{animate:false});
+}
+const WIC={min:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 18h12"/></svg>',
+ win:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="5" y="8" width="12" height="10" rx="2"/><path d="M9 8V6h10v9h-2"/></svg>',
+ full:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'};
+function foldRoute(compact){
+  const panel=$('#navd'),button=$('#navFold');
+  panel.classList.toggle('compact',compact);
+  button.setAttribute('aria-expanded',String(!compact));
+  button.setAttribute('aria-label',compact?'Развернуть панель ведения':'Свернуть панель ведения');
+  button.title=button.getAttribute('aria-label');
+  button.innerHTML=compact?WIC.win:WIC.min;
+  layoutTop();
+}
+function routePanel(){
+  const active=!!NAV.mode, collapsible=isPassage();
+  const panel=$('#navd'),hud=$('#hud');
+  panel.classList.toggle('unified',active);
+  $('#navFold').hidden=!collapsible;
+  if(active){panel.querySelector('.ng').after(hud);foldRoute(collapsible && store.get('compactNav',true))}
+  else{hudHome.after(hud);panel.classList.remove('compact')}
+  panel.querySelector('.navSpeed').hidden=!active;
+  zoomOnFix=collapsible;
+  layoutTop();
+}
+$('#navFold').onclick=()=>{const compact=!$('#navd').classList.contains('compact');foldRoute(compact);store.set('compactNav',compact)};
+if(window.ResizeObserver)new ResizeObserver(layoutTop).observe($('#navd'));
 function navStart(mode,pts,idx,name){Object.assign(NAV,{mode,pts,idx,name,xteWarned:false});navSave();$('#navd').hidden=false;$('#navd').classList.toggle('mob',mode==='mob');
-  if(G.watch==null)$('#btnGps').click();navUpdate();toast(mode==='mob'?'MOB! Не теряйте человека из виду. Курс на точку падения — на панели.':'Ведение включено: '+name,6000)}
-function navStop(){$('#nMob').hidden=true;NAV.mode=null;navSave();$('#navd').hidden=true;navLayer.clearLayers();chip('nav',null)}
+  routePanel();
+  const fresh=G.pos && Date.now()-G.last<20000 && (G.watch!=null||Date.now()-SK.posT<10000);
+  if(G.watch==null)$('#btnGps').click();
+  if(isPassage()){closePanel();G.follow=true;if(fresh)followBoat(G.pos)}
+  navUpdate();toast(mode==='mob'?'MOB! Не теряйте человека из виду. Курс на точку падения — на панели.':'Ведение включено: '+name,6000)}
+function navStop(){$('#nMob').hidden=true;NAV.mode=null;navSave();$('#navd').hidden=true;routePanel();navLayer.clearLayers();chip('nav',null)}
 $('#nStop').onclick=()=>{if(NAV.mode==='mob'&&!confirm('Человек поднят на борт? Закончить MOB?'))return;navStop()};
 $('#rGo').onclick=()=>{if(RT.pts.length<2)return toast('Сначала постройте маршрут');let i=1;
   if(G.pos){let best=1e12;RT.pts.forEach((p,k)=>{const d=dist(G.pos,p);if(d<best){best=d;i=Math.max(1,k)}})}
@@ -1783,6 +1935,8 @@ function navUpdate(){if(!NAV.mode)return;$('#navd').hidden=false;const tgt=NAV.p
   let label=NAV.name+(NAV.mode==='route'?` · точка ${NAV.idx+1} из ${NAV.pts.length}`:'');
   if(NAV.mode==='mob'){const sec=Math.round((Date.now()-NAV.mobT)/1000);label+=` · ${sec<60?sec+' с':Math.floor(sec/60)+' мин '+(sec%60)+' с'} назад`}
   $('#nName').textContent=label;
+  $('#nSpeed').textContent=G.sog==null?'—':uSV(G.sog);
+  $('#nSpeed').nextElementSibling.textContent=spU()+', скорость';
   if(!me){['#nBrg','#nDtw','#nXte','#nEta'].forEach(i=>$(i).textContent='—');$('#nNote').textContent='Жду позицию GPS…';return}
   L.polyline([me,tgt],{color:col,weight:2,dashArray:'4 6'}).addTo(navLayer);
   const d=dist(me,tgt),b=brg(me,tgt),dnm=d/NM,vmg=G.sog!=null&&G.cog!=null?G.sog*Math.cos(rad(G.cog-b)):null;
@@ -1815,7 +1969,7 @@ function shoreCheck(){if(!G.pos||!WM.g)return;if(G.sog==null||G.sog<1.5||G.cog==
   if(min<8){chip('shore',`Берег по курсу: ${km<1?f0(km*1000)+' м':f1(km)+' км'}, ≈${f0(min)} мин`,min<4?'bad':'warn');
     if(min<4&&Date.now()-shoreT>120000){shoreT=Date.now();beep();navigator.vibrate?.([300,150,300]);toast('⚠ Берег по курсу через '+f0(min)+' мин! Проверьте курс.',8000)}}
   else chip('shore',null)}
-if(NAV.mode){$('#navd').hidden=false;$('#navd').classList.toggle('mob',NAV.mode==='mob');setTimeout(navUpdate,800)}
+if(NAV.mode){routePanel();$('#navd').hidden=false;$('#navd').classList.toggle('mob',NAV.mode==='mob');setTimeout(navUpdate,800)}
 setInterval(()=>{if(NAV.mode==='mob')navUpdate()},1000);
 
 /* ===== якорь ===== */
@@ -1915,10 +2069,10 @@ function uLabels(){$$('.uSp').forEach(e=>e.textContent=spU());$$('.uW').forEach(
   const hs=$('#hSog');if(hs&&hs.nextElementSibling)hs.nextElementSibling.textContent=spU()+', скорость';const cs=$('#cuSog');if(cs&&cs.nextElementSibling)cs.nextElementSibling.textContent=spU();try{nmScale.upd()}catch(_){}}
 function uSet(k,v){S[k]=v;saveS();fillBoat();uLabels();try{if(typeof renderRoute==='function'&&RT.pts.length)renderRoute()}catch(_){}try{if(DSH.on)dashRender()}catch(_){}try{updT()}catch(_){}toast('Единицы изменены',2000)}
 function fillBoat(){const B=S.boat;$('#bName').value=B.name;$('#bType').value=B.type;$('#bSpeed').value=+(B.speed*uS()[0]).toFixed(1);$('#bDraft').value=B.draft;$('#bMotor').value=+(B.motor*uS()[0]).toFixed(1);$('#bMast').value=B.mast||'';$('#bXd').value=B.xd||'';
-  $('#sWind').value=Math.round(S.windMax*uW()[0]);$('#sGust').value=Math.round(S.gustMax*uW()[0]);$('#uSpd').value=S.uSpd||'kn';$('#uWind').value=S.uWind||'kn';$('#uDist').value=S.uDist||'nm';uLabels();$('#sWave').value=S.waveMax;$('#sNight').checked=S.night;$('#sAutoN').checked=S.autoNight;$('#sSaver').checked=S.saver;$('#sYa').value=S.yandexKey}
+  $('#sWind').value=Math.round(S.windMax*uW()[0]);$('#sGust').value=Math.round(S.gustMax*uW()[0]);$('#uSpd').value=S.uSpd||'kn';$('#uWind').value=S.uWind||'kn';$('#uDist').value=S.uDist||'nm';uLabels();$('#sWave').value=S.waveMax;$('#sNight').checked=S.night;$('#sAutoN').checked=S.autoNight;$('#sSaver').checked=S.saver;$('#sHaptic').checked=S.haptics!==false;$('#sYa').value=S.yandexKey}
 $('#sSave').onclick=()=>{const k=$('#sYa').value.trim(),chK=k!==S.yandexKey;S.yandexKey=k;
   S.boat={name:$('#bName').value.trim(),type:$('#bType').value,speed:Math.max(.5,(+$('#bSpeed').value||5*uS()[0])/uS()[0]),draft:+$('#bDraft').value||1.8,motor:Math.max(0,(+$('#bMotor').value||0)/uS()[0]),mast:Math.max(0,+$('#bMast').value||0),xd:Math.min(3,Math.max(0,+$('#bXd').value||0))};
-  S.windMax=+$('#sWind').value?+$('#sWind').value/uW()[0]:20;S.gustMax=+$('#sGust').value?+$('#sGust').value/uW()[0]:25;S.waveMax=+$('#sWave').value||1.2;S.night=$('#sNight').checked;S.autoNight=$('#sAutoN').checked;S.saver=$('#sSaver').checked;saveS();
+  S.windMax=+$('#sWind').value?+$('#sWind').value/uW()[0]:20;S.gustMax=+$('#sGust').value?+$('#sGust').value/uW()[0]:25;S.waveMax=+$('#sWave').value||1.2;S.night=$('#sNight').checked;S.autoNight=$('#sAutoN').checked;S.saver=$('#sSaver').checked;S.haptics=$('#sHaptic').checked;syncHaptics();saveS();
   document.body.classList.toggle('night',S.night);if(chK&&S.base==='yandex')setBase('yandex');drawField();renderRoute();if(RT.fc)bestWindows();renderEns();
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);gpsStart()}toast('Сохранено')};
 $('#sNight').onchange=e=>{document.body.classList.toggle('night',e.target.checked);$('#sAutoN').checked=false};
@@ -2979,7 +3133,7 @@ $('#dGrid').onclick=e=>{const g=e.target.closest('.gc');if(!g)return;DSH.big=DSH
 LOG.push(...store.get('log',[]).slice(-100));
 document.body.classList.toggle('night',S.night);fillBoat();
 mapStatus();setBase(S.base);setSea(S.seamarks);obsInit();skInit();kaInit();map.attributionControl.addAttribution('FMI (CC BY 4.0)');$('#chkWind').checked=S.wind;$('#chkTrack').checked=S.track;$('#selTrk').value=S.trackCol||'#ff8a3d';if(S.track)G.line.addTo(map);
-anchorDraw();renderRoute();sizeCv();netChip();if(TZN)chip('tz','Время в программе — московское');
+anchorDraw();renderRoute();sizeCv();netChip();
 {const c=store.get('grid',null);if(c){W.g=buildGrid(c);setupTime();drawField();freshChip()}}
 loadGrid(true);
 if(RT.fc)bestWindows();
@@ -3211,9 +3365,6 @@ try{if(store.get('helm',false))setTimeout(()=>helmSet(true),1500)}catch(e){}
 
 /* ===== v0.9.59: окна панелей, «Вести сюда», нажатия, MOB, перетаскивание приборов ===== */
 const WMD={def:{berth:'full',find:'full',cap:'full',lotsia:'full',help:'full',spb:'full',boat:'full',diag:'full'}};
-const WIC={min:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 18h12"/></svg>',
- win:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="5" y="8" width="12" height="10" rx="2"/><path d="M9 8V6h10v9h-2"/></svg>',
- full:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>'};
 const WTT={min:'Свернуть',win:'Маленькое окно',full:'Во весь экран'};
 function wmName(p){return p.id.replace(/^p-/,'')}
 function wmGet(n){try{return store.get('wm_'+n,null)||WMD.def[n]||'dock'}catch(e){return WMD.def[n]||'dock'}}
@@ -3289,9 +3440,9 @@ tbUpd();addEventListener('resize',tbUpd);setInterval(tbUpd,800);if(window.Resize
 
 /* приборы (скорость, курс) — перетаскиваются, место запоминается; двойное нажатие на ручку — вернуть на место */
 (function(){const hd=$('#hud');if(!hd)return;const g=document.createElement('span');g.className='hgrip';g.title='Потяните, чтобы передвинуть';g.textContent='⋮⋮';hd.prepend(g);
-  const put=(x,y)=>{const r=hd.getBoundingClientRect();x=Math.min(Math.max(4,x),innerWidth-r.width-4);y=Math.min(Math.max(4,y),innerHeight-r.height-4);hd.style.setProperty('--hx',x+'px');hd.style.setProperty('--hy',y+'px');hd.classList.add('hudMoved');return[x,y]};
+  const put=(x,y)=>{if(innerWidth<=520 || hd.parentElement.id==='navd' || hd.hidden){hd.classList.remove('hudMoved');return}const r=hd.getBoundingClientRect();x=Math.min(Math.max(4,x),innerWidth-r.width-4);y=Math.min(Math.max(4,y),innerHeight-r.height-4);hd.style.setProperty('--hx',x+'px');hd.style.setProperty('--hy',y+'px');hd.classList.add('hudMoved');return[x,y]};
   try{const q=store.get('hudPos',null);if(q)setTimeout(()=>put(q[0],q[1]),300)}catch(e){}
-  let st=null;hd.addEventListener('pointerdown',e=>{if(e.target.closest('button')&&!e.target.closest('.hgrip'))return;const r=hd.getBoundingClientRect();st={x:e.clientX,y:e.clientY,l:r.left,t:r.top,m:0,id:e.pointerId}});
+  let st=null;hd.addEventListener('pointerdown',e=>{if(innerWidth<=520||hd.parentElement.id==='navd'||e.target.closest('button')&&!e.target.closest('.hgrip'))return;const r=hd.getBoundingClientRect();st={x:e.clientX,y:e.clientY,l:r.left,t:r.top,m:0,id:e.pointerId}});
   hd.addEventListener('pointermove',e=>{if(!st)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;if(!st.m&&Math.hypot(dx,dy)<6)return;if(!st.m){st.m=1;hd.classList.add('hDrag');try{hd.setPointerCapture(st.id)}catch(_){}}e.preventDefault();put(st.l+dx,st.t+dy)});
   const end=()=>{if(!st)return;const m=st.m;st=null;hd.classList.remove('hDrag');if(m){const r=hd.getBoundingClientRect();try{store.set('hudPos',[r.left,r.top])}catch(_){}hd._dr=Date.now()}};
   hd.addEventListener('pointerup',end);hd.addEventListener('pointercancel',end);
@@ -3456,7 +3607,7 @@ const RZ={
  dp:[['Петербург-3','2, 5',59.94,30.33,14],['Ивановское-3','2, 5',59.84,30.86,12],['Шлиссельбург-3','3, 5',59.945,31.03,14],['Свирица-3','2, 5',60.48,32.88,22],['Лодейное поле-3','2, 5',60.73,33.55,25],['Вознесенье-3','4, 5',61.01,35.49,25],['Вытегра','3, 5',60.99,36.43,25],['Новгород-1','4, 5',58.52,31.27,25]]};
 function rzIn(pt,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const [ai,bi]=poly[i],[aj,bj]=poly[j];if(((bi>pt[1])!==(bj>pt[1]))&&(pt[0]<(aj-ai)*(pt[1]-bi)/(bj-bi)+ai))c=!c}return c}
 function rzMsk(){const d=new Date(Date.now()+3*36e5);return d.getUTCHours()*60+d.getUTCMinutes()}
-async function navRules(){const el=$('#nRules');if(!el)return;if(!NAV.mode||!G.pos){el.innerHTML='';return}
+async function navRules(){const el=$('#nRules');if(!el)return;if(!NAV.mode||!G.pos){el.innerHTML='';$('#navAlerts').textContent='';return}
   const P=G.pos,kn=G.sog,kmh=kn!=null?kn*1.852:null,out=[],rc=(t,c)=>out.push(`<span class="rc${c?' '+c:''}">${t}</span>`);
   // 1. скорость
   let lim=null,zn='';const sl=RZ.slow.find(z=>rzIn(P,z.p));if(sl){lim=8;zn=sl.n}else if(rzIn(P,RZ.city)){lim=15;zn='в черте Петербурга'}
@@ -3481,7 +3632,9 @@ async function navRules(){const el=$('#nRules');if(!el)return;if(!NAV.mode||!G.p
   try{if(!LZ.f&&typeof lzBuiltin==='function')await lzBuiltin();const near=(LZ.f||[]).filter(f=>f.ll&&/якор[^.]{0,30}(не брос|запрещ)|стрельб|запретн[а-я]* район/i.test(f.t)&&dist(P,f.ll)/NM<1.2).slice(0,2);
     near.forEach(f=>rc('Рядом по лоции: '+lzE(f.t.split(/[.;]/)[0].slice(0,80)),'warn'))}catch(e){}
   if(sl||rzIn(P,RZ.night))out.push('<span class="rn">Границы участков примерные — сверяйтесь со знаками на берегу.</span>');
-  el.innerHTML=out.join('')}
+  el.innerHTML=out.join('');
+  const advisories=el.querySelectorAll('.rc.warn').length;
+  $('#navAlerts').textContent=advisories?'⚠ '+advisories:''}
 {const _nu=navUpdate;navUpdate=function(){const r=_nu.apply(this,arguments);navRules();return r}}
 setInterval(()=>{if(NAV.mode)navRules()},5000);
 
@@ -3511,6 +3664,7 @@ addEventListener('resize',()=>$$('.panel.wMin').forEach(wmMinPos));
 /* ===== крестики одним значком ===== */
 (function(){const X='<svg viewBox="0 0 14 14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>';
  const fix=b=>{if(b.classList.contains('xbtn'))return;const t=b.textContent.trim();if(t!=='✕'&&t!=='×'&&t!=='✖')return;if(!b.getAttribute('aria-label'))b.setAttribute('aria-label',b.title||'Закрыть');b.classList.add('xbtn');b.innerHTML=X};
+ const stop=$('#nStop');stop.classList.add('xbtn');stop.innerHTML=X;
  $$('button').forEach(fix);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType!==1)return;if(n.tagName==='BUTTON')fix(n);n.querySelectorAll&&n.querySelectorAll('button').forEach(fix)}))).observe(document.body,{childList:true,subtree:true})})();
 /* ===== переключатели и поля — в карточки-списки ===== */
 (function(){const chk=l=>l.tagName==='LABEL'&&!!l.querySelector('input[type=checkbox],input[type=radio]');
@@ -3609,6 +3763,31 @@ function fiT(c){const M={berth:['#30b0c7','M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12
     btn.onclick=()=>{const o=!btn.classList.contains('open');g.querySelectorAll(':scope>button.open').forEach(x=>{x.classList.remove('open');x.setAttribute('aria-expanded','false')});btn.classList.toggle('open',o);btn.setAttribute('aria-expanded',o?'true':'false')};
     g.appendChild(btn);g.appendChild(body)})}}catch(e){try{logE('rest help '+e.message)}catch(_){}}
 })();
+// Safari provides system feedback for direct taps on native switches.
+function syncHaptics(){
+  const pref=$('#sHaptic'), vibration=typeof navigator.vibrate==='function';
+  const nativeSwitch=!vibration && 'switch' in pref && navigator.maxTouchPoints>0;
+  pref.closest('label').hidden=!vibration && !nativeSwitch;
+  $('#hapticLabel').textContent=nativeSwitch?'Тактильный отклик переключателей':'Лёгкая вибрация кнопок';
+  for(const box of document.querySelectorAll('input[type="checkbox"]')){
+    box.toggleAttribute('switch',nativeSwitch && S.haptics!==false);
+  }
+}
+syncHaptics();
+let touchControl=null;
+const tapControl=target=>target.closest?.('button,[role="button"],summary,label,input[type="checkbox"],input[type="radio"]');
+document.addEventListener('pointerdown',event=>{
+  touchControl=event.isTrusted && event.pointerType==='touch'?tapControl(event.target):null;
+},true);
+document.addEventListener('pointercancel',()=>{touchControl=null},true);
+document.addEventListener('click',event=>{
+  const control=tapControl(event.target);
+  const tapped=event.pointerType==='touch' || (!event.pointerType && event.detail>0 && touchControl===control);
+  touchControl=null;
+  if(!control || !event.isTrusted || !tapped || S.haptics===false || typeof navigator.vibrate!=='function' || A.alarm)return;
+  if(control.matches(':disabled,[aria-disabled="true"]') || (control.tagName==='LABEL' && !control.control?.matches('input[type="checkbox"]:enabled,input[type="radio"]:enabled')))return;
+  navigator.vibrate(12);
+},true);
 </script>
 </body>
 </html>
