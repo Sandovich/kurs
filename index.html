@@ -502,6 +502,10 @@ html body #mob{bottom:calc(var(--tbUp,110px) + 12px)!important}
 .fpop b{display:block;font-size:15px;margin-bottom:2px}.fpop .muted{font-size:12.5px;margin-bottom:8px}
 .fpop .row{display:flex;gap:6px;margin:0}.fpop button{min-height:40px;padding:0 12px;font-size:14px;white-space:nowrap}
 .fpop button:not(.primary){background:#eef2f6!important;color:#0d2233!important;border:1px solid #c9d3dc!important}
+#navd{box-sizing:border-box}
+#navd #nName{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;display:flex;align-items:center;min-height:32px}
+#navd #nName::before{content:"⠿";color:var(--muted);margin-right:6px}
+#navd #nName:active{cursor:grabbing}
 #gCard{margin:0 0 12px}#gCard .okbox,#gCard .badbox{margin:0}#gCard .gw{margin-top:8px;font-size:13.5px;line-height:1.45}#gCard .gh{font-weight:700;font-size:15px;margin-bottom:6px}
 /* приборы можно двигать */
 #hud .hgrip{flex:0 0 auto;width:14px;align-self:stretch;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:grab;touch-action:none;font-size:14px;line-height:1;margin-right:-6px;opacity:.7}
@@ -1180,7 +1184,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.77';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.78';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:false,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1395,9 +1399,42 @@ $('#play').onclick=()=>{if(W.play){clearInterval(W.play);W.play=null;$('#play').
 $('#model').value=S.model;$('#model').onchange=e=>{S.model=e.target.value;saveS();loadGrid(true);if(RT.fc)routeWx()};
 
 /* раскладка верхних блоков: HUD → панель ведения → плашки, без наложений */
+let routePosition=store.get('routePanelPosition',null);
+function placeRoute(panel,base){
+  const brand=$('#top .brand').getBoundingClientRect(),rail=document.body.classList.contains('rail');
+  const closed=document.body.classList.contains('topMin');
+  const margin=10,ceiling=brand.top;
+  const desired=routePosition||{x:margin,y:ceiling};
+  const floor=Math.min(innerHeight-margin,$('#timebar').getBoundingClientRect().top||innerHeight);
+  const minY=closed||rail?ceiling:base;
+  const clampY=()=>Math.max(minY,Math.min(desired.y,floor-panel.offsetHeight-margin));
+  let y=clampY();
+  const minX=rail||y<brand.bottom+6?brand.right+6:margin;
+  const width=Math.min(420,innerWidth-minX-margin);
+  const x=Math.max(minX,Math.min(desired.x,innerWidth-width-margin));
+  panel.style.width=width+'px';panel.style.left=x+'px';
+  y=clampY();
+  panel.style.setProperty('top',y+'px','important');
+}
 function layoutTop(){const base=$('#top').getBoundingClientRect().bottom+6;let y=base;
-  for(const id of ['#hud','#navd']){const e=$(id);if(e.hidden||e.parentElement.id==='navd')continue;e.style.top=y+'px';y=e.getBoundingClientRect().bottom+6}
-  $('#status').style.top=(y===base?base:y)+'px'}
+  for(const id of ['#hud','#navd']){const e=$(id);if(e.hidden||e.parentElement.id==='navd')continue;
+    if(id==='#navd')placeRoute(e,y);else e.style.top=y+'px';
+    y=e.getBoundingClientRect().bottom+6}
+  $('#status').style.top=y+'px'}
+{
+  const panel=$('#navd'),grip=$('#nName');
+  let drag=null;
+  grip.addEventListener('pointerdown',e=>{
+    if(!e.isPrimary||e.button!==0)return;
+    e.preventDefault();const r=panel.getBoundingClientRect();drag={dx:e.clientX-r.left,dy:e.clientY-r.top};
+    grip.setPointerCapture(e.pointerId);
+  });
+  grip.addEventListener('pointermove',e=>{
+    if(!drag||!grip.hasPointerCapture(e.pointerId))return;
+    routePosition={x:e.clientX-drag.dx,y:e.clientY-drag.dy};layoutTop();
+  });
+  grip.addEventListener('lostpointercapture',()=>{drag=null;if(routePosition)store.set('routePanelPosition',routePosition)});
+}
 new MutationObserver(layoutTop).observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden']});addEventListener('resize',layoutTop);setTimeout(layoutTop,50);
 /* ===== панели ===== */
 $$('.panel').forEach(p=>{const c=p.querySelector(':scope > .close'),h=p.querySelector('h2');if(c&&h)h.appendChild(c)});
@@ -3216,7 +3253,7 @@ $$('.panel').forEach(pn=>{const h=pn.querySelector('h2');if(!h)return;let y0=nul
     if(/[?&]nosplash=1/.test(qs))hide();else if(document.readyState==='complete')go();else addEventListener('load',go);setTimeout(hide,3500)}
   const brand=document.querySelector('.brand');
   if(brand){brand.setAttribute('role','button');brand.setAttribute('tabindex','0');brand.setAttribute('aria-label','Курс — скрыть или показать меню');brand.title='Скрыть / показать меню';
-    const tog=()=>{const on=!document.body.classList.contains('topMin');document.body.classList.toggle('topMin',on);try{store.set('topMin',on)}catch(e){}};
+    const tog=()=>{const on=!document.body.classList.contains('topMin');document.body.classList.toggle('topMin',on);layoutTop();try{store.set('topMin',on)}catch(e){}};
     brand.addEventListener('click',tog);brand.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog()}})}
   try{if(store.get('topMin',true))document.body.classList.add('topMin');if(store.get('tbMin',true))document.body.classList.add('tbMin')}catch(e){}
   // нижняя полоса: ручка — нажатие или жест вверх/вниз
