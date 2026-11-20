@@ -93,17 +93,18 @@ body:has(#mob:not([hidden])) .leaflet-bottom.leaflet-left{left:80px}
 #hud span{color:var(--muted);font-size:11px}
 #hud #btnCU{display:inline-flex;align-items:center;justify-content:center;width:44px;padding:0}
 #cu{position:fixed;inset:0;z-index:1500;background:#0d2236}#cuMap{position:absolute;inset:0}
-#cu .cuTop{position:absolute;left:10px;right:10px;top:calc(var(--safe-area-inset-top,env(safe-area-inset-top)) + 10px);display:flex;gap:8px;align-items:flex-start;pointer-events:none}#cu .cuTop>*{pointer-events:auto}
-#cu button{background:rgba(16,34,51,.94);border:1px solid var(--line);color:var(--text);border-radius:12px;min-width:48px;min-height:48px;font-size:18px}
-#cu .cuHud{flex:1;display:flex;gap:16px;justify-content:center;background:rgba(16,34,51,.94);border:1px solid var(--line);border-radius:12px;padding:6px 12px;font-variant-numeric:tabular-nums}
-#cu .cuHud b{font-size:26px;display:block;line-height:1.05}#cu .cuHud span{font-size:11px;color:var(--muted)}
-#cuMode{position:relative;font-weight:800}#cuN{display:inline-block;transition:transform .5s ease}#cuMode.north{border-color:var(--accent);color:var(--accent)}
-#cuNav{position:absolute;left:10px;right:10px;top:calc(var(--safe-area-inset-top,env(safe-area-inset-top)) + 74px);background:rgba(16,34,51,.94);border:1px solid #d63ce0;border-radius:12px;padding:6px 12px;font-size:15px;font-variant-numeric:tabular-nums;text-align:center}
+#cu .cuTop{position:absolute;left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));top:calc(var(--safe-area-inset-top,env(safe-area-inset-top)) + 10px);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:4px;padding:4px;border:1px solid var(--line);border-radius:14px;background:rgba(16,34,51,.96);color:var(--text)}
+#cu button{background:rgba(16,34,51,.94);border:1px solid var(--line);color:var(--text);border-radius:12px;min-width:44px;min-height:44px;font-size:18px}
+#cu .cuHud{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;text-align:center;font-variant-numeric:tabular-nums}
+#cu .cuHud b{font-size:18px;display:block;line-height:1.1}#cu .cuHud span{font-size:11px;color:var(--muted)}
+#cuFold[aria-expanded="true"] svg{transform:rotate(180deg)}
+#cuMode{grid-column:4;position:relative;font-weight:800}#cuN{display:inline-block;transition:transform .5s ease}#cuMode.north{border-color:var(--accent);color:var(--accent)}
+#cuNav{grid-column:1/-1;border-top:1px solid var(--line);padding:6px 8px;font-size:14px;overflow-wrap:anywhere}
 #cu .cuBot{position:absolute;left:10px;right:10px;bottom:calc(var(--safe-area-inset-bottom,env(safe-area-inset-bottom)) + 44px);display:flex;gap:8px;align-items:center;pointer-events:none}#cu .cuBot>*{pointer-events:auto}
 #cu .cuZ{margin-left:auto;display:flex;gap:6px}#cuNote{font-size:12px;color:var(--muted);background:rgba(16,34,51,.85);border-radius:8px;padding:3px 8px}#cuNote:empty{display:none}
 #cuMe{font-size:15px!important;padding:0 14px}
 #cu .cuBoat{width:34px;height:34px}#cu .maplibregl-ctrl-attrib{font-size:10px}
-body.night #cu{background:#000}body.night #cu .cuHud,body.night #cu button,body.night #cuNav,body.night #cuNote{background:rgba(20,0,0,.94);border-color:#4a0a0a;color:#ff5a4a}
+body.night #cu{background:#000}body.night #cu .cuTop,body.night #cu button,body.night #cuNav,body.night #cuNote{background:rgba(20,0,0,.94);border-color:#4a0a0a;color:#ff5a4a}
 body.night #cu .maplibregl-ctrl-attrib,body.night #cu .maplibregl-ctrl-attrib-button{background-color:#140000;color:#a8332b}body.night #cu .maplibregl-ctrl-attrib a{color:#a8332b}body.night .cuBoat path{fill:#ff3b30;stroke:#5a0000}
 body.night #cuMap .maplibregl-canvas{filter:grayscale(1) contrast(1.25) brightness(.5) sepia(1) hue-rotate(-50deg) saturate(3.2) brightness(.62)}
 
@@ -792,6 +793,17 @@ html body #navd.unified #hud{position:static!important;inset:auto!important;max-
 #cu #cuMe{grid-column:1;grid-row:2;justify-self:start;width:auto;white-space:nowrap}
 #cu #cuNote{grid-column:1/-1;grid-row:1;justify-self:start;max-width:100%;line-height:1.35;overflow-wrap:anywhere}
 #cu .cuZ{grid-column:2;grid-row:2}
+html body #p-find #fList button.placeName{display:block;width:100%;text-align:left;color:var(--text);background:transparent;border:0;box-shadow:none;padding:0;min-height:32px;line-height:1.25;font-family:inherit;font-size:16px;font-weight:600}
+@media(max-width:520px){#fList .fi .fb{flex-direction:column;align-items:stretch}}
+.mapCredits{position:relative;margin:0!important;line-height:1.2;color:#e6edf4;background:rgba(16,34,51,.92);border-radius:8px 0 0 0}
+.mapCredits summary{cursor:pointer;list-style:none;padding:6px 8px;font:11px/1.2 system-ui;white-space:nowrap;touch-action:manipulation}
+.mapCredits summary::-webkit-details-marker{display:none}
+.mapCredits .leaflet-control-attribution{position:absolute;right:0;bottom:100%;width:max-content;max-width:min(290px,85vw);box-sizing:border-box;padding:8px!important;margin:0!important;border-radius:8px;background:#102233!important;color:#dce7f0!important;line-height:1.5}
+.mapCredits .leaflet-control-attribution a{font:inherit;color:inherit;text-decoration:underline}#hud .gpsActions{display:flex;align-items:center;gap:4px;margin-left:auto}
+#hud .gpsActions button{width:44px;height:44px;display:grid;place-items:center;padding:0}
+#navd #hud .gpsActions,body>#hud:has(#gpsFold[aria-expanded="false"])>:is(.small,#btnFollow,#btnCU,#btnDash){display:none!important}
+#gpsFold[aria-expanded="true"] svg{transform:rotate(180deg)}
+@media(max-width:520px){body>#hud .gpsActions{order:0}body>#hud>.small,body>#hud>#btnFollow,body>#hud>#btnCU{order:1}body>#hud>.small{flex-basis:calc(100% - 130px)}}
 @media(max-width:520px){body > #hud{box-sizing:border-box;width:auto;min-width:0}#hud .hgrip{display:none}}
 </style>
 </head>
@@ -815,6 +827,7 @@ html body #navd.unified #hud{position:static!important;inset:auto!important;max-
 <div id="hud" hidden>
   <div><b id="hSog">—</b><span>скорость</span></div>
   <div><b id="hCog">—</b><span>курс</span></div>
+  <div class="gpsActions"><button id="gpsFold" aria-expanded="false" aria-label="Развернуть сведения GPS" title="Развернуть сведения GPS"><svg class="i" aria-hidden="true"><use href="#i-down"/></svg></button><button id="gpsEnd" aria-label="Завершить GPS" title="Завершить GPS"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div>
   <div class="small"><div id="hPos">—</div><span id="hAcc"></span></div>
   <button id="btnFollow" title="Держать лодку в центре">⊙</button>
   <button id="btnCU" title="Карта по курсу: нос лодки всегда вверх" aria-label="Карта по курсу"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l6 17-6-4-6 4z"/></svg></button>
@@ -830,10 +843,11 @@ html body #navd.unified #hud{position:static!important;inset:auto!important;max-
 <aside id="helm" hidden aria-label="Экран у штурвала"><div class="hh"><b>У штурвала</b><span id="hClock"></span><button id="helmX" aria-label="Закрыть экран у штурвала">✕</button></div><div id="helmG"></div></aside>
 <div id="cu" hidden role="dialog" aria-label="Карта по курсу">
   <div id="cuMap"></div>
-  <div class="cuTop"><button id="cuX" aria-label="Закрыть карту по курсу">✕</button>
-    <div class="cuHud"><div><b id="cuSog">—</b><span>уз</span></div><div><b id="cuCog">—</b><span>курс</span></div></div>
-    <button id="cuMode" title="По курсу / север вверх" aria-label="Переключить: по курсу или север вверх"><span id="cuN">N</span></button></div>
-  <div id="cuNav" hidden></div>
+  <div class="cuTop"><button id="cuX" aria-label="Закрыть карту по курсу"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="cuHud"><div><b id="cuSog">—</b><span>уз</span></div><div id="cuCourse"><b id="cuCog">—</b><span>курс</span></div><div id="cuTarget" hidden><b id="cuDist">—</b><span>до точки</span></div></div>
+    <button id="cuFold" hidden aria-expanded="false" aria-controls="cuNav" aria-label="Развернуть сведения"><svg class="i" aria-hidden="true"><use href="#i-down"/></svg></button>
+    <button id="cuMode" title="По курсу / север вверх" aria-label="Переключить ориентацию карты"><span id="cuN">N</span></button>
+    <div id="cuNav" hidden></div></div>
   <div class="cuBot"><button id="cuMe" hidden>⊙ К лодке</button><span id="cuNote"></span><span class="cuZ"><button id="cuZm" aria-label="Мельче">−</button><button id="cuZp" aria-label="Крупнее">＋</button></span></div>
 </div>
 <div id="navd" hidden>
@@ -1166,7 +1180,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.74';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.77';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:false,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1239,7 +1253,12 @@ function boatSpeed0(tws,twa){const B=S.boat;
 /* ===== карта ===== */
 const view=store.get('view',{c:[60.25,31.0],z:8});
 const map=L.map('map',{zoomControl:false}).setView(view.c,view.z);
-map.attributionControl.setPrefix(false);
+const credits=document.createElement('details'),creditLabel=document.createElement('summary');
+credits.className='mapCredits leaflet-control';
+creditLabel.textContent='© OpenStreetMap · Источники';
+const creditList=map.attributionControl.getContainer();
+creditList.before(credits);credits.append(creditLabel,creditList);
+L.DomEvent.disableClickPropagation(credits);map.attributionControl.setPrefix(false);
 map.attributionControl.addAttribution('<a href="https://open-meteo.com">Open-Meteo</a>');
 L.control.zoom({position:'bottomright'}).addTo(map);
 const NmScale=L.Control.extend({options:{position:'bottomleft'},onAdd(){this._d=L.DomUtil.create('div','nmscale');map.on('moveend zoomend',()=>this.upd());setTimeout(()=>this.upd());return this._d},
@@ -1394,7 +1413,7 @@ function dismissPanel(){
   panelExit=panel.animate([{opacity:1,translate:'0 0'},{opacity:0,translate:'0 8px'}],{duration:160,easing:'ease-in',fill:'forwards'});
   panelExit.onfinish=()=>{closePanel()};
 }
-function openPanel(n){cancelPanelExit();if(n==='spb')setTimeout(spbUI,0);$$('.panel').forEach(p=>p.hidden=p.id!=='p-'+n);openName=n;$$('#top [data-panel]').forEach(b=>b.classList.toggle('on',b.dataset.panel===n));if(n==='ais')aisList()}
+function openPanel(n){cancelPanelExit();if(n==='spb')setTimeout(spbUI,0);$$('.panel').forEach(p=>p.hidden=p.id!=='p-'+n);openName=n;$$('#top [data-panel]').forEach(b=>b.classList.toggle('on',b.dataset.panel===n));if(n==='route')$('#p-route').scrollTop=0;if(n==='ais')aisList()}
 function closePanel(){cancelPanelExit();$$('.panel').forEach(p=>p.hidden=true);openName=null;$$('#top [data-panel]').forEach(b=>b.classList.remove('on'));if(ptMarker){map.removeLayer(ptMarker);ptMarker=null}anchorBtn()}
 $$('#top [data-panel]').forEach(b=>b.onclick=()=>openName===b.dataset.panel?dismissPanel():openPanel(b.dataset.panel));
 $$('.panel .close').forEach(b=>b.onclick=dismissPanel);
@@ -1834,6 +1853,14 @@ async function wake(on){try{if(on&&'wakeLock' in navigator&&!G.wake){G.wake=awai
 document.addEventListener('visibilitychange',()=>{const vis=document.visibilityState==='visible';if(vis&&(G.watch!=null||A.pos))wake(true);
   if(!vis)G.hidT=Date.now();else if(G.hidT){const m=(Date.now()-G.hidT)/6e4;G.hidT=0;if(A.pos&&m>=1){beep();toast(`Экран был погашен ${f0(m)} мин — якорная вахта в это время не работала. Проверьте, где лодка.`,12000)}}});
 function gpsStart(){G.watch=navigator.geolocation.watchPosition(onPos,e=>{logE('gps '+e.message);toast('GPS: '+(e.code===1?'нет разрешения. Разрешите геолокацию для сайта в настройках браузера':e.code===3?'долго нет сигнала, продолжаю искать':(e.message||'нет сигнала')))},{enableHighAccuracy:true,maximumAge:S.saver?5000:1000,timeout:30000})}
+$('#gpsFold').onclick=()=>{
+  const button=$('#gpsFold'),expanded=button.getAttribute('aria-expanded')!=='true';
+  button.setAttribute('aria-expanded',String(expanded));
+  button.title=expanded?'Свернуть сведения GPS':'Развернуть сведения GPS';
+  button.setAttribute('aria-label',button.title);
+  layoutTop();
+};
+$('#gpsEnd').onclick=()=>{if(G.watch!=null)$('#btnGps').click()};
 $('#btnGps').onclick=()=>{
   if(G.watch!=null){navigator.geolocation.clearWatch(G.watch);G.watch=null;$('#btnGps').classList.remove('on');$('#hud').hidden=true;$('#mob').hidden=true;chip('gps',null);wake(false);store.set('track',G.track);return}
   if(!('geolocation' in navigator))return toast('В этом браузере нет GPS');
@@ -2928,7 +2955,14 @@ function cuData(all){const m=CU.map;if(!m||!m.isStyleLoaded())return;const src=k
   src('ais').setData(cuFC(AIS.on?[...AIS.ships.values()].filter(q=>q.lat!=null).map(q=>cuPt([q.lat,q.lon],{r:q.cog!=null?q.cog:0,n:q.name||''})):[]))}
 function cuTick(){if(!CU.on||!CU.map)return;const m=CU.map,me=G.pos;
   $('#cuSog').textContent=G.sog!=null?uSV(G.sog):'—';$('#cuCog').textContent=G.cog!=null?String(Math.round(G.cog)%360).padStart(3,'0')+'°':'—';
-  const tg=NAV.mode&&NAV.pts[NAV.idx];if(tg&&me){const d=dist(me,tg);$('#cuNav').hidden=false;$('#cuNav').textContent=`→ ${NAV.name||'точка'} · ${String(Math.round(brg(me,tg))%360).padStart(3,'0')}° · ${fDm(d)}`}else $('#cuNav').hidden=true;
+  const tg=NAV.mode&&NAV.pts[NAV.idx];const expanded=$('#cuFold').getAttribute('aria-expanded')==='true';
+  $('#cuFold').hidden=false;$('#cuTarget').hidden=!tg;
+  $('#cuCourse').hidden=!expanded;
+  $('#cuNav').hidden=!tg||!expanded;
+  if(tg){
+    $('#cuDist').textContent=me?fDm(dist(me,tg)):'—';
+    $('#cuNav').textContent=(NAV.name||'Точка')+(me?' · пеленг '+String(Math.round(brg(me,tg))%360).padStart(3,'0')+'°':'');
+  }
   const slow=G.sog==null||G.sog<1||G.cog==null;
   if(!slow)CU.lastCog=G.cog;const tc=slow?CU.lastCog:G.cog;if(CU.mode==='course'&&tc!=null){let d=((tc-CU.brg+540)%360)-180;CU.brg=(CU.brg+d*.6+360)%360}else if(CU.mode==='north')CU.brg=0;
   $('#cuN').style.transform=`rotate(${-CU.brg}deg)`;$('#cuMode').classList.toggle('north',CU.mode==='north');
@@ -2947,6 +2981,12 @@ async function cuOpen(){$('#cu').hidden=false;CU.on=true;try{await cuLoad()}catc
   else{CU.map.resize();cuData(true)}
   clearInterval(CU.tm);CU.tm=setInterval(cuTick,1000);cuTick();try{navigator.wakeLock?.request('screen').then(w=>CU.wl=w).catch(()=>{})}catch(_){}}
 function cuClose(){CU.on=false;clearInterval(CU.tm);$('#cu').hidden=true;try{CU.wl?.release()}catch(_){}CU.wl=null}
+$('#cuFold').onclick=()=>{
+  const button=$('#cuFold'),expanded=button.getAttribute('aria-expanded')!=='true';
+  button.setAttribute('aria-expanded',String(expanded));
+  button.setAttribute('aria-label',expanded?'Свернуть сведения':'Развернуть сведения');
+  cuTick();
+};
 $('#btnCU').onclick=cuOpen;$('#cuX').onclick=cuClose;
 $('#cuMode').onclick=()=>{CU.mode=CU.mode==='course'?'north':'course';store.set('cuMode',CU.mode);CU.free=0;toast(CU.mode==='course'?'Карта по курсу: нос лодки вверх':'Север вверх',2500);cuTick()};
 $('#uSpd').onchange=e=>uSet('uSpd',e.target.value);$('#uWind').onchange=e=>uSet('uWind',e.target.value);$('#uDist').onchange=e=>uSet('uDist',e.target.value);setTimeout(uLabels,0);
@@ -3320,22 +3360,21 @@ async function findData(){if(FIND.d)return FIND.d;let p=[];try{const r=await fet
   try{if(!LZ.f&&typeof lzBuiltin==='function')await lzBuiltin()}catch(e){}
   const lz=(LZ.f||[]).filter(f=>f.ll).map(f=>({c:'lz',n:f.t.split(/[.:;]/)[0].slice(0,90),ll:f.ll,t:f.t}));return FIND.d=[...p,...lz]}
 function findFrom(){return G.pos?[G.pos[0],G.pos[1]]:[map.getCenter().lat,map.getCenter().lng]}
-function findGo(P){RT.pts=P.map(p=>p.slice());routeChanged();openPanel('route');setTimeout(()=>{$('#rIso').click();setTimeout(()=>$('#rIsoOut').scrollIntoView({block:'nearest',behavior:'smooth'}),400)},150)}
-function findShow(ll,n){if(FIND.lay)map.removeLayer(FIND.lay);FIND.lay=L.circleMarker(ll,{radius:9,color:'#fff',weight:3,fillColor:'#ff8a3d',fillOpacity:1}).bindTooltip(n,{permanent:true,direction:'top'}).addTo(map);map.setView(ll,Math.max(map.getZoom(),13));if(innerWidth<820)closePanel()}
 async function findRender(){const el=$('#fList'),q=$('#fQ').value.trim().toLowerCase(),from=findFrom();
   if(FIND.cat==='tour'&&!q){el.innerHTML=TOURS.map((t,i)=>{const d=dist(from,t.s[0].ll)/NM;return`<div class="tour"><h3>${t.n}</h3><div class="small muted">${t.a} · до первой точки ${fDn(d,'миль')} от ${G.pos?'лодки':'центра карты'}</div><p>${t.t}</p><ol>${t.s.map(x=>`<li><b>${x.n}</b>${x.t?' — '+x.t:''}</li>`).join('')}</ol><div class="row"><button class="primary" data-tour="${i}" style="flex:1">Проложить путь</button><button data-tshow="${i}">На карте</button></div></div>`}).join('')+'<p class="small muted">Путь строится под ветер по прогнозу или по воде. Подход к стоянкам, глубины и опасности — смотрите в лоции и на карте с глубинами.</p>';
-    el.querySelectorAll('[data-tour]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tour];findGo([from,...t.s.map(x=>x.ll)])});
-    el.querySelectorAll('[data-tshow]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tshow];findShow(t.s[0].ll,t.n)});return}
+    el.querySelectorAll('[data-tour]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tour];findGo([G.pos||from,...t.s.map(x=>x.ll)],t.n)});
+    el.querySelectorAll('[data-tshow]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tshow];findShow(t.s[0].ll,t.n,t.s.map(x=>x.ll))});return}
   el.innerHTML='<p class="muted small">Ищу…</p>';const D=await findData();
   let L2=D.filter(p=>q?(p.n+' '+(p.t||'')+' '+F_CAT[p.c]).toLowerCase().includes(q)||(q.startsWith('заправ')&&(p.c==='fuel'||p.fuel)):p.c===FIND.cat||(FIND.cat==='fuel'&&p.fuel));
   if(!q&&FIND.cat!=='lz')L2=L2.filter(p=>p.n||p.c!=='sight');
   L2=L2.map(p=>({...p,d:dist(from,p.ll)})).sort((a,b)=>a.d-b.d).slice(0,60);
   const TQ=q?TOURS.map((t,i)=>({t,i})).filter(({t})=>(t.n+' '+t.a+' '+t.t+' '+t.s.map(x=>x.n).join(' ')).toLowerCase().includes(q)):[];
-  const tq=TQ.map(({t,i})=>`<div class="fi">${fiT('tour')}<div class="fx"><b>${t.n}</b><div class="fm">прогулка · ${t.a}</div></div><div class="fb"><button class="primary" data-tq="${i}">Проложить</button></div></div>`).join('');
+  const tq=TQ.map(({t,i})=>`<div class="fi">${fiT('tour')}<div class="fx"><button class="placeName" data-tshow="${i}">${t.n}</button><div class="fm">прогулка · ${t.a}</div></div><div class="fb"><button class="primary" data-tq="${i}">Проложить путь</button><button data-tshow="${i}">На карте</button></div></div>`).join('');
   if(!L2.length&&!tq){el.innerHTML='<p class="muted">Ничего не нашлось. Попробуйте другое слово или раздел.</p>';return}
-  el.innerHTML=tq+L2.map((p,i)=>`<div class="fi">${fiT(p.c)}<div class="fx"><b>${p.n||(F_CAT[p.c][0].toUpperCase()+F_CAT[p.c].slice(1)+' без названия')}</b><div class="fm">${F_CAT[p.c]}${p.fuel?' · есть топливо':''} · ${fDn(p.d/NM,'миль')} · ${f0(brg(from,p.ll))}°${p.c==='lz'?'<br>'+lzE(p.t).slice(0,220):''}</div></div><div class="fb"><button class="primary" data-fgo="${i}">Маршрут</button><button data-fsh="${i}">На карте</button></div></div>`).join('');
-  el.querySelectorAll('[data-fgo]').forEach(b=>b.onclick=()=>findGo([from,L2[+b.dataset.fgo].ll]));
-  el.querySelectorAll('[data-tq]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tq];findGo([from,...t.s.map(x=>x.ll)])});
+  el.innerHTML=tq+L2.map((p,i)=>`<div class="fi">${fiT(p.c)}<div class="fx"><button class="placeName" data-fsh="${i}">${lzE(p.n||'')||(F_CAT[p.c][0].toUpperCase()+F_CAT[p.c].slice(1)+' без названия')}</button><div class="fm">${F_CAT[p.c]}${p.fuel?' · есть топливо':''} · ${fDn(p.d/NM,'миль')} · ${f0(brg(from,p.ll))}°${p.c==='lz'?'<br>'+lzE(p.t).slice(0,220):''}</div></div><div class="fb"><button class="primary" data-fgo="${i}">Проложить путь</button><button data-fsh="${i}">На карте</button></div></div>`).join('');
+  el.querySelectorAll('[data-fgo]').forEach(b=>b.onclick=()=>{const p=L2[+b.dataset.fgo];findGo([G.pos||from,p.ll],p.n||F_CAT[p.c])});
+  el.querySelectorAll('[data-tshow]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tshow];findShow(t.s[0].ll,t.n,t.s.map(x=>x.ll))});
+  el.querySelectorAll('[data-tq]').forEach(b=>b.onclick=()=>{const t=TOURS[+b.dataset.tq];findGo([G.pos||from,...t.s.map(x=>x.ll)],t.n)});
   el.querySelectorAll('[data-fsh]').forEach(b=>b.onclick=()=>{const p=L2[+b.dataset.fsh];findShow(p.ll,p.n||F_CAT[p.c])})}
 $$('#fCat [data-fc]').forEach(b=>b.onclick=()=>{FIND.cat=b.dataset.fc;$$('#fCat [data-fc]').forEach(x=>x.classList.toggle('on',x===b));findRender()});
 {let tm;$('#fQ').addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(findRender,250)})}
@@ -3402,7 +3441,7 @@ addEventListener('resize',()=>$$('.panel.wWin,.panel.wMin').forEach(wmClamp));
 /* кнопка «считаю…» на долгих действиях и прокрутка к результату */
 function busyBtn(sel,label,outSel){const b=$(sel);if(!b||b._busy)return;const f=b.onclick;if(!f)return;b._busy=1;
   b.onclick=async e=>{if(b.classList.contains('busy'))return;const t=b.innerHTML;b.classList.add('busy');b.innerHTML='<span class="spin"></span>'+label;
-    try{return await f.call(b,e)}finally{b.innerHTML=t;b.classList.remove('busy');const o=outSel&&$(outSel);if(o&&o.innerHTML.trim()){o.classList.remove('flashOk');void o.offsetWidth;o.classList.add('flashOk');o.scrollIntoView({block:'nearest',behavior:'smooth'})}}}}
+    try{return await f.call(b,e)}finally{b.innerHTML=t;b.classList.remove('busy');const o=outSel&&$(outSel);if(e&&o&&o.innerHTML.trim()){o.classList.remove('flashOk');void o.offsetWidth;o.classList.add('flashOk');o.scrollIntoView({block:'nearest',behavior:'smooth'})}}}}
 busyBtn('#rIso','Считаю путь под ветер…','#rIsoOut');busyBtn('#rWx','Загружаю погоду…','#rSum');busyBtn('#rEns','Считаю календарь…','#rEnsOut');
 
 /* «Вести сюда»: путь от лодки (или центра карты) под ветер от текущего часа, погода по пути, ведение */
@@ -3413,26 +3452,25 @@ async function guideTo(P,name,go){map.closePopup();RT._g=1;RT.pts=P.map(p=>p.sli
   try{await $('#rWx').onclick()}catch(e){logE('guide wx '+e.message)}
   if(go){if(G.pos){navStart('route',RT.pts.map(p=>p.slice()),1,name||'Точка');toast('Веду к «'+(name||'точке')+'». Время прихода и ветер — в окне «Переход».',6000)}
     else toast('GPS выключен: путь построен от центра карты. Включите GPS — и «Курс» поведёт к точке.',8000)}
-  const RP=$('#p-route');let c=$('#gCard');if(!c){c=document.createElement('div');c.id='gCard';RP.querySelector('h2').after(c)}
+  const RP=$('#p-route');let c=$('#gCard');if(!c){c=document.createElement('div');c.id='gCard';$('#rIsoOut').after(c)}
   const ok=$('#rIsoOut .okbox')||$('#rIsoOut .badbox'),ws=($('#rSum').innerText||'').trim().split(/[\r\n]+/).filter(Boolean).slice(0,3).join('<br>');
-  c.innerHTML=`<div class="gh">${go&&G.pos?'Веду':'Путь'} к «${name||'точке'}» · выход сейчас, ${mskT(Date.now())}</div>${ok?ok.outerHTML:''}${ws?`<div class="gw"><b>Погода по пути:</b><br>${ws}</div>`:''}<div class="small muted" style="margin-top:6px">Подробности — ниже в этом окне.</div>`;
+  c.innerHTML=`<div class="gh">${go&&G.pos?'Веду':'Путь'} к «${lzE(name||'точке')}» · выход сейчас, ${mskT(Date.now())}</div>${ok?ok.outerHTML:''}${ws?`<div class="gw"><b>Погода по пути:</b><br>${ws}</div>`:''}<div class="small muted" style="margin-top:6px">Подробности — ниже в этом окне.</div>`;
   c.classList.remove('flashOk');void c.offsetWidth;c.classList.add('flashOk');setTimeout(()=>{RP.scrollTop=0},350)}
-findGo=function(P,name){guideTo(P,name,false)};
+function findGo(P,name){return guideTo(P,name,false)}
 {const _rc=routeChanged;routeChanged=function(){const c=$('#gCard');if(c&&!RT._g)c.remove();return _rc.apply(this,arguments)}}
-findShow=function(ll,n){if(FIND.lay)map.removeLayer(FIND.lay);const from=findFrom(),d=dist(from,ll)/NM;
-  FIND.lay=L.circleMarker(ll,{radius:10,color:'#fff',weight:3,fillColor:'#ff8a3d',fillOpacity:1}).addTo(map);
-  const html=`<div class="fpop"><b>${n||'Точка'}</b><div class="muted">${fDn(d,'миль')} · пеленг ${f0(brg(from,ll))}° от ${G.pos?'лодки':'центра карты'}</div><div class="row"><button class="primary" data-g="1">Вести сюда</button><button data-g="0">Только путь</button></div></div>`;
-  FIND.lay.bindPopup(html,{closeButton:true,autoPan:false,maxWidth:300});
-  FIND.lay.on('popupopen',ev=>{ev.popup.getElement().querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{b.innerHTML='<span class="spin"></span>Считаю…';guideTo([findFrom(),ll],n,b.dataset.g==='1')})});
+function findShow(ll,n,stops=[ll]){
+  const origin=findFrom(),d=dist(origin,ll)/NM;
+  if(FIND.lay)map.removeLayer(FIND.lay);
+  closePanel();
+  G.follow=false;
   map.setView(ll,Math.max(map.getZoom(),13),{animate:false});
-  const fp=$('#p-find');if(fp&&!fp.hidden)wmSet(fp,'win',true);
-  requestAnimationFrame(()=>{mapFree(ll);setTimeout(()=>FIND.lay&&FIND.lay.openPopup(),60)})};
-/* сдвинуть карту, чтобы точка с подписью была на свободном месте, а не под маленьким окном */
-function mapFree(ll){const w=$('.panel.wWin:not([hidden]),.panel.wMin:not([hidden])'),up=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tbUp'))||100,top=70,bot=innerHeight-up;
-  let A=[{x0:0,y0:top,x1:innerWidth,y1:bot}];
-  if(w){const R=w.getBoundingClientRect();A=[{x0:0,y0:top,x1:innerWidth,y1:R.top},{x0:0,y0:R.bottom,x1:innerWidth,y1:bot},{x0:0,y0:top,x1:R.left,y1:bot},{x0:R.right,y0:top,x1:innerWidth,y1:bot}]}
-  const b=A.map(a=>({...a,s:Math.max(0,a.x1-a.x0)*Math.max(0,a.y1-a.y0)})).sort((a,b)=>b.s-a.s)[0];
-  const tx=(b.x0+b.x1)/2,ty=Math.min(b.y1-30,(b.y0+b.y1)/2+70),pt=map.latLngToContainerPoint(ll);map.panBy([Math.round(pt.x-tx),Math.round(pt.y-ty)],{animate:false})}
+  const html=`<div class="fpop"><b>${lzE(n||'Точка')}</b><div class="muted">${fDn(d,'миль')} от ${G.pos?'лодки':'исходного центра карты'}</div><div class="row"><button class="primary" data-build-path>Проложить путь</button></div></div>`;
+  FIND.lay=L.circleMarker(ll,{radius:10,color:'#fff',weight:3,fillColor:'#ff8a3d',fillOpacity:1})
+    .addTo(map).bindPopup(html,{autoPanPaddingTopLeft:[12,95],autoPanPaddingBottomRight:[12,100],maxWidth:280});
+  FIND.lay.on('popupopen',ev=>{
+    ev.popup.getElement().querySelector('[data-build-path]').onclick=()=>findGo([G.pos||origin,...stops],n);
+  }).openPopup();
+}
 
 /* высота нижней полосы → MOB всегда над ней */
 function tbUpd(){const t=$('#timebar');if(!t)return;const r=t.getBoundingClientRect(),v=r.height===0||getComputedStyle(t).display==='none'?0:document.body.classList.contains('tbMin')?68:Math.max(0,innerHeight-r.top);document.documentElement.style.setProperty('--tbUp',Math.round(v)+'px')}
@@ -3707,7 +3745,12 @@ $$('.panel .close').forEach(b=>b.classList.add('xbtn'));
  // Переход
  group('Маршрут',[['#rAdd','Ставить точки','нажимайте на карту по очереди','blue','plus'],['#rUndo','Убрать последнюю точку','','gray','undo'],['#rRev','Развернуть маршрут','идти в обратную сторону','indigo','swap'],['#rClear','Очистить маршрут','','red','trash']]);
  fields('Время',['#rDep','#rPta']);
- group('Расчёт',[['#rIso','Проложить под ветер','через все точки, по прогнозу','green','compass'],['#rWx','Погода по маршруту','ветер, порывы и волна по пути','teal','cloud'],['#rEns','Календарь выхода','7 суток, 51 вариант прогноза','orange','cal'],['#rGo','Вести по маршруту','пеленг, расстояние, время прихода','blue','play']],['#rIsoOut','#rSum','#rBrief','#rWin','#rLegs','#rEnsOut']);
+ group(null,[['#rIso','Проложить под ветер','рассчитать путь через точки','green','compass'],['#rGo','Идти по маршруту','начать ведение по текущим точкам','blue','play']]);
+ const routeActions=$('#rGo').closest('.mgrp');
+ routeActions.id='routeActions';
+ $('#p-route h2').after(routeActions);
+ routeActions.after($('#rIsoOut'));
+ group('Расчёт',[['#rWx','Погода по маршруту','ветер, порывы и волна по пути','teal','cloud'],['#rEns','Календарь выхода','7 суток, 51 вариант прогноза','orange','cal']],['#rSum','#rBrief','#rWin','#rLegs','#rEnsOut']);
  group('Файлы',[['#rGpx','Сохранить маршрут','файл GPX','gray','save'],['#rImpBtn','Открыть маршрут','из файла GPX','gray','open'],['#mkExp','Сохранить метки','','brown','save'],['#mkImpBtn','Открыть метки','','brown','open']],['#mkL']);
  // Якорь
  group('Якорь',[['#aSetGps','Якорь здесь','по GPS лодки','blue','anchor'],['#aSetMap','Якорь в центре карты','','teal','target'],['#aOff','Поднять якорь','выключить вахту','red','up']]);
