@@ -1184,7 +1184,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.78';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.79';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:false,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1971,16 +1971,20 @@ function routePanel(){
 }
 $('#navFold').onclick=()=>{const compact=!$('#navd').classList.contains('compact');foldRoute(compact);store.set('compactNav',compact)};
 if(window.ResizeObserver)new ResizeObserver(layoutTop).observe($('#navd'));
-function navStart(mode,pts,idx,name){Object.assign(NAV,{mode,pts,idx,name,xteWarned:false});navSave();$('#navd').hidden=false;$('#navd').classList.toggle('mob',mode==='mob');
+function navStart(mode,pts,idx,name){Object.assign(NAV,{mode,pts,idx,name,xteWarned:false,lastD:null,away:0});navSave();$('#navd').hidden=false;$('#navd').classList.toggle('mob',mode==='mob');
   routePanel();
   const fresh=G.pos && Date.now()-G.last<20000 && (G.watch!=null||Date.now()-SK.posT<10000);
   if(G.watch==null)$('#btnGps').click();
   if(isPassage()){closePanel();G.follow=true;if(fresh)followBoat(G.pos)}
-  navUpdate();toast(mode==='mob'?'MOB! Не теряйте человека из виду. Курс на точку падения — на панели.':'Ведение включено: '+name,6000)}
+  navUpdate();if(!NAV.mode)return;toast(mode==='mob'?'MOB! Не теряйте человека из виду. Курс на точку падения — на панели.':'Ведение включено: '+name,6000)}
 function navStop(){$('#nMob').hidden=true;NAV.mode=null;navSave();$('#navd').hidden=true;routePanel();navLayer.clearLayers();chip('nav',null)}
 $('#nStop').onclick=()=>{if(NAV.mode==='mob'&&!confirm('Человек поднят на борт? Закончить MOB?'))return;navStop()};
 $('#rGo').onclick=()=>{if(RT.pts.length<2)return toast('Сначала постройте маршрут');let i=1;
-  if(G.pos){let best=1e12;RT.pts.forEach((p,k)=>{const d=dist(G.pos,p);if(d<best){best=d;i=Math.max(1,k)}})}
+  if(G.pos&&dist(G.pos,RT.pts[0])>=NAV.arrNm*NM){
+    // Join at a nearby intermediate waypoint. The finish alone cannot establish progress.
+    let nearest=NAV.arrNm*NM;
+    for(let k=1;k<RT.pts.length-1;k++){const d=dist(G.pos,RT.pts[k]);if(d<nearest){nearest=d;i=k}}
+  }
   navStart('route',RT.pts.map(p=>p.slice()),i,'Маршрут');closePanel()};
 $('#mob').onclick=()=>{if(!G.pos){beep();toast('Нет позиции GPS! Бросьте круг, назначьте наблюдателя, запомните ориентиры.',9000);return}
   NAV.mobT=Date.now();const log=store.get('mobLog',[]);log.push({t:NAV.mobT,p:G.pos});store.set('mobLog',log);logE('MOB '+G.pos.map(v=>v.toFixed(5)).join(','));
@@ -2012,7 +2016,7 @@ function navUpdate(){if(!NAV.mode)return;$('#navd').hidden=false;const tgt=NAV.p
     if(ax/NM>NAV.xteNm){chip('nav',`Ушли с линии на ${f0(ax)} м`,'warn');if(!NAV.xteWarned){NAV.xteWarned=true;beep();navigator.vibrate?.([200,100,200]);toast(`Ушли с линии на ${f0(ax)} м — держите ${x.xte>0?'левее':'правее'}`,6000)}}
     else{NAV.xteWarned=false;chip('nav',null)}
     if(NAV.lastD!=null&&dnm>NAV.lastD&&dnm<.5)NAV.away=(NAV.away||0)+1;else NAV.away=0;NAV.lastD=dnm;
-    if(dnm<NAV.arrNm||x.t>1||NAV.away>=3){NAV.away=0;NAV.lastD=null;if(NAV.idx<NAV.pts.length-1){NAV.idx++;navSave();beep();toast(`Точка ${NAV.idx} пройдена. Новый курс ${f0(brg(me,NAV.pts[NAV.idx]))}°`,6000);return navUpdate()}
+    if(dnm<NAV.arrNm||(x.t>1&&dnm<.5&&ax/NM<NAV.xteNm)||NAV.away>=3){NAV.away=0;NAV.lastD=null;if(NAV.idx<NAV.pts.length-1){NAV.idx++;navSave();beep();toast(`Точка ${NAV.idx} пройдена. Новый курс ${f0(brg(me,NAV.pts[NAV.idx]))}°`,6000);return navUpdate()}
       if(dnm<NAV.arrNm){beep();toast('Прибыли! Маршрут пройден.',8000);navStop();return}}}
   else{$('#nXte').textContent='—';if(NAV.mode==='point'&&dnm<NAV.arrNm){beep();toast('Прибыли в точку.',8000);navStop();return}}
   if(vmg!=null&&vmg>.3){const ms=dnm/vmg*36e5;$('#nEta').textContent=mskT(Date.now()+ms);note.push(`в пути ${fmtHM(ms)}, к цели ${fSp(vmg)}`)}
