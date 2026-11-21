@@ -89,6 +89,8 @@ body:has(#mob:not([hidden])) .leaflet-bottom.leaflet-left{left:80px}
 #navd span{color:var(--muted);font-size:11px}
 #addBar{position:fixed;z-index:1150;left:50%;transform:translateX(-50%);bottom:calc(var(--safe-area-inset-bottom,env(safe-area-inset-bottom)) + 100px);display:flex;gap:8px;align-items:center;background:rgba(16,34,51,.96);border:1px solid var(--accent);border-radius:14px;padding:6px 6px 6px 14px;box-shadow:0 6px 20px rgba(0,0,0,.4);white-space:nowrap}
 #addBar button{min-height:40px}
+#waterPick{position:fixed;z-index:1150;bottom:calc(var(--tbUp,100px) + 12px);left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--panel);color:var(--text);border:1px solid var(--accent);border-radius:14px;font-size:14px}
+#waterPick button{min-height:44px}
 #mob{position:fixed;z-index:1001;left:10px;bottom:calc(var(--safe-area-inset-bottom,env(safe-area-inset-bottom)) + 96px);width:64px;height:64px;min-height:64px;padding:0;border-radius:50%;background:#e01e1e;color:#fff;border:3px solid #fff;font-weight:800;font-size:16px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
 #hud span{color:var(--muted);font-size:11px}
 #hud #btnCU{display:inline-flex;align-items:center;justify-content:center;width:44px;padding:0}
@@ -476,10 +478,12 @@ body.helmOn #timebar{right:calc(min(360px,42vw) + 8px)!important}body.helmOn .le
 html body .panel.wFull{left:0!important;right:0!important;top:0!important;bottom:0!important;width:auto!important;max-width:none!important;height:auto!important;max-height:none!important;border-radius:0!important;border:0!important;z-index:1200;padding-top:calc(var(--safe-area-inset-top,env(safe-area-inset-top)) + 14px)!important;padding-left:calc(var(--safe-area-inset-left,env(safe-area-inset-left)) + 14px)!important;padding-right:calc(var(--safe-area-inset-right,env(safe-area-inset-right)) + 14px)!important;animation:kWin .28s var(--ease)!important;transform:none}
 html body .panel.wFull>*{max-width:900px;margin-left:auto;margin-right:auto}html body .panel.wFull>h2{max-width:none;margin:-14px -14px 10px}
 html body .panel.wWin,html body .panel.wMin{left:var(--wx,12px)!important;top:var(--wy,80px)!important;right:auto!important;bottom:auto!important;width:var(--ww,min(370px,calc(100vw - 24px)))!important;max-width:calc(100vw - 16px)!important;border:1px solid var(--barLine,var(--line))!important;border-radius:16px!important;box-shadow:0 14px 40px rgba(0,0,0,.5)!important;z-index:1150;animation:kWin .25s var(--ease)!important;transform:none}
-html body .panel.wWin{height:var(--wh,min(400px,46vh))!important;max-height:calc(100vh - 16px)!important;resize:both}
+html body .panel.wWin{height:var(--wh,min(400px,46vh))!important;max-height:calc(100vh - 16px)!important;resize:none}
 html body .panel.wMin{height:auto!important;max-height:none!important;overflow:hidden!important;width:auto!important;padding-bottom:0!important}
 html body .panel.wMin>*:not(h2){display:none!important}html body .panel.wMin>h2{border-bottom:0;margin-bottom:0;cursor:pointer}
 .panel.wWin>h2,.panel.wMin>h2{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}.panel.wWin>h2::before,.panel.wMin>h2::before{display:none}
+#windowCorner{position:fixed;z-index:1151;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px 0 14px 0;display:grid;place-items:center;touch-action:none;user-select:none;cursor:nwse-resize}
+#windowCorner svg{width:22px;height:22px;pointer-events:none}
 .panel.wDrag{transition:none!important;opacity:.92}.panel.wDrag>h2{cursor:grabbing}
 @keyframes kWin{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
 /* заметное нажатие и «считаю» */
@@ -590,7 +594,11 @@ html body .panel.wStash{transform:translate(var(--sx,0),var(--sy,0)) scale(.92)!
 .stashTab[data-e=l] i,.stashTab[data-e=r] i{width:4px;height:36px}
 .stashTab[data-e=t],.stashTab[data-e=b]{width:78px;height:24px}
 .stashTab[data-e=t]{border-top:0;border-radius:0 0 14px 14px}
-.stashTab[data-e=b]{border-bottom:0;border-radius:14px 14px 0 0}
+.stashTab[data-e=b]{height:44px;width:126px;max-width:calc(100vw - 165px);padding:0 8px;gap:5px;border-radius:12px;bottom:calc(var(--tbUp,100px) + 6px)}
+.stashTab[data-e=b] span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:13px}
+body.tbMin .stashTab[data-e=b]{bottom:calc(var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)) + 8px)}
+html body.tbMin #map .leaflet-bottom.leaflet-right{bottom:calc(var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)) + 8px)}
+html body.tbMin #timebar{visibility:hidden}
 .stashTab[data-e=t] i,.stashTab[data-e=b] i{width:36px;height:4px}
 html body #bBody .bc .bp b{font-size:17px}
 
@@ -868,6 +876,7 @@ html body #p-find #fList button.placeName{display:block;width:100%;text-align:le
   <div class="row" id="nMob" hidden style="margin:6px 0 0"><button id="nMay" class="primary" style="flex:1">📢 Текст для MAYDAY по рации</button></div>
 </div>
 <button id="mob" hidden aria-label="Человек за бортом">MOB</button>
+<div id="waterPick" hidden role="group" aria-label="Выбор точки на воде"><span role="status"></span><button type="button">Отмена</button></div>
 <div id="addBar" hidden><span id="addTxt">Нажимайте на карту</span><button id="addUndo">↶</button><button id="addIso" hidden title="Проложить под ветер через все точки">🧭 По ветру</button><button id="addDone" class="primary">✓ Готово</button></div>
 
 <footer id="timebar"><button id="tbGrip" aria-label="Свернуть или развернуть полосу прогноза" title="Свернуть / развернуть"></button>
@@ -1184,7 +1193,7 @@ const LOG=[];function logE(m){LOG.push(new Date().toISOString()+' '+m);if(LOG.le
 window.addEventListener('error',e=>logE('ERR '+e.message+' @'+(e.lineno||'')));
 window.addEventListener('unhandledrejection',e=>logE('PROMISE '+(e.reason&&e.reason.message||e.reason)));
 
-const VER='0.9.79';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
+const VER='0.9.81';document.querySelector('.brand').title='Курс, версия '+VER;document.getElementById('moreVer').textContent='Курс · версия '+VER+' · проверочная';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const store={get(k,d){try{const v=localStorage.getItem('kurs.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kurs.'+k,JSON.stringify(v));return true}catch(e){logE('store '+k+' '+e.message);return false}}};
 const S=Object.assign({yandexKey:'',aisKey:'',windMax:20,gustMax:25,waveMax:1.2,night:false,autoNight:false,saver:false,polar:'simple',polEff:90,base:'kurs',seamarks:true,obs:true,wind:true,track:true,model:'ecmwf_ifs025',
@@ -1439,6 +1448,7 @@ new MutationObserver(layoutTop).observe(document.body,{subtree:true,attributes:t
 /* ===== панели ===== */
 $$('.panel').forEach(p=>{const c=p.querySelector(':scope > .close'),h=p.querySelector('h2');if(c&&h)h.appendChild(c)});
 let openName=null;
+let syncRouteView=()=>{};
 let panelExit;
 function cancelPanelExit(){
   if(panelExit){panelExit.cancel();panelExit=null}
@@ -1450,8 +1460,8 @@ function dismissPanel(){
   panelExit=panel.animate([{opacity:1,translate:'0 0'},{opacity:0,translate:'0 8px'}],{duration:160,easing:'ease-in',fill:'forwards'});
   panelExit.onfinish=()=>{closePanel()};
 }
-function openPanel(n){cancelPanelExit();if(n==='spb')setTimeout(spbUI,0);$$('.panel').forEach(p=>p.hidden=p.id!=='p-'+n);openName=n;$$('#top [data-panel]').forEach(b=>b.classList.toggle('on',b.dataset.panel===n));if(n==='route')$('#p-route').scrollTop=0;if(n==='ais')aisList()}
-function closePanel(){cancelPanelExit();$$('.panel').forEach(p=>p.hidden=true);openName=null;$$('#top [data-panel]').forEach(b=>b.classList.remove('on'));if(ptMarker){map.removeLayer(ptMarker);ptMarker=null}anchorBtn()}
+function openPanel(n){cancelPanelExit();if(n==='spb')setTimeout(spbUI,0);$$('.panel').forEach(p=>p.hidden=p.id!=='p-'+n);openName=n;syncRouteView();$$('#top [data-panel]').forEach(b=>b.classList.toggle('on',b.dataset.panel===n));if(n==='route')$('#p-route').scrollTop=0;if(n==='ais')aisList()}
+function closePanel(){cancelPanelExit();$$('.panel').forEach(p=>p.hidden=true);openName=null;syncRouteView();$$('#top [data-panel]').forEach(b=>b.classList.remove('on'));if(ptMarker){map.removeLayer(ptMarker);ptMarker=null}anchorBtn()}
 $$('#top [data-panel]').forEach(b=>b.onclick=()=>openName===b.dataset.panel?dismissPanel():openPanel(b.dataset.panel));
 $$('.panel .close').forEach(b=>b.onclick=dismissPanel);
 $$('input[name=base]').forEach(r=>r.onchange=()=>setBase(r.value));
@@ -1568,11 +1578,11 @@ function chart(t,a,b,series,dirs){const Wd=360,H=170,P=26;let mx=10;series.forEa
   return g+'</svg>'}
 
 /* ===== переход: маршрут, погода на время прохождения, окна выхода ===== */
-const RT={pts:store.get('route',[]),adding:false,layer:L.layerGroup().addTo(map),fc:null};
+const RT={pts:store.get('route',[]),adding:false,layer:L.layerGroup(),fc:null};
 {const c=store.get('routefc',null);if(c&&JSON.stringify(c.pts)===JSON.stringify(RT.pts))RT.fc=c}
 (function(){const d=new Date();d.setMinutes(0,0,0);d.setHours(d.getHours()+1);setDep(d)})();
 function setDep(d){$('#rDep').value=new Date(+d+MSK).toISOString().slice(0,16)} // в поле — московские часы
-function setAdding(on){RT.adding=on;$('#addBar').hidden=!on;addBarUpd();$('#rAdd').classList.toggle('on',on);$('#rAdd').textContent=on?'✓ Готово':'＋ Ставить точки';map.getContainer().style.cursor=on?'crosshair':''}
+function setAdding(on){RT.adding=on;syncRouteView();$('#addBar').hidden=!on;addBarUpd();$('#rAdd').classList.toggle('on',on);$('#rAdd').textContent=on?'✓ Готово':'＋ Ставить точки';map.getContainer().style.cursor=on?'crosshair':''}
 $('#rAdd').onclick=()=>{const on=!RT.adding;setAdding(on);if(on)closePanel()};
 $('#rUndo').onclick=()=>{RT.pts.pop();routeChanged()};
 $('#rRev').onclick=()=>{RT.pts.reverse();routeChanged()};
@@ -1722,12 +1732,12 @@ async function waterPath(A,B,padK=1){const g=await wfLoad();if(!g)return null;
   const heap=[],hf=[];const push=(i,f)=>{heap.push(i);hf.push(f);let k=heap.length-1;while(k>0){const p=(k-1)>>1;if(hf[p]<=hf[k])break;[heap[p],heap[k]]=[heap[k],heap[p]];[hf[p],hf[k]]=[hf[k],hf[p]];k=p}};
   const pop=()=>{const top=heap[0],lh=heap.pop(),lf=hf.pop();if(heap.length){heap[0]=lh;hf[0]=lf;let k=0;for(;;){const l=2*k+1,r=l+1;let m=k;if(l<heap.length&&hf[l]<hf[m])m=l;if(r<heap.length&&hf[r]<hf[m])m=r;if(m===k)break;[heap[m],heap[k]]=[heap[k],heap[m]];[hf[m],hf[k]]=[hf[k],hf[m]];k=m}}return top};
   const lb=[b[0]-r0,b[1]-c0];const hh=(r,c)=>{const ddy=Math.abs(r-lb[0])*dy,ddx=Math.abs(c-lb[1])*dx;return Math.max(ddx,ddy)+(Math.SQRT2-1)*Math.min(ddx,ddy)};
-  // старт и цель: все клетки воды в пределах ~600 м (точка может стоять на берегу или у причала)
-  const ring=(p,rad)=>{const out=[];for(let dr=-rad;dr<=rad;dr++)for(let dc=-rad;dc<=rad;dc++){const r=p[0]-r0+dr,c=p[1]-c0+dc;if(r<0||c<0||r>=H||c>=Wd)continue;const i=r*Wd+c;if(wat[i])out.push([i,Math.hypot(dr*dy,dc*dx)])}return out};
-  const st=ring(a,6),goal=new Set(ring(b,6).map(x=>x[0]));if(!st.length||!goal.size)return null;
-  for(const[i,d]of st){gs[i]=d*3;push(i,gs[i]+hh(Math.floor(i/Wd),i%Wd))}
+  const start=(a[0]-r0)*Wd+a[1]-c0,goal=(b[0]-r0)*Wd+b[1]-c0;
+  if(!wat[start]||!wat[goal])return null;
+  if(start===goal)return [A.slice(),B.slice()];
+  gs[start]=0;push(start,hh(a[0]-r0,a[1]-c0));
   let end=-1,it=0;
-  while(heap.length){const i=pop();if(closed[i])continue;closed[i]=1;if(goal.has(i)){end=i;break}
+  while(heap.length){const i=pop();if(closed[i])continue;closed[i]=1;if(i===goal){end=i;break}
     if(++it%40000===0)await new Promise(r=>setTimeout(r,0));
     const r=Math.floor(i/Wd),c=i%Wd;
     for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(!dr&&!dc)continue;const rr=r+dr,cc=c+dc;if(rr<0||cc<0||rr>=H||cc>=Wd)continue;const j=rr*Wd+cc;if(!wat[j]||closed[j])continue;
@@ -1766,14 +1776,12 @@ async function isoRoute(P0,dep,onProg){const g=await routeGrid(P0),hop=(a,b)=>di
   for(let i=0;i<P.length-1;i++){const A=P[i].p,B=P[i+1].p;let lp;
     if(P[i+1].direct){const t1=t+hop(A,B);lp=[{p:A,t,h:null},{p:B,t:t1,h:brg(A,B),v:S.boat.speed,w:path[path.length-1]?.w}];t=t1}      // сами ворота — прямо по оси
     else{const a0=nearWater(A),b0=nearWater(B);if(!a0)return{err:'land',pt:un};if(!b0)return{err:'land',pt:un+1};
-      if(a0!==A)t+=hop(A,a0);
       ISO_CLR.on=true;let r=await isoLeg(a0,b0,t,onProg,g);
       if(r.err==='path'){ISO_CLR.on=false;r=await isoLeg(a0,b0,t,onProg,g);ISO_CLR.on=true;if(!r.err)relaxed=true}      // узкое место: пробуем без запаса 300 м от берега
       {const wp=await waterPath(a0,b0);if(wp){const rw=wpTimed(wp,t,g);if(r.err==='path'||(!r.err&&rw.t<t+(r.t-t)*.93)){r=rw;if(!fallback.includes(un))fallback.push(un)}}}      // по воде быстрее или под ветер не нашлось
       if(r.err)return{err:r.err,leg:un};
       lp=r.path.map(q=>({...q,keep:!!r.water}));
-      if(a0!==A)lp.unshift({p:A,t:t-hop(A,a0),h:null});
-      t=r.t;if(b0!==B){t+=hop(b0,B);lp.push({p:B,t,h:brg(b0,B),v:S.boat.speed,w:lp[lp.length-1].w})}}
+      t=r.t;}
     lp[0].via=true;lp[lp.length-1].via=true;if(P[i+1].u){eta.push(t);un++}path.push(...(i?lp.slice(1):lp))}
   return{path,t,dep,g,eta,relaxed,gates,fallback,n:P0.length,nv:P.length}}
 /* время по пути по воде: ход лодки при ветре на каждом отрезке; против ветра — мотор или лавировка */
@@ -1782,13 +1790,15 @@ function wpTimed(wp,t0,g){const tIdx=t=>g.times.findIndex(x=>x>=t/1000-1800);let
     let v=w?polarSpeed(w.spd,offBow(w.dir,h)):S.boat.speed;if(!(v>.3))v=S.boat.motor>0?S.boat.motor:(w?polarSpeed(w.spd,45)*.7:S.boat.speed);if(!(v>.3))v=1;
     t+=d/v*36e5;path.push({p:b,par:path[path.length-1],t,h,v,w})}
   return{path,t,water:true}}
-const ISO={layer:L.layerGroup().addTo(map),res:null};
+const ISO={layer:L.layerGroup(),res:null,seq:0};
 function simplifyPath(path){const out=[path[0].p];for(let i=1;i<path.length-1;i++){const a=path[i-1],b=path[i],c=path[i+1];if(b.via||b.keep||Math.abs(((c.h-b.h)%360+540)%360-180)>15)out.push(b.p)}out.push(path[path.length-1].p);return out}
-$('#rIso').onclick=async()=>{const P=RT.pts.length===1&&G.pos?[[G.pos[0],G.pos[1]],RT.pts[0]]:RT.pts.slice();
+$('#rIso').onclick=()=>calculateIso(RT.pts.length===1&&G.pos?[[G.pos[0],G.pos[1]],RT.pts[0]]:RT.pts.slice());
+async function calculateIso(P){const seq=++ISO.seq;ISO.res=null;
   if(P.length<2)return toast('Поставьте хотя бы две точки маршрута (или одну, если включён GPS: старт — от лодки)');
   const out=$('#rIsoOut');out.innerHTML='<p class="muted small">Считаю: тысячи вариантов курса по часам прогноза, с обходом берега…</p>';ISO.layer.clearLayers();
   try{const dep=depTs(),t0=performance.now();
-    const r=await isoRoute(P,dep,(st,fr,A)=>{if(st%2===0)L.polyline(fr.map(q=>q.p).sort((a,b)=>brg(A,a)-brg(A,b)),{color:'#9fb4c7',weight:1,opacity:.35,interactive:false}).addTo(ISO.layer)});
+    const r=await isoRoute(P,dep,(st,fr,A)=>{if(seq===ISO.seq&&st%2===0)L.polyline(fr.map(q=>q.p).sort((a,b)=>brg(A,a)-brg(A,b)),{color:'#9fb4c7',weight:1,opacity:.35,interactive:false}).addTo(ISO.layer)});
+    if(seq!==ISO.seq)return;
     if(r.err){ISO.layer.clearLayers();const lg=r.leg?`На участке ${r.leg}→${r.leg+1} `:'';out.innerHTML='<div class="badbox small">'+(r.err==='land'?`Точка ${r.pt} стоит далеко на суше: до воды больше 2 миль. Передвиньте её ближе к воде.`:r.err==='time'?`${lg}нет ветра в прогнозе на это время: прогноз покрывает 5 суток. Поставьте выход раньше или сократите маршрут.`:`${lg}путь по воде не найден: мешает берег, или стоит штиль, а скорость под мотором в настройках лодки равна нулю.`)+'</div>';return}
     ISO.res=r;const pts=simplifyPath(r.path),dur=r.t-dep;
     L.polyline(r.path.map(q=>q.p),{color:'#2ee59d',weight:5,opacity:.95}).addTo(ISO.layer);
@@ -1801,8 +1811,9 @@ $('#rIso').onclick=async()=>{const P=RT.pts.length===1&&G.pos?[[G.pos[0],G.pos[1
       <p class="note">Глубин в расчёте нет: путь держится не ближе ~300 м от берега по карте воды, но мели и камни он не видит. Проверьте по карте с глубинами. Скорость — по упрощённым полярам; с полярами вашей лодки будет точнее.</p>`;
     $('#isoUse').onclick=()=>{RT.pts=pts;routeChanged();ISO.layer.clearLayers();$('#rIsoOut').innerHTML='';toast(`Маршрут заменён: точек — ${pts.length}. Нажмите «Погода по маршруту»`)};
     $('#isoClr').onclick=()=>{ISO.layer.clearLayers();$('#rIsoOut').innerHTML=''};
-    map.fitBounds(L.latLngBounds(r.path.map(q=>q.p)),{padding:[30,30]});
-  }catch(err){logE('iso '+err.message);out.innerHTML=`<p class="badbox">Ошибка: ${err.message}</p>`}};
+    if(map.hasLayer(ISO.layer))map.fitBounds(L.latLngBounds(r.path.map(q=>q.p)),{padding:[30,30]});
+    return r;
+  }catch(err){if(seq!==ISO.seq)return;logE('iso '+err.message);out.innerHTML=`<p class="badbox">Ошибка: ${err.message}</p>`}};
 
 /* ===== брифинг штурмана (по шаблонам из расчётов; позже — живой текст от ИИ на своём сервере) ===== */
 
@@ -2540,7 +2551,7 @@ $('#addDone').onclick=()=>{setAdding(false);if(RT.pts.length>1){openPanel('route
 $('#addUndo').onclick=()=>{RT.pts.pop();routeChanged()};
 $('#addIso').onclick=()=>{setAdding(false);openPanel('route');$('#rIso').click();setTimeout(()=>$('#rIsoOut').scrollIntoView({block:'nearest',behavior:'smooth'}),300)};
 /* ===== клик по карте ===== */
-map.on('click',e=>{if(LP.suppress)return;if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}if(dpHit(e))return;showPoint(e.latlng)});
+map.on('click',e=>{if(LP.suppress)return;if(pendingWater){pickWater([e.latlng.lat,e.latlng.lng]);return}if(RT.adding){RT.pts.push([e.latlng.lat,e.latlng.lng]);routeChanged();return}if(dpHit(e))return;showPoint(e.latlng)});
 
 
 /* ===== ветер, измеренный на станциях сейчас (не прогноз) =====
@@ -3450,7 +3461,7 @@ function wmName(p){return p.id.replace(/^p-/,'')}
 function wmGet(n){try{return store.get('wm_'+n,null)||WMD.def[n]||'dock'}catch(e){return WMD.def[n]||'dock'}}
 function wmClamp(p){const r=p.getBoundingClientRect(),st=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-top'))||0;
   let x=parseFloat(p.style.getPropertyValue('--wx'))||r.left,y=parseFloat(p.style.getPropertyValue('--wy'))||r.top;
-  x=Math.min(Math.max(4,x),Math.max(4,innerWidth-Math.min(r.width,innerWidth)-4));y=Math.min(Math.max(st+4,y),Math.max(st+4,innerHeight-Math.min(r.height,60)-4));
+  x=Math.min(Math.max(4,x),Math.max(4,innerWidth-Math.min(r.width,innerWidth)-4));y=Math.min(Math.max(st+4,y),Math.max(st+4,innerHeight-r.height-4));
   p.style.setProperty('--wx',x+'px');p.style.setProperty('--wy',y+'px')}
 function wmPlaceDefault(p){const n=wmName(p);let pos=null;try{pos=store.get('wpos_'+n,null)}catch(e){}
   const w=Math.min(370,innerWidth-24),h=Math.min(400,innerHeight*.46),up=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tbUp'))||110;
@@ -3474,6 +3485,53 @@ $$('.panel').forEach(p=>{const h=p.querySelector('h2');if(!h)return;const c=docu
   const end=()=>{if(!st)return;const m=st.m,st0=st;st=null;p.classList.remove('wDrag');if(m&&p.classList.contains('wWin')&&wmFling(p,st0)){h._dr=Date.now();return}if(m){wmClamp(p);const r=p.getBoundingClientRect();try{store.set('wpos_'+wmName(p),{x:r.left,y:r.top,w:p.classList.contains('wWin')?r.width:null,h:p.classList.contains('wWin')?r.height:null})}catch(_){}h._dr=Date.now()}
     else if(p.classList.contains('wMin'))wmSet(p,'win')};
   h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end)});
+// Keep the resize target outside the scrolling content of floating windows.
+{
+  const corner=document.createElement('button');
+  corner.id='windowCorner';corner.type='button';corner.hidden=true;
+  corner.title='Потяните, чтобы изменить размер. Нажмите, чтобы развернуть.';
+  corner.setAttribute('aria-label',corner.title);
+  corner.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 19L19 5M12 19l7-7"/></svg>';
+  document.body.append(corner);
+  let panel=null,drag=null,skipClick=false;
+  function syncCorner(){
+    panel=$('.panel.wWin:not([hidden]):not(.wStash)');
+    corner.hidden=!panel;
+    if(!panel)return;
+    corner.setAttribute('aria-controls',panel.id);
+    corner.style.left=(panel.offsetLeft+panel.offsetWidth-44)+'px';
+    corner.style.top=(panel.offsetTop+panel.offsetHeight-44)+'px';
+  }
+  const changes=new MutationObserver(syncCorner);
+  const sizes=window.ResizeObserver?new ResizeObserver(syncCorner):null;
+  $$('.panel').forEach(p=>{changes.observe(p,{attributes:true,attributeFilter:['class','style','hidden']});sizes?.observe(p)});
+  addEventListener('resize',syncCorner);syncCorner();
+  corner.onpointerdown=e=>{
+    if(!panel||!e.isPrimary||e.button!==0)return;
+    skipClick=false;
+    drag={panel,id:e.pointerId,x:e.clientX,y:e.clientY,w:panel.offsetWidth,h:panel.offsetHeight};
+    corner.setPointerCapture(e.pointerId);
+  };
+  corner.onpointermove=e=>{
+    if(!drag||e.pointerId!==drag.id||drag.panel!==panel)return;
+    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    if(!skipClick&&Math.hypot(dx,dy)<6)return;
+    skipClick=true;
+    const w=Math.min(Math.max(220,drag.w+dx),innerWidth-panel.offsetLeft-4);
+    const h=Math.min(Math.max(112,drag.h+dy),innerHeight-panel.offsetTop-4);
+    panel.style.setProperty('--ww',w+'px');panel.style.setProperty('--wh',h+'px');
+    syncCorner();
+  };
+  corner.onpointerup=e=>{
+    if(drag&&drag.id===e.pointerId&&skipClick&&drag.panel===panel){
+      store.set('wpos_'+wmName(panel),{x:panel.offsetLeft,y:panel.offsetTop,w:panel.offsetWidth,h:panel.offsetHeight});
+    }
+    if(drag&&drag.id===e.pointerId&&!skipClick&&drag.panel===panel)wmSet(panel,'full');
+    drag=null;
+  };
+  corner.onlostpointercapture=()=>{drag=null};
+  corner.onclick=e=>{if(panel&&e.detail===0)wmSet(panel,'full')};
+}
 // размер маленького окна, если его потянули за уголок
 if(window.ResizeObserver){const ro=new ResizeObserver(es=>es.forEach(en=>{const p=en.target;if(!p.classList.contains('wWin')||p.hidden)return;clearTimeout(p._rs);p._rs=setTimeout(()=>{if(!p.classList.contains('wWin')||p.hidden||p.classList.contains('wStash'))return;const r=p.getBoundingClientRect();try{store.set('wpos_'+wmName(p),{x:r.left,y:r.top,w:r.width,h:r.height})}catch(_){}},400)}));$$('.panel').forEach(p=>ro.observe(p))}
 {const _op=openPanel;openPanel=function(n){_op(n);const p=$('#p-'+n);if(p)wmSet(p,wmGet(n),true)}}
@@ -3486,19 +3544,59 @@ function busyBtn(sel,label,outSel){const b=$(sel);if(!b||b._busy)return;const f=
 busyBtn('#rIso','Считаю путь под ветер…','#rIsoOut');busyBtn('#rWx','Загружаю погоду…','#rSum');busyBtn('#rEns','Считаю календарь…','#rEnsOut');
 
 /* «Вести сюда»: путь от лодки (или центра карты) под ветер от текущего часа, погода по пути, ведение */
-async function guideTo(P,name,go){map.closePopup();RT._g=1;RT.pts=P.map(p=>p.slice());routeChanged();RT._g=0;setDep(Date.now());
-  openPanel('route');wmSet('route','win',true);ISO.res=null;
-  try{await $('#rIso').onclick()}catch(e){logE('guide iso '+e.message)}
-  const r=ISO.res;if(r&&r.path){const pts=simplifyPath(r.path);RT.pts=pts.map(p=>p.slice());store.set('route',RT.pts);RT.fc=null;renderRoute();const u=$('#isoUse');if(u)u.closest('.row').remove()}
-  try{await $('#rWx').onclick()}catch(e){logE('guide wx '+e.message)}
-  if(go){if(G.pos){navStart('route',RT.pts.map(p=>p.slice()),1,name||'Точка');toast('Веду к «'+(name||'точке')+'». Время прихода и ветер — в окне «Переход».',6000)}
-    else toast('GPS выключен: путь построен от центра карты. Включите GPS — и «Курс» поведёт к точке.',8000)}
-  const RP=$('#p-route');let c=$('#gCard');if(!c){c=document.createElement('div');c.id='gCard';$('#rIsoOut').after(c)}
-  const ok=$('#rIsoOut .okbox')||$('#rIsoOut .badbox'),ws=($('#rSum').innerText||'').trim().split(/[\r\n]+/).filter(Boolean).slice(0,3).join('<br>');
-  c.innerHTML=`<div class="gh">${go&&G.pos?'Веду':'Путь'} к «${lzE(name||'точке')}» · выход сейчас, ${mskT(Date.now())}</div>${ok?ok.outerHTML:''}${ws?`<div class="gw"><b>Погода по пути:</b><br>${ws}</div>`:''}<div class="small muted" style="margin-top:6px">Подробности — ниже в этом окне.</div>`;
-  c.classList.remove('flashOk');void c.offsetWidth;c.classList.add('flashOk');setTimeout(()=>{RP.scrollTop=0},350)}
-function findGo(P,name){return guideTo(P,name,false)}
-{const _rc=routeChanged;routeChanged=function(){const c=$('#gCard');if(c&&!RT._g)c.remove();return _rc.apply(this,arguments)}}
+let pendingWater=null,guideSeq=0,guideBusy=false;
+function cancelGuide(){
+  ++guideSeq;pendingWater=null;guideBusy=false;$('#waterPick').hidden=true;
+  $('#rIso').disabled=$('#rGo').disabled=false;
+}
+$('#waterPick button').onclick=()=>{cancelGuide();syncRouteView()};
+syncRouteView=()=>{
+  if(openName!=='route'&&guideBusy){cancelGuide();++ISO.seq;ISO.layer.clearLayers();$('#rIsoOut').textContent=''}
+  if(openName&&pendingWater)cancelGuide();
+  for(const layer of [RT.layer,ISO.layer]){
+    const show=(openName==='route'||RT.adding)&&!(layer===RT.layer&&guideBusy);
+    if(show&&!map.hasLayer(layer))layer.addTo(map);
+    else if(!show&&map.hasLayer(layer))map.removeLayer(layer);
+  }
+};
+syncRouteView();
+function pickWater(ll){
+  if(wAt(...ll)!==true){toast('Выберите точку внутри воды на карте района');return}
+  const {pts,index,name}=pendingWater;
+  pts[index]=ll;pendingWater=null;$('#waterPick').hidden=true;
+  findGo(pts,name);
+}
+async function findGo(points,name){
+  cancelGuide();const seq=guideSeq;
+  map.closePopup();openPanel('route');wmSet('route','win',true);
+  guideBusy=true;syncRouteView();$('#rGo').disabled=$('#rIso').disabled=true;
+  ++ISO.seq;ISO.layer.clearLayers();$('#gCard')?.remove();
+  const out=$('#rIsoOut');out.textContent='Проверяю точки по карте воды…';
+  await wfLoad();if(seq!==guideSeq)return;
+  const pts=points.map(p=>p.slice()),index=pts.findIndex(p=>wAt(...p)!==true);
+  if(index>=0){
+    guideBusy=false;closePanel();out.textContent='';G.follow=false;
+    pendingWater={pts,index,name};
+    const prompt=index===0?'Выберите на воде место старта':'Выберите на воде точку подхода № '+(index+1);
+    $('#waterPick span').textContent=prompt+' для «'+(name||'Переход')+'»';
+    $('#waterPick').hidden=false;
+    map.setView(pts[index],Math.max(12,map.getZoom()),{animate:false});return;
+  }
+  setDep(Date.now());
+  const r=await calculateIso(pts);
+  if(seq!==guideSeq)return;
+  guideBusy=false;$('#rGo').disabled=$('#rIso').disabled=false;
+  if(!r){syncRouteView();return}
+  RT.pts=simplifyPath(r.path).map(p=>p.slice());routeChanged();
+  $('#isoUse')?.closest('.row')?.remove();
+  syncRouteView();const title=document.createElement('h3');title.id='gCard';
+  title.textContent='Путь к «'+(name||'точке')+'»';out.before(title);
+  await $('#rWx').onclick();
+}
+{const original=routeChanged;routeChanged=function(){
+  if(guideBusy){cancelGuide();++ISO.seq;syncRouteView()}
+  $('#gCard')?.remove();return original.apply(this,arguments);
+}}
 function findShow(ll,n,stops=[ll]){
   const origin=findFrom(),d=dist(origin,ll)/NM;
   if(FIND.lay)map.removeLayer(FIND.lay);
@@ -3646,7 +3744,7 @@ function wmFling(p,st){const r=p.getBoundingClientRect(),W=innerWidth,H=innerHei
   const off={l:-r.left/r.width,r:(r.right-W)/r.width,t:(top-r.top)/r.height,b:(r.bottom-(H-tb))/r.height};
   const vx=st&&st.vx||0,vy=st&&st.vy||0,V=0.9;const fl={l:-vx,r:vx,t:-vy,b:vy};
   const mv=st?{l:st.x-(st.px||st.x),r:(st.px||st.x)-st.x,t:st.y-(st.py||st.y),b:(st.py||st.y)-st.y}:{};
-  let e=null,best=0;for(const k of ['l','r','t','b']){if(!(mv[k]>40))continue;const sc=Math.max(off[k]>0.33?off[k]+1:0,fl[k]>V?fl[k]:0);if(sc>best){best=sc;e=k}}
+  let e=null,best=0;for(const k of ['l','r','t','b']){if(!(mv[k]>40)||k==='b'&&r.bottom<H-tb-16)continue;const sc=Math.max(off[k]>0.33?off[k]+1:0,fl[k]>V?fl[k]:0);if(sc>best){best=sc;e=k}}
   if(!e)return false;p._pre={x:st.l,y:st.t};wmStash(p,e);return true}
 function wmStash(p,e){const r=p.getBoundingClientRect(),W=innerWidth,H=innerHeight,tb=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tbUp'))||0,n=wmName(p);
   const sx={l:-(r.right+30),r:W-r.left+30,t:0,b:0}[e],sy={t:-(r.bottom+30),b:H-r.top+30,l:0,r:0}[e];p.style.setProperty('--sx',sx+'px');p.style.setProperty('--sy',sy+'px');
@@ -3654,7 +3752,11 @@ function wmStash(p,e){const r=p.getBoundingClientRect(),W=innerWidth,H=innerHeig
   const ttl=(p.querySelector('h2')||{}).firstChild;const name=ttl&&ttl.textContent?ttl.textContent.trim():'';t.setAttribute('aria-label','Показать окно'+(name?' «'+name+'»':''));t.title=t.getAttribute('aria-label');
   t.dataset.e=e;t.innerHTML='<i></i>';t.style.left=t.style.right=t.style.top=t.style.bottom='';
   const cl=(v,a,b)=>Math.min(Math.max(v,a),b);
-  if(e==='l'||e==='r')t.style.top=cl(r.top+r.height/2-39,70,H-tb-90)+'px';else{t.style.left=cl(r.left+r.width/2-39,8,W-86)+'px';if(e==='t')t.style.top='64px';else t.style.bottom=(tb+2)+'px'}
+  if(e==='l'||e==='r')t.style.top=cl(r.top+r.height/2-39,70,H-tb-90)+'px';else{t.style.left=cl(r.left+r.width/2-39,8,W-86)+'px';if(e==='t')t.style.top='64px';else{
+    t.style.left=cl(r.left+r.width/2-63,76,W-198)+'px';
+    const label=document.createElement('span');label.textContent=name||'Окно';
+    t.textContent='⌃';t.append(label);
+  }}
   let d=null;t.onpointerdown=ev=>{d={x:ev.clientX,y:ev.clientY};try{t.setPointerCapture(ev.pointerId)}catch(_){}};
   t.onpointermove=ev=>{if(!d)return;if(d.pull){ev.preventDefault();d.pull(ev);return}if(Math.hypot(ev.clientX-d.x,ev.clientY-d.y)>16)d.pull=wmPull(p,t,ev)};
   t.onpointerup=t.onpointercancel=()=>{if(!d)return;const pl=d.pull;d=null;if(pl){pl(null)}else wmUnstash(p)}}
